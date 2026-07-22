@@ -1,3 +1,21 @@
+# Environment and Secrets
+.env
+.env.local
+.env.*.local
+.env.production
+.env.production.local
+!.env.example
+!.env.*.example
+
+# Databases
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+logs/
+*.log
+
 # Python
 __pycache__/
 *.py[cod]
@@ -11,16 +29,6 @@ venv/
 .eggs/
 dist/
 build/
-
-# Environment
-.env
-.env.local
-.env.*.local
-.env.production
-.env.production.local
-
-# Logs
-logs/
 
 # Node
 node_modules/
@@ -49,10 +57,6 @@ htmlcov/
 coverage/
 playwright-report/
 test-results/
-
-# Database
-*.db
-*.db-*
 
 # Runtime
 *.pid
