@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Synaris Brand Tokens ───────────────────────────────
+ *  Palette: deep electric blue (#2563EB), cyan teal (#06B6D4),
+ *           soft violet (#8B5CF6), slate (#1E293B)
+ *  Aesthetic: "Warm-Tech" — clean geometric lines, rounded
+ *             edges, frosted glass, subtle gradients.
+ * ─────────────────────────────────────────────────────── */
+
+/* Light Theme */
+:root {
+  --surface-primary: #ffffff;
+  --surface-secondary: #f8f9fa;
+  --surface-hover: #f0f1f3;
+
+  --synapse-blue: #2563EB;
+  --synapse-blue-dark: #1E40AF;
+  --synapse-cyan: #06B6D4;
+  --synapse-cyan-light: #22D3EE;
+  --synapse-violet: #8B5CF6;
+  --synapse-violet-light: #A78BFA;
+  --synapse-indigo: #6366F1;
+  --synapse-slate: #1E293B;
+  --synapse-slate-light: #334155;
+}
+
+/* Dark Theme */
+.dark {
+  --surface-primary: #0F1117;
+  --surface-secondary: #1C1E2B;
+  --surface-hover: #282B40;
+}
+
+/* Base Styles */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  /* Focus ring */
+  *:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: #3b82f6;
+    color: white;
+  }
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 157, 163, 0.5);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 157, 163, 0.8);
+}
+
+/* Animations */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  animation: gradient 4s ease infinite;
+}
