@@ -62,3 +62,6 @@ test-results/
 *.pid
 *.seed
 *.pid.lock
+
+# Ad-hoc test scripts (use backend/tests/ instead)
+backend/test_*.py

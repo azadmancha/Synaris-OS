@@ -10,7 +10,6 @@ spaced repetition (Phase 3).
 """
 
 import logging
-from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

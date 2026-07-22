@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { supabase, getCurrentUser } from '@/lib/supabase';
 import { api } from '@/lib/api';
@@ -26,6 +26,18 @@ const DEPTHS = [
 ];
 
 export default function SettingsPage() {
+  return (
+    <Suspense fallback={
+      <main className="flex min-h-screen items-center justify-center bg-white dark:bg-[#0F1117]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+      </main>
+    }>
+      <SettingsContent />
+    </Suspense>
+  );
+}
+
+function SettingsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const isGuest = searchParams.get('dev') === '1';

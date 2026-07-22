@@ -15,7 +15,6 @@ The pipeline is designed to be:
 """
 
 import logging
-from typing import Optional
 
 from app.knowledge.sources import SourceAdapter, SourceDocument, SearchResult as SourceSearchResult
 from app.knowledge.sources.wikipedia import get_wikipedia_source

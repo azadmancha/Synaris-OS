@@ -22,8 +22,6 @@ Requires the appropriate API key for whatever provider you use.
 
 from collections.abc import AsyncGenerator
 import logging
-import os
-from typing import Optional
 
 from app.ai.providers.base import AIProvider, AIResponse, AIStreamChunk
 from app.ai.providers.key_manager import get_key_manager, get_env_var_for_provider
