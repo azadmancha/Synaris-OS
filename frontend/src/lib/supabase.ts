@@ -2,25 +2,62 @@
  * Supabase Client
  *
  * Browser-side Supabase client for Google OAuth authentication.
- * Uses the project's Supabase credentials from environment variables.
+ * Uses lazy initialization so it doesn't crash Next.js static page
+ * generation (SSG) when environment variables are unavailable in CI.
+ *
+ * All helpers (signInWithGoogle, getCurrentSession, etc.) call
+ * getSupabaseClient() internally, so callers don't need to import
+ * the client directly.
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+let _client: SupabaseClient | null = null;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn(
-    'Supabase credentials not found. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env',
-  );
+/**
+ * Get or create the Supabase client instance.
+ * Returns null if credentials are not configured (safe for SSG).
+ */
+export function getSupabaseClient(): SupabaseClient | null {
+  if (_client) return _client;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    if (typeof window !== 'undefined') {
+      console.warn(
+        'Supabase credentials not found. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env',
+      );
+    }
+    return null;
+  }
+
+  _client = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  });
+
+  return _client;
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
+/**
+ * Legacy direct export for backwards compatibility.
+ * Throws if called before Supabase is configured.
+ * Prefer getSupabaseClient() instead.
+ */
+export const supabase = new Proxy<SupabaseClient>({} as SupabaseClient, {
+  get(_, prop) {
+    const client = getSupabaseClient();
+    if (!client) {
+      throw new Error(
+        'Supabase client not initialized. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.',
+      );
+    }
+    return Reflect.get(client, prop);
   },
 });
 
@@ -39,7 +76,10 @@ function getSiteUrl(): string {
 // ─── Google OAuth ────────────────────────────────────
 
 export async function signInWithGoogle() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Supabase not configured');
+
+  const { data, error } = await client.auth.signInWithOAuth({
     provider: 'google',
     options: {
       redirectTo: `${getSiteUrl()}/auth/callback`,
@@ -61,7 +101,10 @@ export async function signInWithGoogle() {
 // ─── Email / Password ─────────────────────────────────
 
 export async function signInWithEmail(email: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Supabase not configured');
+
+  const { data, error } = await client.auth.signInWithPassword({
     email,
     password,
   });
@@ -75,7 +118,10 @@ export async function signInWithEmail(email: string, password: string) {
 }
 
 export async function signUpWithEmail(email: string, password: string) {
-  const { data, error } = await supabase.auth.signUp({
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Supabase not configured');
+
+  const { data, error } = await client.auth.signUp({
     email,
     password,
     options: {
@@ -92,7 +138,10 @@ export async function signUpWithEmail(email: string, password: string) {
 }
 
 export async function sendPasswordResetEmail(email: string) {
-  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+  const client = getSupabaseClient();
+  if (!client) throw new Error('Supabase not configured');
+
+  const { data, error } = await client.auth.resetPasswordForEmail(email, {
     redirectTo: `${getSiteUrl()}/auth/callback`,
   });
 
@@ -105,14 +154,20 @@ export async function sendPasswordResetEmail(email: string) {
 }
 
 export async function signOut() {
-  const { error } = await supabase.auth.signOut();
+  const client = getSupabaseClient();
+  if (!client) return;
+
+  const { error } = await client.auth.signOut();
   if (error) {
     console.error('Sign out error:', error.message);
   }
 }
 
 export async function getCurrentSession() {
-  const { data, error } = await supabase.auth.getSession();
+  const client = getSupabaseClient();
+  if (!client) return null;
+
+  const { data, error } = await client.auth.getSession();
   if (error) {
     console.error('Get session error:', error.message);
     return null;
@@ -121,7 +176,10 @@ export async function getCurrentSession() {
 }
 
 export async function getCurrentUser() {
-  const { data, error } = await supabase.auth.getUser();
+  const client = getSupabaseClient();
+  if (!client) return null;
+
+  const { data, error } = await client.auth.getUser();
   if (error) {
     return null;
   }
