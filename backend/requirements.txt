@@ -35,7 +35,7 @@ python-multipart==0.0.6
 
 # Development
 pytest==8.0.0
-pytest-asyncio==0.23.4
+pytest-asyncio==0.24.0
 pytest-cov==4.1.0
 ruff==0.2.0
 mypy==1.9.0
