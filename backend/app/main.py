@@ -109,8 +109,15 @@ async def lifespan(app: FastAPI):
     """
     # Startup
     logger.info("Synaris starting up...", environment=settings.app_env)
-    await init_db()
-    logger.info("Database initialized", tables=["users", "learning_sessions", "messages", "concept_mastery"])
+
+    # Initialize database — wrapped in try-catch so the app starts even if
+    # the database is unreachable (e.g. wrong DATABASE_URL, still provisioning).
+    # The health endpoint reports the degraded status until DB comes online.
+    try:
+        await init_db()
+        logger.info("Database initialized", tables=["users", "learning_sessions", "messages", "concept_mastery"])
+    except Exception as e:
+        logger.error("Database initialization failed — app will run in degraded mode", error=str(e))
 
     # Log AI provider status
     try:

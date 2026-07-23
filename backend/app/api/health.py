@@ -8,15 +8,17 @@ Provides monitoring with individual service checks:
 - Redis connectivity (future)
 """
 
+import logging
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.config import settings
-from app.infrastructure.database import get_db
+from app.infrastructure.database import async_session_factory
 from app.orchestration.router import router as request_router
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["health"])
 
@@ -39,23 +41,30 @@ def _check_api_key(name: str, value: str | None) -> str:
 
 
 @router.get("/health")
-async def health_check(db: AsyncSession = Depends(get_db)):
+async def health_check():
     """
     Comprehensive health check.
 
     Returns the status of the API and its AI providers.
     Used by monitoring systems and Docker health checks.
+
+    Does NOT require a database session — creates one lazily so that
+    the endpoint still responds (with degraded status) when the
+    database is unreachable. This prevents healthcheck cascade failures
+    during startup or brief DB outages.
     """
     checks = {}
     is_healthy = True
 
-    # Check database
+    # Check database (lazy session — does not use Depends)
     try:
-        await db.execute(text("SELECT 1"))
+        async with async_session_factory() as session:
+            await session.execute(text("SELECT 1"))
         checks["database"] = "healthy"
     except Exception as e:
         checks["database"] = f"unhealthy: {str(e)}"
         is_healthy = False
+        logger.warning("Healthcheck: database unhealthy", extra={"error": str(e)})
 
     # Check AI providers
     available_providers = request_router.get_available_providers()
