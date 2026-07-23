@@ -1,12 +1,11 @@
-"""
-Session Summarizer — generates summaries of learning sessions.
+"""Session Summarizer — generates summaries of learning sessions.
 
-Part of the Long-Term Memory system (Phase 1).
-Uses the AI orchestrator to generate concise summaries of what was
-learned, extracting key concepts, struggles, and strengths.
+Part of the Long-Term Memory system:
+- Phase 1: Generates concise summaries of session content
+- Phase 2 (current): Also generates embeddings for cross-session recall
 
-These summaries feed into cross-session recall (Phase 2) and
-spaced repetition (Phase 3).
+The embedding is stored alongside the summary so the AI can later find
+relevant past learning experiences via pgvector semantic search.
 """
 
 import logging
@@ -14,20 +13,16 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure.config import settings
-from app.models.message import Message
+from app.knowledge.embeddings import get_embedding_service
 from app.models.memory_summary import MemorySummary
+from app.models.message import Message
 from app.orchestration.router import route_request
 
 logger = logging.getLogger(__name__)
 
-# How many recent messages to include in a single summary
 _SUMMARY_WINDOW = 10
-
-# Only generate summaries for sessions with at least this many messages
 _MIN_MESSAGES_FOR_SUMMARY = 3
 
-# System prompt for the summarizer AI
 _SUMMARIZER_SYSTEM_PROMPT = """You are a learning session summarizer. Your job is to analyze a conversation between a student (User) and an AI tutor (Assistant) and produce a concise, structured summary.
 
 Analyze the conversation and extract:
@@ -56,7 +51,7 @@ async def generate_session_summary(
     session_id,
     db: AsyncSession,
     force: bool = False,
-) -> Optional[MemorySummary]:
+) -> MemorySummary | None:
     """Generate or retrieve a summary for a session.
 
     If a summary already exists for the latest message window, returns it.
@@ -145,6 +140,17 @@ async def generate_session_summary(
             message_count=len(messages),
             model_used=response.model_used,
         )
+
+        # ── Phase 2: Generate embedding for cross-session recall ──
+        summary_text = data.get("summary", "")
+        if summary_text:
+            try:
+                embedding_service = get_embedding_service()
+                emb_result = await embedding_service.embed(summary_text)
+                summary.summary_embedding = emb_result.vector
+            except Exception as e:
+                logger.warning(f"Failed to generate embedding for session {session_id}: {e}")
+
         db.add(summary)
         await db.flush()
 

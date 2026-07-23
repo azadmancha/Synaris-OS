@@ -6,6 +6,7 @@ import { supabase, getCurrentUser } from '@/lib/supabase';
 import { api } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const SUBJECTS = [
   { value: 'mathematics', label: '🧮 Mathematics', desc: 'Algebra, Calculus, Geometry, Statistics' },
@@ -25,11 +26,23 @@ const DEPTHS = [
   { value: 'expert', label: '🧠 Expert', desc: 'Advanced level' },
 ];
 
+function AmbientOrbs() {
+  return (
+    <div className="orb-container">
+      <div className="orb orb-1" />
+      <div className="orb orb-2" />
+      <div className="orb orb-3" />
+      <div className="orb orb-4" />
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   return (
     <Suspense fallback={
-      <main className="flex min-h-screen items-center justify-center bg-white dark:bg-[#0F1117]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+      <main className="relative flex min-h-screen items-center justify-center bg-gray-50 dark:bg-[#0F1117]">
+        <AmbientOrbs />
+        <div className="relative z-10 h-8 w-8 animate-spin rounded-full border-2 border-synapse-neon-blue border-t-transparent" />
       </main>
     }>
       <SettingsContent />
@@ -120,135 +133,144 @@ function SettingsContent() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-white dark:bg-[#0F1117]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+      <main className="relative flex min-h-screen items-center justify-center bg-gray-50 dark:bg-[#0F1117]">
+        <AmbientOrbs />
+        <div className="relative z-10 h-8 w-8 animate-spin rounded-full border-2 border-synapse-neon-blue border-t-transparent" />
       </main>
     );
   }
 
   return (
     <AppLayout activeNav="settings" user={user} isGuest={isGuest} onSignOut={handleSignOut}>
-      <form onSubmit={handleSave} className="space-y-10">
-        {/* Profile Section */}
-        <section>
-          <div className="mb-6 flex items-center gap-4">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="h-16 w-16 rounded-full ring-2 ring-gray-200 dark:ring-gray-700" />
-            ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-xl font-bold text-white ring-2 ring-gray-200 dark:ring-gray-700">
-                {(displayName || '?').charAt(0).toUpperCase()}
+      <ErrorBoundary componentName="SettingsPage">
+      <div className="relative">
+        {/* Grid overlay */}
+        <div className="grid-overlay pointer-events-none fixed inset-0" />
+
+        <form onSubmit={handleSave} className="relative z-10 space-y-6">
+          {/* Profile Section */}
+          <section className="glass-card animate-slide-up overflow-hidden p-6">
+            <div className="mb-6 flex items-center gap-4">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="" className="h-16 w-16 rounded-full ring-2 ring-white/10" />
+              ) : (
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-xl font-bold text-white shadow-glow-blue ring-2 ring-white/10">
+                  {(displayName || '?').charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div>
+                <h2 className="text-lg font-semibold text-glass-primary">Profile</h2>
+                <p className="text-xs text-glass-tertiary">{email}</p>
+                <a href="/onboarding" className="mt-1 inline-block text-[10px] text-synapse-neon-blue hover:text-blue-400 transition-colors">
+                  Update learning profile →
+                </a>
               </div>
-            )}
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-glass-secondary">Display Name</label>
+                <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
+                  className="w-full rounded-xl border border-gray-300 dark:border-white/10 bg-gray-100 dark:bg-white/[0.05] px-4 py-2.5 text-sm text-glass-primary outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-synapse-neon-blue/50 dark:focus:border-synapse-neon-blue/50 focus:bg-white dark:focus:bg-white/[0.08] focus:shadow-glow-blue"
+                  placeholder="Your display name"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-glass-secondary">Bio</label>
+                <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} maxLength={500}
+                  className="w-full resize-none rounded-xl border border-gray-300 dark:border-white/10 bg-gray-100 dark:bg-white/[0.05] px-4 py-2.5 text-sm text-glass-primary outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-synapse-neon-blue/50 dark:focus:border-synapse-neon-blue/50 focus:bg-white dark:focus:bg-white/[0.08] focus:shadow-glow-blue"
+                  placeholder="Tell Synaris about yourself..."
+                />
+                <p className="mt-1 text-right text-[10px] text-glass-tertiary">{bio.length}/500</p>
+              </div>
+            </div>
+          </section>
+
+          {/* Learning Preferences */}
+          <section className="glass-card animate-slide-up overflow-hidden p-6" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
+            <h2 className="mb-5 text-lg font-semibold text-glass-primary">Learning Preferences</h2>
+
+            <div className="mb-6">
+              <label className="mb-3 block text-xs font-medium text-glass-secondary">Interested Subjects</label>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {SUBJECTS.map((s) => (
+                  <button key={s.value} type="button" onClick={() => toggleSubject(s.value)}
+                    className={`rounded-xl border px-3 py-2.5 text-left text-xs transition-all duration-200 ${
+                      subjects.includes(s.value)
+                        ? 'border-synapse-neon-blue/50 bg-synapse-neon-blue/10 text-synapse-neon-blue shadow-glow-sm'
+                        : 'border-gray-300 dark:border-white/10 text-glass-secondary hover:border-gray-400 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/[0.03]'
+                    }`}
+                  >
+                    <div className="font-medium">{s.label}</div>
+                    <div className="mt-0.5 text-[10px] opacity-60">{s.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-[#EDEDEE]">Profile</h2>
-              <p className="text-xs text-gray-500">{email}</p>
-              <a href="/onboarding" className="mt-1 inline-block text-[10px] text-blue-500 hover:text-blue-600">
-                Update learning profile →
-              </a>
+              <label className="mb-3 block text-xs font-medium text-glass-secondary">Default Learning Depth</label>
+              <div className="inline-flex rounded-xl border border-gray-300 dark:border-white/10 bg-gray-100 dark:bg-white/[0.03] p-1">
+                {DEPTHS.map((d) => (
+                  <button key={d.value} type="button" onClick={() => setDefaultMode(d.value)}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
+                      defaultMode === d.value
+                        ? 'bg-gradient-to-r from-synapse-neon-blue to-indigo-600 text-white shadow-glow-sm'
+                        : 'text-glass-tertiary hover:text-glass-primary'
+                    }`}
+                    title={d.desc}
+                  >{d.label}</button>
+                ))}
+              </div>
             </div>
-          </div>
+          </section>
 
-          <div className="space-y-4">
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Display Name</label>
-              <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-[#1C1E2B] dark:text-[#EDEDEE] dark:focus:border-blue-400"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Bio</label>
-              <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} maxLength={500}
-                className="w-full resize-none rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition-all placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-[#1C1E2B] dark:text-[#EDEDEE] dark:focus:border-blue-400"
-                placeholder="Tell Synaris about yourself..."
-              />
-              <p className="mt-1 text-right text-[10px] text-gray-400">{bio.length}/500</p>
-            </div>
-          </div>
-        </section>
+          {/* Save Button */}
+          <div className="flex items-center gap-3">
+            <button type="submit" disabled={isSaving}
+              className="rounded-xl bg-gradient-to-r from-synapse-neon-blue to-indigo-600 px-6 py-2.5 text-sm font-medium text-white shadow-glow-blue transition-all duration-200 hover:shadow-lg hover:brightness-110 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isSaving ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Saving...
+                </span>
+              ) : 'Save Settings'}
+            </button>
 
-        {/* Learning Preferences */}
-        <section>
-          <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-[#EDEDEE]">Learning Preferences</h2>
-
-          <div className="mb-4">
-            <label className="mb-2 block text-xs font-medium text-gray-600 dark:text-gray-400">Interested Subjects</label>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {SUBJECTS.map((s) => (
-                <button key={s.value} type="button" onClick={() => toggleSubject(s.value)}
-                  className={`rounded-xl border px-3 py-2.5 text-left text-xs transition-all ${
-                    subjects.includes(s.value)
-                      ? 'border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-900/20 dark:text-blue-300'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-500'
-                  }`}
-                >
-                  <div className="font-medium">{s.label}</div>
-                  <div className="mt-0.5 text-[10px] opacity-60">{s.desc}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-xs font-medium text-gray-600 dark:text-gray-400">Default Learning Depth</label>
-            <div className="inline-flex rounded-xl border border-gray-200 p-1 dark:border-gray-700">
-              {DEPTHS.map((d) => (
-                <button key={d.value} type="button" onClick={() => setDefaultMode(d.value)}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                    defaultMode === d.value
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                  }`}
-                  title={d.desc}
-                >{d.label}</button>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Save */}
-        <div className="flex items-center gap-3">
-          <button type="submit" disabled={isSaving}
-            className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isSaving ? (
-              <span className="inline-flex items-center gap-2">
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                Saving...
+            {saveStatus && (
+              <span className="inline-flex items-center gap-1 text-xs text-synapse-neon-green">
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                {saveStatus}
               </span>
-            ) : 'Save Settings'}
-          </button>
+            )}
+            {error && (
+              <span className="inline-flex items-center gap-1 text-xs text-synapse-neon-red">
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                {error}
+              </span>
+            )}
+          </div>
 
-          {saveStatus && (
-            <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-              {saveStatus}
-            </span>
-          )}
-          {error && (
-            <span className="inline-flex items-center gap-1 text-xs text-red-500">
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
-              {error}
-            </span>
-          )}
-        </div>
-      </form>
-
-      {/* Danger Zone */}
-      <section className="mt-16 border-t border-gray-200 pt-8 dark:border-gray-700">
-        <h2 className="mb-4 text-sm font-semibold text-red-600 dark:text-red-400">Danger Zone</h2>
-        <p className="mb-4 text-xs text-gray-500">Permanently delete your profile and all learning data.</p>
-        <button
-          onClick={async () => {
-            if (window.confirm('Are you sure? This will delete all your data and cannot be undone.')) {
-              await handleSignOut();
-              router.push('/');
-            }
-          }}
-          className="rounded-xl border border-red-300 px-5 py-2 text-sm font-medium text-red-600 transition-all hover:bg-red-50 active:scale-[0.97] dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
-        >
-          Delete Account
-        </button>
-      </section>
+          {/* Danger Zone */}
+          <section className="glass-card animate-slide-up overflow-hidden border-red-500/20 p-6" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
+            <h2 className="mb-2 text-sm font-semibold text-synapse-neon-red">Danger Zone</h2>
+            <p className="mb-4 text-xs text-glass-tertiary">Permanently delete your profile and all learning data.</p>
+            <button
+              onClick={async () => {
+                if (window.confirm('Are you sure? This will delete all your data and cannot be undone.')) {
+                  await handleSignOut();
+                  router.push('/');
+                }
+              }}
+              className="rounded-xl border border-red-500/30 bg-red-500/5 px-5 py-2 text-sm font-medium text-synapse-neon-red transition-all duration-200 hover:bg-red-500/10 hover:shadow-glow-sm active:scale-[0.97]"
+            >
+              Delete Account
+            </button>
+          </section>
+        </form>
+      </div>
+      </ErrorBoundary>
     </AppLayout>
   );
 }

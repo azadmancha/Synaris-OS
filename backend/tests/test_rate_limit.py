@@ -30,7 +30,7 @@ class TestRateLimiterBasics:
     """Basic tests for the rate limiter."""
 
     @pytest.mark.asyncio
-    async def test_first_request_allowed(self):
+    async def test_first_request_allowed(self) -> None:
         """The first request from a user should always be allowed."""
         limiter = SlidingWindowRateLimiter(max_requests=10, window_seconds=60)
         result = await limiter.check("user-1")
@@ -38,7 +38,7 @@ class TestRateLimiterBasics:
         assert result.remaining == 9
 
     @pytest.mark.asyncio
-    async def test_within_limit_allows_requests(self):
+    async def test_within_limit_allows_requests(self) -> None:
         """Requests within the limit should be allowed."""
         limiter = SlidingWindowRateLimiter(max_requests=5, window_seconds=60)
 
@@ -48,7 +48,7 @@ class TestRateLimiterBasics:
             assert result.remaining == 5 - (i + 1)
 
     @pytest.mark.asyncio
-    async def test_exceeding_limit_blocks(self):
+    async def test_exceeding_limit_blocks(self) -> None:
         """Requests exceeding the limit should be blocked."""
         limiter = SlidingWindowRateLimiter(max_requests=3, window_seconds=60)
 
@@ -60,7 +60,7 @@ class TestRateLimiterBasics:
         assert result.remaining == 0
 
     @pytest.mark.asyncio
-    async def test_different_users_have_independent_limits(self):
+    async def test_different_users_have_independent_limits(self) -> None:
         """Different users should have independent rate limits."""
         limiter = SlidingWindowRateLimiter(max_requests=2, window_seconds=60)
 
@@ -83,7 +83,7 @@ class TestRateLimiterWindow:
     """Tests for the sliding window behavior."""
 
     @pytest.mark.asyncio
-    async def test_window_slides_allowing_new_requests(self):
+    async def test_window_slides_allowing_new_requests(self) -> None:
         """After the window passes, new requests should be allowed."""
         limiter = SlidingWindowRateLimiter(max_requests=2, window_seconds=0.1)
 
@@ -99,7 +99,7 @@ class TestRateLimiterWindow:
         assert result.blocked is False
 
     @pytest.mark.asyncio
-    async def test_old_requests_expire_from_window(self):
+    async def test_old_requests_expire_from_window(self) -> None:
         """Old requests outside the window should not count."""
         limiter = SlidingWindowRateLimiter(max_requests=3, window_seconds=0.1)
 
@@ -123,7 +123,7 @@ class TestRateLimiterConfig:
     """Tests for configurable rate limiter parameters."""
 
     @pytest.mark.asyncio
-    async def test_custom_max_requests(self):
+    async def test_custom_max_requests(self) -> None:
         """Should respect custom max_requests."""
         limiter = SlidingWindowRateLimiter(max_requests=100, window_seconds=60)
         for _ in range(100):
@@ -132,21 +132,21 @@ class TestRateLimiterConfig:
         assert (await limiter.check("user-1")).blocked is True
 
     @pytest.mark.asyncio
-    async def test_very_restrictive_limit(self):
+    async def test_very_restrictive_limit(self) -> None:
         """Should work with very restrictive limits."""
         limiter = SlidingWindowRateLimiter(max_requests=1, window_seconds=60)
         assert (await limiter.check("user-1")).blocked is False
         assert (await limiter.check("user-1")).blocked is True
 
     @pytest.mark.asyncio
-    async def test_zero_limit_blocks_everything(self):
+    async def test_zero_limit_blocks_everything(self) -> None:
         """A limit of zero should block all requests."""
         limiter = SlidingWindowRateLimiter(max_requests=0, window_seconds=60)
         result = await limiter.check("user-1")
         assert result.blocked is True
 
     @pytest.mark.asyncio
-    async def test_properties_are_correct(self):
+    async def test_properties_are_correct(self) -> None:
         """Properties should return the configured values."""
         limiter = SlidingWindowRateLimiter(max_requests=42, window_seconds=99)
         assert limiter.max_requests == 42
@@ -157,7 +157,7 @@ class TestRateLimiterCleanup:
     """Tests for stale entry cleanup."""
 
     @pytest.mark.asyncio
-    async def test_stale_users_are_cleaned(self):
+    async def test_stale_users_are_cleaned(self) -> None:
         """Users with no recent activity should be cleaned up.
 
         Note: _maybe_cleanup has a 10-second guard clause (avoids excessive scanning).
@@ -178,7 +178,7 @@ class TestRateLimiterCleanup:
         assert "stale-user" not in limiter._buckets
 
     @pytest.mark.asyncio
-    async def test_active_users_persist_after_cleanup(self):
+    async def test_active_users_persist_after_cleanup(self) -> None:
         """Active users should not be cleaned up."""
         limiter = SlidingWindowRateLimiter(max_requests=5, window_seconds=60)
 
@@ -195,14 +195,14 @@ class TestRateLimiterEdgeCases:
     """Edge cases for the rate limiter."""
 
     @pytest.mark.asyncio
-    async def test_empty_user_id(self):
+    async def test_empty_user_id(self) -> None:
         """Should handle empty user IDs."""
         limiter = SlidingWindowRateLimiter(max_requests=5, window_seconds=60)
         result = await limiter.check("")
         assert result.blocked is False
 
     @pytest.mark.asyncio
-    async def test_get_remaining_without_consuming(self):
+    async def test_get_remaining_without_consuming(self) -> None:
         """get_remaining should not consume a request."""
         limiter = SlidingWindowRateLimiter(max_requests=10, window_seconds=60)
 
@@ -215,7 +215,7 @@ class TestRateLimiterEdgeCases:
         assert remaining_again == 9
 
     @pytest.mark.asyncio
-    async def test_many_users_dont_interfere(self):
+    async def test_many_users_dont_interfere(self) -> None:
         """Many different users should not interfere with each other."""
         limiter = SlidingWindowRateLimiter(max_requests=3, window_seconds=60)
         for i in range(100):
@@ -225,6 +225,6 @@ class TestRateLimiterEdgeCases:
             assert result.remaining == 2
 
 
-async def _wait(seconds: float):
+async def _wait(seconds: float) -> None:
     """Helper to wait asynchronously."""
     await asyncio.sleep(seconds)

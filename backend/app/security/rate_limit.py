@@ -18,12 +18,10 @@ Usage:
         raise HTTPException(status_code=429, detail=result.message)
 """
 
-import json
 import logging
 import time
 from collections import defaultdict
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
 
 from app.infrastructure.config import settings
 
@@ -69,7 +67,7 @@ class SlidingWindowRateLimiter:
         self,
         max_requests: int | None = None,
         window_seconds: int | None = None,
-    ):
+    ) -> None:
         self._max_requests = max_requests if max_requests is not None else settings.rate_limit_requests
         self._window = window_seconds if window_seconds is not None else settings.rate_limit_window
         # user_id -> list of timestamps
@@ -138,7 +136,7 @@ class SlidingWindowRateLimiter:
             reset_at=now + self._window,
         )
 
-    def _maybe_cleanup(self, now: float):
+    def _maybe_cleanup(self, now: float) -> None:
         """Periodically clean up stale entries from all buckets."""
         # Cleanup every ~10 seconds to avoid excessive scanning
         if now - self._last_cleanup < 10.0:
@@ -180,7 +178,7 @@ def get_rate_limiter() -> SlidingWindowRateLimiter:
     return _limiter
 
 
-def reset_rate_limiter():
+def reset_rate_limiter() -> None:
     """Reset the rate limiter (for testing)."""
     global _limiter
     _limiter = None

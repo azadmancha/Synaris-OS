@@ -7,21 +7,21 @@ milestones tailored to the user's goals, subjects, and experience level.
 """
 
 import json
-import uuid
 import re
-import structlog
-from datetime import datetime, timezone
+import uuid
+from datetime import UTC, datetime
 from typing import Any
 
+import structlog
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select, desc
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.ai.prompts import STUDY_PLAN_PROMPT
+from app.api.dependencies import check_rate_limit, get_current_user_id
 from app.infrastructure.database import get_db
 from app.models.study_plan import StudyPlan
-from app.api.dependencies import get_current_user_id, check_rate_limit
-from app.ai.prompts import STUDY_PLAN_PROMPT
 from app.orchestration.router import route_request
 from app.security import check_input, check_output
 
@@ -203,7 +203,11 @@ async def generate_study_plan(
     # ── Generate Plan via AI ───────────────────────────────
     ai_response = await route_request(
         prompt=prompt_text,
-        system_prompt="You are a personalized learning path designer. Generate structured study plans in JSON format. Return ONLY valid JSON, no other text.",
+        system_prompt=(
+            "You are a personalized learning path designer. "
+            "Generate structured study plans in JSON format. "
+            "Return ONLY valid JSON, no other text."
+        ),
         mode="balanced",
     )
 
@@ -338,9 +342,9 @@ async def update_study_plan(
             )
         plan.status = request.status
         if request.status == "completed" and not plan.completed_at:
-            plan.completed_at = datetime.now(timezone.utc)
+            plan.completed_at = datetime.now(UTC)
 
-    plan.updated_at = datetime.now(timezone.utc)
+    plan.updated_at = datetime.now(UTC)
     await db.flush()
     await db.commit()
 

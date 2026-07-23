@@ -7,8 +7,9 @@ Supports rich content types: text, math, code, diagram, mixed.
 """
 
 import uuid
-from datetime import datetime, timezone
-from sqlalchemy import String, Integer, DateTime, Text, ForeignKey, Float, JSON, Uuid
+from datetime import UTC, datetime
+
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database import Base
@@ -53,7 +54,7 @@ class Message(Base):
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
     )
 
     # SQLAlchemy 2.0 style relationship

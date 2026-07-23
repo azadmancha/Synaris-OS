@@ -8,16 +8,15 @@ Covers:
 """
 
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
-import pytest
 from fastapi.testclient import TestClient
 
 
 class TestDevLogin:
     """Tests for the development login endpoint."""
 
-    def test_login_creates_new_user(self, client: TestClient):
+    def test_login_creates_new_user(self, client: TestClient) -> None:
         """POST /v1/auth/login with a new email should create a user."""
         response = client.post(
             "/v1/auth/login",
@@ -31,7 +30,7 @@ class TestDevLogin:
         assert data["token"] is not None
         assert data["token"].startswith("dev-token-")
 
-    def test_login_returns_existing_user(self, client: TestClient):
+    def test_login_returns_existing_user(self, client: TestClient) -> None:
         """POST /v1/auth/login with an existing email should return the same user."""
         # Create user
         response1 = client.post(
@@ -49,7 +48,7 @@ class TestDevLogin:
 
         assert user_id1 == user_id2
 
-    def test_login_without_display_name_uses_email_prefix(self, client: TestClient):
+    def test_login_without_display_name_uses_email_prefix(self, client: TestClient) -> None:
         """Without display_name, should use email username as display name."""
         response = client.post(
             "/v1/auth/login",
@@ -59,7 +58,7 @@ class TestDevLogin:
         data = response.json()
         assert data["display_name"] == "john.doe"
 
-    def test_login_email_is_required(self, client: TestClient):
+    def test_login_email_is_required(self, client: TestClient) -> None:
         """Email field should be required."""
         response = client.post(
             "/v1/auth/login",
@@ -67,7 +66,7 @@ class TestDevLogin:
         )
         assert response.status_code == 422  # Validation error
 
-    def test_login_updates_display_name(self, client: TestClient):
+    def test_login_updates_display_name(self, client: TestClient) -> None:
         """Logging in with a different display name should update it."""
         # Create
         client.post(
@@ -83,7 +82,7 @@ class TestDevLogin:
         data = response.json()
         assert data["display_name"] == "Updated"
 
-    def test_login_response_has_all_fields(self, client: TestClient):
+    def test_login_response_has_all_fields(self, client: TestClient) -> None:
         """Login response should contain all required fields."""
         response = client.post(
             "/v1/auth/login",
@@ -96,7 +95,7 @@ class TestDevLogin:
         assert "token" in data
         assert "created_at" in data
 
-    def test_token_format(self, client: TestClient):
+    def test_token_format(self, client: TestClient) -> None:
         """Token should be a valid dev-token-<uuid> format."""
         response = client.post(
             "/v1/auth/login",
@@ -108,7 +107,7 @@ class TestDevLogin:
         uid_str = token.removeprefix("dev-token-")
         uuid.UUID(uid_str)  # Should not raise
 
-    def test_login_different_emails_get_different_users(self, client: TestClient):
+    def test_login_different_emails_get_different_users(self, client: TestClient) -> None:
         """Different emails should create different user IDs."""
         r1 = client.post("/v1/auth/login", json={"email": "alice@test.com"})
         r2 = client.post("/v1/auth/login", json={"email": "bob@test.com"})
@@ -118,7 +117,7 @@ class TestDevLogin:
 class TestSupabaseAuth:
     """Tests for the Supabase OAuth login endpoint."""
 
-    def test_supabase_auth_with_valid_token_creates_user(self, client: TestClient):
+    def test_supabase_auth_with_valid_token_creates_user(self, client: TestClient) -> None:
         """A valid Supabase token should create a user."""
         # Mock _verify_supabase_token to return a valid ID
         with patch(
@@ -141,7 +140,7 @@ class TestSupabaseAuth:
             assert data["avatar_url"] == "https://example.com/avatar.jpg"
             assert data["token"] == "valid-token"
 
-    def test_supabase_auth_with_verified_token_user_exists(self, client: TestClient):
+    def test_supabase_auth_with_verified_token_user_exists(self, client: TestClient) -> None:
         """If user already exists by external_id, return existing user."""
         with patch(
             "app.api.auth._verify_supabase_token",
@@ -171,7 +170,7 @@ class TestSupabaseAuth:
 
             assert uid1 == uid2
 
-    def test_supabase_auth_fails_with_invalid_token(self, client: TestClient):
+    def test_supabase_auth_fails_with_invalid_token(self, client: TestClient) -> None:
         """An invalid Supabase token should return 401."""
         with patch(
             "app.api.auth._verify_supabase_token",
@@ -188,7 +187,7 @@ class TestSupabaseAuth:
             data = response.json()
             assert "detail" in data
 
-    def test_supabase_auth_requires_access_token(self, client: TestClient):
+    def test_supabase_auth_requires_access_token(self, client: TestClient) -> None:
         """access_token field should be required."""
         response = client.post(
             "/v1/auth/supabase",
@@ -196,7 +195,7 @@ class TestSupabaseAuth:
         )
         assert response.status_code == 422
 
-    def test_supabase_auth_requires_email(self, client: TestClient):
+    def test_supabase_auth_requires_email(self, client: TestClient) -> None:
         """email field should be required."""
         response = client.post(
             "/v1/auth/supabase",
@@ -204,7 +203,7 @@ class TestSupabaseAuth:
         )
         assert response.status_code == 422
 
-    def test_supabase_auth_updates_avatar_url(self, client: TestClient):
+    def test_supabase_auth_updates_avatar_url(self, client: TestClient) -> None:
         """Logging in again with a new avatar URL should update it."""
         with patch(
             "app.api.auth._verify_supabase_token",
@@ -236,14 +235,14 @@ class TestSupabaseAuth:
 class TestLogout:
     """Tests for the logout endpoint."""
 
-    def test_logout_returns_success(self, client: TestClient):
+    def test_logout_returns_success(self, client: TestClient) -> None:
         """POST /v1/auth/logout should return success."""
         response = client.post("/v1/auth/logout")
         assert response.status_code == 200
         data = response.json()
         assert data["message"] == "Logged out successfully"
 
-    def test_logout_does_not_require_auth(self, client: TestClient):
+    def test_logout_does_not_require_auth(self, client: TestClient) -> None:
         """Logout should work without authentication."""
         response = client.post("/v1/auth/logout")
         assert response.status_code == 200

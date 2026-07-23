@@ -29,15 +29,14 @@ import hashlib
 import json
 import logging
 import re
-import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.infrastructure.config import settings
 from app.security.patterns import (
     INPUT_THREAT_PATTERNS,
-    OUTPUT_THREAT_PATTERNS,
     LEAKAGE_SIGNATURES,
+    OUTPUT_THREAT_PATTERNS,
     SENSITIVE_DATA_PATTERNS,
 )
 
@@ -82,7 +81,7 @@ class SecurityAuditor:
     dedicated audit logging system.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._audit_logger = logging.getLogger("synaris.security.audit")
 
     def log(
@@ -92,7 +91,7 @@ class SecurityAuditor:
         category: str,
         details: dict | None = None,
         blocked: bool = False,
-    ):
+    ) -> None:
         """Log a security event.
 
         Args:
@@ -103,7 +102,7 @@ class SecurityAuditor:
             blocked: Whether the request was blocked
         """
         entry = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "event": event,
             "user_id": user_id,
             "category": category,
@@ -117,7 +116,7 @@ class SecurityAuditor:
         if settings.app_env == "production":
             self._write_audit_log(entry)
 
-    def _write_audit_log(self, entry: dict):
+    def _write_audit_log(self, entry: dict) -> None:
         """Write audit entry to a dedicated file (production only)."""
         import os
         log_dir = os.path.join(os.path.dirname(__file__), "..", "..", "logs")
@@ -156,7 +155,7 @@ class InputGuardrail:
         6. Repetitive / spam content
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._auditor = get_auditor()
         # Maximum content length — well above normal use, below absurd
         self.max_content_length: int = 10_000
@@ -199,7 +198,7 @@ class InputGuardrail:
             )
 
         # ── 2. Pattern-based Threat Detection ────────────────
-        content_lower = content.lower()
+        content.lower()
 
         for category, patterns in INPUT_THREAT_PATTERNS:
             for pattern in patterns:
@@ -243,6 +242,13 @@ class InputGuardrail:
                 },
                 blocked=True,
             )
+
+            # Record abuse event for blocked content
+            from app.security.abuse import mark_abuse_event
+            try:
+                mark_abuse_event(user_id, "injection_attempt", categories[0] if categories else "unknown")
+            except Exception:
+                pass
 
             return GuardrailResult.block(
                 reason="I'm unable to process that request. The content was flagged by our safety filters.",
@@ -335,7 +341,7 @@ class OutputGuardrail:
         4. Educational appropriateness
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._auditor = get_auditor()
 
         # System prompt signatures to detect leakage

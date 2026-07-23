@@ -7,8 +7,8 @@ Manages token budgets and adds citation instructions.
 
 import logging
 
+from app.knowledge.citation import CitationEngine
 from app.knowledge.context import ContextDocument, LLMContext
-from app.knowledge.citation import Citation, CitationEngine, CitationGroup
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class ContextBuilder:
     MAX_DOCUMENTS = 5
     MAX_CONTENT_LENGTH = 2000  # Characters per document
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._citation_engine = CitationEngine()
 
     async def build_context(
@@ -83,7 +83,8 @@ class ContextBuilder:
             "## Knowledge Context",
             "The following information has been retrieved from knowledge sources to help answer the user's question.",
             "Use this information to provide accurate, source-backed answers.",
-            "CRITICAL: After your answer, include a 'Learn More' section with citations for each source you referenced.",
+            "CRITICAL: After your answer, include a 'Learn More' section "
+            "with citations for each source you referenced.",
             "---",
         ]
 

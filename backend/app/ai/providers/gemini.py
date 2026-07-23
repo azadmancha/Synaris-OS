@@ -7,8 +7,8 @@ Requires: GEMINI_API_KEY environment variable.
 Get one at: https://aistudio.google.com/apikey
 """
 
-from collections.abc import AsyncGenerator
 import logging
+from collections.abc import AsyncGenerator
 
 from app.ai.providers.base import AIProvider, AIResponse, AIStreamChunk
 from app.infrastructure.config import settings
@@ -37,12 +37,12 @@ class GeminiProvider(AIProvider):
         "research": "gemini-2.5-pro",
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._client = None
         self._configured = False
         self._init_client()
 
-    def _init_client(self):
+    def _init_client(self) -> None:
         """Initialize the Gemini client if API key is available."""
         if not HAS_GEMINI:
             self._configured = False

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { supabase, signInWithGoogle, signInWithEmail, signUpWithEmail } from '@/lib/supabase';
-import { SynarisWordmark, NeuralS } from '@/components/brand/SynarisLogo';
+import { SynarisWordmark } from '@/components/brand/SynarisLogo';
 
 // ─── Particle Field (canvas background) ──────────────────
 

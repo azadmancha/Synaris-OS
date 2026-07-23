@@ -4,7 +4,9 @@ Synaris uses async SQLAlchemy with PostgreSQL + pgvector.
 The engine is created once at startup and reused across requests.
 """
 
-from sqlalchemy import event
+from contextlib import suppress
+
+from sqlalchemy import event, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
@@ -27,7 +29,7 @@ engine = create_async_engine(
 # when multiple sessions try to write simultaneously.
 
 @event.listens_for(engine.sync_engine, "connect")
-def _set_sqlite_pragma(dbapi_connection, connection_record):
+def _set_sqlite_pragma(dbapi_connection, connection_record) -> None:
     """Enable WAL mode for SQLite to allow concurrent access.
 
     WAL (Write-Ahead Logging) is essential for the SSE streaming
@@ -79,20 +81,27 @@ async def get_db() -> AsyncSession:
             await session.close()
 
 
-async def init_db():
-    """Create all tables on startup.
+async def init_db() -> None:
+    """Initialize the database on startup.
 
-    In development, this auto-creates tables from models.
-    In production, use Alembic migrations instead.
+    1. Enable pgvector extension (PostgreSQL only — safe to call on SQLite)
+    2. Create all tables from SQLAlchemy models
+
+    In production, use Alembic migrations instead of auto-create.
     """
     async with engine.begin() as conn:
+        # Enable pgvector extension (PostgreSQL only — silently ignored on SQLite)
+        with suppress(Exception):
+            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+
         await conn.run_sync(Base.metadata.create_all)
 
     # Seed the dev user in development mode
     if settings.app_env in ("development", "test", "testing"):
-        from app.infrastructure.constants import DEV_USER_ID, DEV_USER_EMAIL
-        from app.models.user import User
         from sqlalchemy import select
+
+        from app.infrastructure.constants import DEV_USER_EMAIL, DEV_USER_ID
+        from app.models.user import User
 
         async with async_session_factory() as session:
             try:
@@ -113,6 +122,6 @@ async def init_db():
                 logging.getLogger(__name__).warning(f"Failed to seed dev user: {e}")
 
 
-async def close_db():
+async def close_db() -> None:
     """Dispose of the engine on shutdown."""
     await engine.dispose()

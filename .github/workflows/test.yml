@@ -38,6 +38,14 @@ jobs:
         run: |
           ruff check backend/
       
+      - name: Check formatting
+        run: |
+          ruff format --check backend/
+      
+      - name: Type check
+        run: |
+          cd backend && mypy app/
+      
       - name: Run tests
         run: |
           cd backend && pytest
@@ -67,9 +75,22 @@ jobs:
         run: |
           cd frontend && npm run lint
       
+      - name: Check formatting
+        run: |
+          cd frontend && npx prettier --check 'src/**/*.{ts,tsx}'
+      
+      - name: Build
+        run: |
+          cd frontend && npm run build
+      
       - name: Run tests
         run: |
           cd frontend && npm test
+      
+      - name: Check dependencies (advisory)
+        run: |
+          cd frontend && npm audit --audit-level=high
+        continue-on-error: true
 
   security-scan:
     runs-on: ubuntu-latest
@@ -82,5 +103,5 @@ jobs:
       - name: Install safety
         run: pip install safety
       
-      - name: Check dependencies
+      - name: Check backend dependencies
         run: safety check -r backend/requirements.txt --continue-on-error

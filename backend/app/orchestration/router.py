@@ -11,15 +11,14 @@ Switching models is now a config change, not a code change.
 Set LITELLM_<MODE>_MODEL in .env to switch providers.
 """
 
-from collections.abc import AsyncGenerator
 import logging
+from collections.abc import AsyncGenerator
 
 from app.ai.providers.base import AIProvider, AIResponse, AIStreamChunk
-from app.ai.providers.litellm import provider as litellm_provider
 from app.ai.providers.gemini import provider as gemini_provider
 from app.ai.providers.groq import provider as groq_provider
+from app.ai.providers.litellm import provider as litellm_provider
 from app.ai.providers.openrouter import provider as openrouter_provider
-from app.infrastructure.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -31,11 +30,11 @@ class RequestRouter:
     individual SDK providers (Gemini, Groq, OpenRouter).
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._providers: dict[str, AIProvider] = {}
         self._register_providers()
 
-    def _register_providers(self):
+    def _register_providers(self) -> None:
         """Register all available providers on startup.
 
         LiteLLM is registered first and is the primary provider.
@@ -47,7 +46,7 @@ class RequestRouter:
         self._register(openrouter_provider)
         # TODO(v3): Register Ollama provider (local)
 
-    def _register(self, provider: AIProvider):
+    def _register(self, provider: AIProvider) -> None:
         """Register a provider by name."""
         self._providers[provider.name] = provider
         logger.info(f"Registered provider: {provider.name}")

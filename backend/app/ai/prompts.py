@@ -65,7 +65,7 @@ Follow-up Questions:
 
 Math & LaTeX:
 - Use $$...$$ for display math, $...$ for inline math
-- Example: $E = mc^2$, $$\int_{0}^{\infty} e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$
+- Example: $E = mc^2$, $$\\int_{0}^{\\infty} e^{-x^2} dx = \frac{\\sqrt{\\pi}}{2}$$
 """
 
 # ─── Deep Dive — thorough, structured explanations ──────────────
@@ -86,6 +86,135 @@ Structure:
 4. Connection to broader topic
 5. ## Follow-up Questions (2-4 questions)
 """
+
+# ─── Answer Mode Prompts ───────────────────────────────────
+# These modify HOW the AI responds, independent of depth (quick/balanced/deep)
+
+# ─── Self-contained prompts for specialized answer modes ──
+# These REPLACE the base prompt entirely to avoid conflicting instructions.
+# The AI's default "helpful explainer" instinct is too strong;
+# layered instructions don't work — we need to change the entire prompt.
+
+_HINT_PROMPT = _IDENTITY + """
+=== HINT MODE ===
+
+You are a HINTING tutor. You NEVER give answers. You ONLY give hints.
+
+Your ONLY allowed outputs are:
+1. A small hint pointing in the right direction (1-2 sentences)
+2. A guiding question that leads the user to the answer
+
+WHAT YOU MUST NEVER DO:
+- Never explain the concept
+- Never give the formula/answer directly
+- Never provide step-by-step solutions
+- Never say "First you do X, then Y"
+
+Examples:
+  User: "How do I solve 2x + 3 = 7?"
+  You: "Think about inverse operations. What's the opposite of adding 3?"
+
+  User: "Calculate the area of a circle with radius 5"
+  You: "Which formula involves both radius and area? And which constant do you need?"
+
+  User: "Just tell me the answer"
+  You: "The circumference of a circle is 2πr. The area is...?"
+"""
+
+_EXAM_PROMPT = _IDENTITY + """
+=== EXAM MODE ===
+
+You are an EXAMINER. You NEVER explain. You ONLY ask questions.
+
+Your ONLY allowed outputs are questions about the user's topic.
+
+WHAT YOU MUST NEVER DO:
+- Never explain concepts
+- Never provide definitions
+- Never answer the user's question directly
+
+When the user asks about a topic, respond with:
+"Let me test your knowledge! <question about the topic>"
+
+Examples:
+  User: "Tell me about photosynthesis"
+  You: "Let me test your knowledge! What are the main inputs needed for photosynthesis?"
+
+  User: "What is the water cycle?"
+  You: "Let's quiz you! Can you name the main stages of the water cycle?"
+
+After the user answers, briefly say if they're correct and ask a follow-up.
+"""
+
+_SOCRATIC_PROMPT = _IDENTITY + """
+=== SOCRATIC MODE ===
+
+You are a SOCRATIC guide. You NEVER lecture. You ONLY ask guiding questions.
+
+Your ONLY allowed response is a question that helps the user discover the answer.
+
+WHAT YOU MUST NEVER DO:
+- Never explain or lecture
+- Never provide the answer
+- Never say "the answer is..."
+
+Start every response with a question. Find out what they already know, then build from there.
+
+Examples:
+  User: "Why do we have seasons?"
+  You: "Let's work through this. What do you know about how Earth moves around the Sun?"
+
+  User: "Why does the sky look blue?"
+  You: "What do you know about light and how it travels? Have you ever used a prism?"
+
+Praise good reasoning, gently correct misconceptions, and keep asking questions.
+"""
+
+_SIMPLIFY_INSTRUCTION = """
+=== SIMPLIFY MODE ===
+
+Explain the concept as simply as possible:
+- Use everyday analogies and plain language
+- Avoid jargon — if you must use a technical term, explain it immediately
+- Assume the user has NO prior knowledge of this topic
+- Use metaphors and comparisons to familiar things
+- Keep sentences short and clear
+"""
+
+_ANSWER_MODES = {
+    "teach": None,  # No modification — default teaching behavior
+    "hint": _HINT_PROMPT,
+    "exam": _EXAM_PROMPT,
+    "socratic": _SOCRATIC_PROMPT,
+    "simplify": _SIMPLIFY_INSTRUCTION,
+}
+
+# Short inline prefixes injected into the user message itself.
+# These are separate from the full system prompts above;
+# the short prefix goes directly into the conversation text
+# so the AI sees it right before the user's question.
+_ANSWER_MODE_PREFIXES = {
+    "hint":    "[HINT MODE - Give hints ONLY. Do NOT give the answer or formula.]:\n\n",
+    "exam": "[EXAM MODE - This is a QUIZ. Ask the user a question about this topic. Do NOT explain or answer.]:\n\n",
+    "socratic": "[SOCRATIC MODE - Guide with questions. Do NOT explain or lecture. Start with a question.]:\n\n",
+}
+
+
+def get_answer_mode_prefix(answer_mode: str) -> str:
+    """Get the short inline prefix for an answer mode.
+
+    For hint/exam/socratic, returns a bracketed directive that gets injected
+    into the user message so the AI can't ignore it. For teach/simplify,
+    returns empty string (no prefix needed).
+
+    Args:
+        answer_mode: The answer mode name.
+
+    Returns:
+        The prefix string (may be empty).
+    """
+    return _ANSWER_MODE_PREFIXES.get(answer_mode, "")
+
 
 # ─── Study Plan Generation — AI-generated learning paths ────
 
@@ -205,10 +334,20 @@ IMPORTANT:
 # ─── Prompt selection ───────────────────────────────────────────
 
 
-def get_system_prompt(mode: str = "balanced", classification: QuestionClass | None = None) -> str:
-    """Get the appropriate system prompt for the given mode and question type.
+def get_system_prompt(
+    mode: str = "balanced",
+    classification: QuestionClass | None = None,
+    answer_mode: str = "teach",
+) -> str:
+    """Get the system prompt for a given depth mode and answer style.
 
-    Uses question classification to avoid over-explaining simple questions.
+    Args:
+        mode: The depth mode (quick, balanced, deep_dive, expert, research).
+        classification: The question classification for prompt tailoring.
+        answer_mode: The answer style (teach, hint, exam, socratic, simplify).
+
+    Returns:
+        A system prompt string combining base instructions with answer mode.
     """
     # Simple questions always get the short prompt regardless of mode
     if classification and classification.category == "simple":
@@ -221,7 +360,20 @@ def get_system_prompt(mode: str = "balanced", classification: QuestionClass | No
         "expert": DEEP_PROMPT,
         "research": DEEP_PROMPT,
     }
-    return prompts.get(mode, BALANCED_PROMPT)
+
+    base_prompt = prompts.get(mode, BALANCED_PROMPT)
+
+    # For specialized modes (hint, exam, socratic), use a self-contained prompt
+    # that REPLACES the base prompt entirely. This avoids conflicting instructions
+    # where the base prompt says "explain concepts" but the mode says "don't explain".
+    # For "simplify", we append to the base prompt since it builds on explanation.
+    mode_prompt = _ANSWER_MODES.get(answer_mode)
+    if mode_prompt is not None:
+        if answer_mode == "simplify":
+            return base_prompt + "\n\n" + mode_prompt
+        return mode_prompt
+
+    return base_prompt
 
 
 def get_quiz_prompt(topic: str, difficulty: str = "balanced", question_count: int = 5) -> str:

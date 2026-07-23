@@ -12,9 +12,9 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.dependencies import get_current_user_id
 from app.infrastructure.database import get_db
 from app.models.message import Message
-from app.api.dependencies import get_current_user_id
 
 logger = logging.getLogger(__name__)
 

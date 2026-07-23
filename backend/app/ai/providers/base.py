@@ -11,7 +11,7 @@ Adding a new provider:
 
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass

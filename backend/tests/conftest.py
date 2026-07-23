@@ -12,21 +12,19 @@ Provides:
 
 import asyncio
 import uuid
-from typing import AsyncGenerator, Generator
+from collections.abc import AsyncGenerator, Generator
 
 import pytest
 import pytest_asyncio
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
+from app.infrastructure.constants import DEV_USER_EMAIL, DEV_USER_ID
 from app.infrastructure.database import Base, get_db
-from app.infrastructure.constants import DEV_USER_ID, DEV_USER_EMAIL
-from app.models.user import User
 from app.models.learning_session import LearningSession
 from app.models.message import Message
-
+from app.models.user import User
 
 # ═══════════════════════════════════════════════════════════════
 # Database Fixtures
@@ -90,10 +88,9 @@ async def db_session(engine) -> AsyncGenerator[AsyncSession, None]:
 
 from unittest.mock import patch
 
-from app.ai.providers.base import AIResponse, AIStreamChunk
 from app.ai.classifier import QuestionClass
+from app.ai.providers.base import AIResponse, AIStreamChunk
 from app.security.guardrails import GuardrailResult
-
 
 # ── Mock functions used by all test clients (defined once) ─────
 # The patch objects themselves are created INSIDE the client fixture
@@ -249,8 +246,8 @@ async def client(override_get_db: AsyncSession) -> Generator[TestClient, None, N
     - check_output → passes everything
     - check_rate_limit → allows everything
     """
+    from app.api.dependencies import check_rate_limit, get_current_user_id
     from app.main import app
-    from app.api.dependencies import get_current_user_id, check_rate_limit
 
     # Override all dependencies
     app.dependency_overrides[get_db] = lambda: override_get_db
@@ -259,6 +256,7 @@ async def client(override_get_db: AsyncSession) -> Generator[TestClient, None, N
 
     # Seed the DEV_USER_ID user in the test database so profile/session endpoints work
     from sqlalchemy import select
+
     from app.models.user import User
 
     result = await override_get_db.execute(

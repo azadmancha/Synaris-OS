@@ -16,9 +16,8 @@ Heuristic fallback:
 import logging
 import re
 import uuid
-from typing import Optional
 
-from app.knowledge.chunking.types import DocumentChunk, ChunkType
+from app.knowledge.chunking.types import ChunkType, DocumentChunk
 
 logger = logging.getLogger(__name__)
 
@@ -284,7 +283,7 @@ class SemanticChunker:
 
         return sub_chunks
 
-    def _detect_heading(self, line: str) -> Optional[tuple[int, str]]:
+    def _detect_heading(self, line: str) -> tuple[int, str] | None:
         """Detect if a line is a heading and return (level, text)."""
         # Markdown: # ## ### ####
         md_match = re.match(r'^(#{1,4})\s+(.+)$', line)

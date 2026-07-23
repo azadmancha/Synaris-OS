@@ -30,7 +30,6 @@ class LLMContext:
 # builder.py imports ContextDocument/LLMContext from this module
 from app.knowledge.context.builder import ContextBuilder, get_context_builder  # noqa: E402
 
-
 __all__ = [
     "ContextDocument",
     "LLMContext",

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser, supabase } from '@/lib/supabase';
 import { api } from '@/lib/api';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const GOALS = [
   {
@@ -63,6 +64,19 @@ const DEPTHS = [
 
 type Step = 'welcome' | 'goals' | 'subjects' | 'level' | 'preferences' | 'done';
 
+// ─── Ambient Background ─────────────────────────────
+
+function AmbientOrbs() {
+  return (
+    <div className="orb-container">
+      <div className="orb orb-1" />
+      <div className="orb orb-2" />
+      <div className="orb orb-3" />
+      <div className="orb orb-4" />
+    </div>
+  );
+}
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<Step>('welcome');
@@ -86,7 +100,6 @@ export default function OnboardingPage() {
         router.push('/');
         return;
       }
-      // Check if onboarding already completed
       if (user.user_metadata?.onboarding_completed) {
         router.push('/dashboard');
         return;
@@ -101,7 +114,7 @@ export default function OnboardingPage() {
     setCurrentStep(step);
     const stepOrder: Step[] = ['welcome', 'goals', 'subjects', 'level', 'preferences', 'done'];
     const idx = stepOrder.indexOf(step);
-    setProgress(Math.round((idx / (totalSteps)) * 100));
+    setProgress(Math.round((idx / totalSteps) * 100));
   }
 
   function toggleGoal(goal: string) {
@@ -119,7 +132,6 @@ export default function OnboardingPage() {
   async function handleComplete() {
     setIsSaving(true);
     try {
-      // Save onboarding data to Supabase user metadata
       const { error } = await supabase.auth.updateUser({
         data: {
           goals: selectedGoals,
@@ -132,12 +144,9 @@ export default function OnboardingPage() {
       if (error) throw error;
 
       goToStep('done');
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 2500);
+      setTimeout(() => { router.push('/dashboard'); }, 2500);
     } catch (err) {
       console.error('Onboarding save error:', err);
-      // Even on error, go to dashboard
       router.push('/dashboard');
     } finally {
       setIsSaving(false);
@@ -145,58 +154,63 @@ export default function OnboardingPage() {
   }
 
   function skipOnboarding() {
-    // Mark as completed anyway so they don't see it again
     supabase.auth.updateUser({ data: { onboarding_completed: true } }).then(() => {
       router.push('/dashboard');
-    }).catch(() => {
-      router.push('/dashboard');
-    });
+    }).catch(() => { router.push('/dashboard'); });
   }
 
   if (isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-white dark:from-[#0F1117] dark:to-[#13172B]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+      <main className="relative flex min-h-screen items-center justify-center bg-gray-50 dark:bg-[#0F1117]">
+        <AmbientOrbs />
+        <div className="relative z-10 h-8 w-8 animate-spin rounded-full border-2 border-synapse-neon-blue border-t-transparent" />
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-[#0F1117] dark:to-[#13172B]">
+    <ErrorBoundary componentName="OnboardingPage">
+    <main className="relative min-h-screen bg-gray-50 dark:bg-[#0F1117]">
+      {/* Grid overlay */}
+      <div className="grid-overlay pointer-events-none fixed inset-0 z-0" />
+      <AmbientOrbs />
+
       {/* Progress bar */}
-      <div className="fixed left-0 right-0 top-0 z-50 h-1 bg-gray-200 dark:bg-gray-800">
+      <div className="fixed left-0 right-0 top-0 z-50 h-1 bg-gray-800">
         <div
-          className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500 ease-out"
+          className="h-full bg-gradient-to-r from-synapse-neon-blue to-indigo-500 transition-all duration-500 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      <div className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center px-4 py-12">
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center px-4 py-12">
         {/* Skip button */}
         <button
           onClick={skipOnboarding}
-          className="fixed right-4 top-4 z-40 rounded-lg px-3 py-1.5 text-xs text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-[#1C1E2B] dark:hover:text-gray-300"
+          className="fixed right-4 top-4 z-40 rounded-lg border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs text-glass-tertiary backdrop-blur-sm transition-colors hover:bg-white/[0.1] hover:text-glass-primary"
         >
           Skip →
         </button>
 
         {currentStep === 'welcome' && (
           <div className="w-full max-w-md text-center animate-fade-in">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl shadow-blue-500/20">
-              <span className="text-3xl">🧠</span>
+            <div className="glass-card mx-auto mb-6 inline-flex h-20 w-20 items-center justify-center rounded-3xl">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-synapse-neon-blue to-indigo-600 shadow-glow-blue">
+                <span className="text-3xl">🧠</span>
+              </div>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-[#EDEDEE]">
+            <h1 className="text-3xl font-bold text-glass-primary">
               Welcome, {userName} 👋
             </h1>
-            <p className="mt-3 text-base text-gray-500 dark:text-gray-400">
+            <p className="mt-3 text-base text-glass-secondary">
               Let&apos;s set up your learning profile so Synaris can adapt to <em>you</em>.
             </p>
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-sm text-glass-tertiary">
               This only takes a minute — you can change everything later.
             </p>
             <button
               onClick={() => goToStep('goals')}
-              className="mt-8 rounded-xl bg-blue-600 px-8 py-3 text-sm font-medium text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-700 hover:shadow-xl active:scale-[0.97]"
+              className="mt-8 rounded-xl bg-gradient-to-r from-synapse-neon-blue to-indigo-600 px-8 py-3 text-sm font-medium text-white shadow-glow-blue transition-all duration-200 hover:shadow-lg hover:brightness-110 active:scale-[0.97]"
             >
               Get Started
             </button>
@@ -206,21 +220,21 @@ export default function OnboardingPage() {
         {currentStep === 'goals' && (
           <div className="w-full animate-fade-in">
             <StepIndicator step={1} total={totalSteps} title="What brings you here?" />
-            <p className="mt-1 text-sm text-gray-400">Choose all that apply</p>
+            <p className="mt-1 text-sm text-glass-tertiary">Choose all that apply</p>
             <div className="mt-6 grid grid-cols-2 gap-3">
               {GOALS.map((goal) => (
                 <button
                   key={goal.id}
                   onClick={() => toggleGoal(goal.id)}
-                  className={`rounded-2xl border p-4 text-left transition-all ${
+                  className={`rounded-2xl border p-4 text-left transition-all duration-200 ${
                     selectedGoals.includes(goal.id)
-                      ? 'border-blue-500 bg-blue-50 shadow-sm dark:border-blue-400 dark:bg-blue-900/20'
-                      : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-[#1C1E2B] dark:hover:border-gray-500'
+                      ? 'border-synapse-neon-blue/50 bg-synapse-neon-blue/10 shadow-glow-sm'
+                      : 'glass-card border-white/5 hover:border-white/20'
                   }`}
                 >
                   <span className="text-2xl">{goal.icon}</span>
-                  <h3 className="mt-2 text-sm font-semibold text-gray-900 dark:text-[#EDEDEE]">{goal.label}</h3>
-                  <p className="mt-1 text-xs text-gray-400">{goal.desc}</p>
+                  <h3 className="mt-2 text-sm font-semibold text-glass-primary">{goal.label}</h3>
+                  <p className="mt-1 text-xs text-glass-tertiary">{goal.desc}</p>
                 </button>
               ))}
             </div>
@@ -237,16 +251,16 @@ export default function OnboardingPage() {
         {currentStep === 'subjects' && (
           <div className="w-full animate-fade-in">
             <StepIndicator step={2} total={totalSteps} title="What subjects interest you?" />
-            <p className="mt-1 text-sm text-gray-400">Select topics you want to learn about</p>
+            <p className="mt-1 text-sm text-glass-tertiary">Select topics you want to learn about</p>
             <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3">
               {SUBJECTS.map((subject) => (
                 <button
                   key={subject.value}
                   onClick={() => toggleSubject(subject.value)}
-                  className={`rounded-xl border px-3 py-2.5 text-left text-sm transition-all ${
+                  className={`rounded-xl border px-3 py-2.5 text-left text-sm transition-all duration-200 ${
                     selectedSubjects.includes(subject.value)
-                      ? 'border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-900/20 dark:text-blue-300'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-500'
+                      ? 'border-synapse-neon-blue/50 bg-synapse-neon-blue/10 text-synapse-neon-blue shadow-glow-sm'
+                      : 'border-gray-300 dark:border-white/10 text-glass-secondary hover:border-gray-400 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/[0.03]'
                   }`}
                 >
                   {subject.label}
@@ -266,20 +280,20 @@ export default function OnboardingPage() {
         {currentStep === 'level' && (
           <div className="w-full max-w-md animate-fade-in">
             <StepIndicator step={3} total={totalSteps} title="Your experience level" />
-            <p className="mt-1 text-sm text-gray-400">How familiar are you with these subjects?</p>
+            <p className="mt-1 text-sm text-glass-tertiary">How familiar are you with these subjects?</p>
             <div className="mt-6 space-y-2">
               {LEVELS.map((level) => (
                 <button
                   key={level.value}
                   onClick={() => setExperienceLevel(level.value)}
-                  className={`w-full rounded-xl border p-4 text-left transition-all ${
+                  className={`w-full rounded-xl border p-4 text-left transition-all duration-200 ${
                     experienceLevel === level.value
-                      ? 'border-blue-500 bg-blue-50 shadow-sm dark:border-blue-400 dark:bg-blue-900/20'
-                      : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-[#1C1E2B] dark:hover:border-gray-500'
+                      ? 'border-synapse-neon-blue/50 bg-synapse-neon-blue/10 shadow-glow-sm'
+                      : 'glass-card border-white/5 hover:border-white/20'
                   }`}
                 >
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-[#EDEDEE]">{level.label}</h3>
-                  <p className="mt-0.5 text-xs text-gray-400">{level.desc}</p>
+                  <h3 className="text-sm font-semibold text-glass-primary">{level.label}</h3>
+                  <p className="mt-0.5 text-xs text-glass-tertiary">{level.desc}</p>
                 </button>
               ))}
             </div>
@@ -296,21 +310,19 @@ export default function OnboardingPage() {
         {currentStep === 'preferences' && (
           <div className="w-full max-w-md animate-fade-in">
             <StepIndicator step={4} total={totalSteps} title="Learning preferences" />
-            <p className="mt-1 text-sm text-gray-400">How do you like to learn?</p>
+            <p className="mt-1 text-sm text-glass-tertiary">How do you like to learn?</p>
 
             <div className="mt-6">
-              <label className="mb-2 block text-xs font-medium text-gray-600 dark:text-gray-400">
-                Default learning depth
-              </label>
-              <div className="inline-flex rounded-xl border border-gray-200 p-1 dark:border-gray-700">
+              <label className="mb-2 block text-xs font-medium text-glass-secondary">Default learning depth</label>
+              <div className="inline-flex rounded-xl border border-gray-300 dark:border-white/10 bg-gray-100 dark:bg-white/[0.03] p-1">
                 {DEPTHS.map((d) => (
                   <button
                     key={d.value}
                     onClick={() => setDefaultDepth(d.value)}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
                       defaultDepth === d.value
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                        ? 'bg-gradient-to-r from-synapse-neon-blue to-indigo-600 text-white shadow-glow-sm'
+                        : 'text-glass-tertiary hover:text-glass-primary'
                     }`}
                   >
                     {d.label}
@@ -319,9 +331,9 @@ export default function OnboardingPage() {
               </div>
             </div>
 
-            <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50/50 p-4 dark:border-blue-900/20 dark:bg-blue-900/10">
-              <h4 className="text-xs font-semibold text-blue-700 dark:text-blue-400">✨ Recap</h4>
-              <div className="mt-2 space-y-1 text-xs text-blue-600 dark:text-blue-300">
+            <div className="mt-8 rounded-2xl border border-synapse-neon-blue/20 bg-synapse-neon-blue/[0.03] p-4">
+              <h4 className="text-xs font-semibold text-glass-primary">✨ Recap</h4>
+              <div className="mt-2 space-y-1 text-xs text-glass-secondary">
                 <p>🎯 {selectedGoals.length > 0 ? selectedGoals.map((g) => GOALS.find((x) => x.id === g)?.label).join(', ') : 'No goals selected'}</p>
                 <p>📚 {selectedSubjects.length > 0 ? selectedSubjects.length : 0} subjects selected</p>
                 <p>🌱 Level: {LEVELS.find((l) => l.value === experienceLevel)?.label}</p>
@@ -342,30 +354,30 @@ export default function OnboardingPage() {
 
         {currentStep === 'done' && (
           <div className="w-full max-w-md text-center animate-fade-in">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-green-400 to-emerald-500 shadow-xl shadow-green-500/20">
-              <span className="text-3xl">🚀</span>
+            <div className="glass-card mx-auto mb-6 inline-flex h-20 w-20 items-center justify-center rounded-3xl">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669] shadow-lg shadow-[#10B981]/20">
+                <span className="text-3xl">🚀</span>
+              </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-[#EDEDEE]">
-              Your profile is ready!
-            </h1>
-            <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+            <h1 className="text-2xl font-bold text-glass-primary">Your profile is ready!</h1>
+            <p className="mt-3 text-sm text-glass-secondary">
               Synaris is personalizing your learning experience...
             </p>
             <div className="mt-8 flex flex-col items-center gap-3">
               <a
                 href="/dashboard"
-                className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-700 hover:shadow-xl active:scale-[0.97]"
+                className="rounded-xl bg-gradient-to-r from-synapse-neon-blue to-indigo-600 px-6 py-2.5 text-sm font-medium text-white shadow-glow-blue transition-all duration-200 hover:shadow-lg hover:brightness-110 active:scale-[0.97]"
               >
                 Go to Dashboard
               </a>
               <a
                 href="/study-plan"
-                className="rounded-xl border border-emerald-200 bg-emerald-50/50 px-6 py-2.5 text-sm font-medium text-emerald-700 shadow-sm transition-all hover:bg-emerald-100 hover:shadow-md active:scale-[0.97] dark:border-emerald-900/20 dark:bg-emerald-900/10 dark:text-emerald-300 dark:hover:bg-emerald-900/20"
+                className="glass-card rounded-xl border-emerald-500/20 px-6 py-2.5 text-sm font-medium text-emerald-400 shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.97]"
               >
                 ✨ Generate Study Plan
               </a>
             </div>
-            <p className="mt-4 text-xs text-gray-400">
+            <p className="mt-4 text-xs text-glass-tertiary">
               You can always access your study plans from the dashboard sidebar.
             </p>
           </div>
@@ -383,6 +395,7 @@ export default function OnboardingPage() {
         }
       `}} />
     </main>
+    </ErrorBoundary>
   );
 }
 
@@ -391,10 +404,8 @@ export default function OnboardingPage() {
 function StepIndicator({ step, total, title }: { step: number; total: number; title: string }) {
   return (
     <div>
-      <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
-        Step {step} of {total}
-      </span>
-      <h2 className="mt-1 text-xl font-bold text-gray-900 dark:text-[#EDEDEE]">{title}</h2>
+      <span className="text-xs font-medium text-synapse-neon-blue">Step {step} of {total}</span>
+      <h2 className="mt-1 text-xl font-bold text-glass-primary">{title}</h2>
     </div>
   );
 }
@@ -419,18 +430,16 @@ function NavButtons({
       {back ? (
         <button
           onClick={onBack}
-          className="rounded-lg px-4 py-2 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-[#1C1E2B] dark:hover:text-gray-300"
+          className="rounded-lg px-4 py-2 text-sm text-glass-tertiary transition-colors hover:bg-white/[0.05] hover:text-glass-primary"
         >
           ← Back
         </button>
-      ) : (
-        <div />
-      )}
+      ) : <div />}
       {next && (
         <button
           onClick={onNext}
           disabled={disabled}
-          className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-xl active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-xl bg-gradient-to-r from-synapse-neon-blue to-indigo-600 px-6 py-2.5 text-sm font-medium text-white shadow-glow-blue transition-all duration-200 hover:shadow-lg hover:brightness-110 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {nextLabel}
         </button>

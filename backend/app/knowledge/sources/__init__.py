@@ -4,14 +4,14 @@ Each source implements the SourceAdapter interface.
 Add a new source by creating a new adapter class.
 
 Sources:
-- Wikipedia (free API)
-- OpenStax (open textbooks)
-- Wikibooks (wiki textbooks)
-- NCERT (Indian curriculum)
-- Khan Academy (free lessons)
-- arXiv (research papers)
-- CK12 (STEM resources)
-- LibreTexts (open textbooks)
+- Wikipedia (free API) — ✓ implemented
+- OpenStax (open textbooks) — ✓ implemented
+- Wikibooks (wiki textbooks) — ✓ implemented
+- NCERT (Indian curriculum) — planned
+- Khan Academy (free lessons) — planned
+- arXiv (research papers) — planned
+- CK12 (STEM resources) — planned
+- LibreTexts (open textbooks) — planned
 """
 
 from abc import ABC, abstractmethod

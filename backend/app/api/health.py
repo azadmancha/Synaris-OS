@@ -8,18 +8,20 @@ Provides monitoring with individual service checks:
 - Redis connectivity (future)
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.infrastructure.config import settings
 from app.infrastructure.database import get_db
 from app.orchestration.router import router as request_router
-from app.infrastructure.config import settings
 
 router = APIRouter(tags=["health"])
 
-
+# ─── Server start time (set on module load) ─────────────────
+_server_start_time: datetime = datetime.now(UTC)
 def _check_api_key(name: str, value: str | None) -> str:
     """Check if an API key is configured and return a human-readable status."""
     if not value:
@@ -72,12 +74,14 @@ async def health_check(db: AsyncSession = Depends(get_db)):
     if len(available_providers) == 0:
         is_healthy = False
 
+    uptime = (datetime.now(UTC) - _server_start_time).total_seconds()
+
     return {
         "status": "healthy" if is_healthy else "degraded",
         "version": "0.1.0",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "checks": checks,
-        "uptime_seconds": None,  # TODO(v2): Track server start time
+        "uptime_seconds": round(uptime, 1),
         "setup_guide": (
             None if len(available_providers) > 0
             else {
@@ -112,4 +116,4 @@ async def ping():
     For load balancers and quick health checks.
     No database dependency — pure API responsiveness.
     """
-    return {"pong": True, "timestamp": datetime.now(timezone.utc).isoformat()}
+    return {"pong": True, "timestamp": datetime.now(UTC).isoformat()}

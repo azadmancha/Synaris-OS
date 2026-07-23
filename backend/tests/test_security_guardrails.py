@@ -12,8 +12,7 @@ Covers:
 
 import pytest
 
-from app.security.guardrails import InputGuardrail, OutputGuardrail, GuardrailResult
-
+from app.security.guardrails import InputGuardrail, OutputGuardrail
 
 # ═══════════════════════════════════════════════════════════════
 # Shared fixtures
@@ -41,14 +40,14 @@ class TestInputGuardrailBasics:
     """Basic tests for the InputGuardrail class."""
 
     @pytest.mark.asyncio
-    async def test_empty_content_passes(self, input_guardrail):
+    async def test_empty_content_passes(self, input_guardrail) -> None:
         """Empty content should pass without being flagged."""
         result = await input_guardrail.check("")
         assert result.passed is True
         assert result.blocked is False
 
     @pytest.mark.asyncio
-    async def test_normal_question_passes(self, input_guardrail):
+    async def test_normal_question_passes(self, input_guardrail) -> None:
         """A normal learning question should pass all checks."""
         result = await input_guardrail.check(
             "What is the capital of France?",
@@ -58,7 +57,7 @@ class TestInputGuardrailBasics:
         assert result.blocked is False
 
     @pytest.mark.asyncio
-    async def test_long_question_passes(self, input_guardrail):
+    async def test_long_question_passes(self, input_guardrail) -> None:
         """A long but legitimate question should pass."""
         # Use varied content to avoid triggering repetition detection
         question = (
@@ -75,7 +74,7 @@ class TestInputGuardrailBasics:
         assert result.passed is True
 
     @pytest.mark.asyncio
-    async def test_excessive_length_is_blocked(self, input_guardrail):
+    async def test_excessive_length_is_blocked(self, input_guardrail) -> None:
         """Content exceeding max length should be blocked."""
         content = "x" * (input_guardrail.max_content_length + 1)
         result = await input_guardrail.check(content, user_id=TEST_USER_ID)
@@ -113,7 +112,7 @@ class TestInputGuardrailPromptInjection:
     ]
 
     @pytest.mark.asyncio
-    async def test_injection_payloads_are_flagged(self, input_guardrail):
+    async def test_injection_payloads_are_flagged(self, input_guardrail) -> None:
         """Common prompt injection payloads should be flagged (score > 0).
 
         Note: The guardrail uses a scoring threshold of 0.8 for blocking.
@@ -128,7 +127,7 @@ class TestInputGuardrailPromptInjection:
             )
 
     @pytest.mark.asyncio
-    async def test_injection_mixed_with_learning_context(self, input_guardrail):
+    async def test_injection_mixed_with_learning_context(self, input_guardrail) -> None:
         """Injection attempts mixed with learning content should be flagged."""
         payload = (
             "I want to learn about physics. "
@@ -166,7 +165,7 @@ class TestInputGuardrailSystemExtraction:
     ]
 
     @pytest.mark.asyncio
-    async def test_extraction_payloads_are_flagged(self, input_guardrail):
+    async def test_extraction_payloads_are_flagged(self, input_guardrail) -> None:
         """System prompt extraction attempts should be flagged (score > 0)."""
         for payload in self.EXTRACTION_PAYLOADS:
             result = await input_guardrail.check(payload, user_id=TEST_USER_ID)
@@ -205,7 +204,7 @@ class TestInputGuardrailJailbreak:
     ]
 
     @pytest.mark.asyncio
-    async def test_jailbreak_payloads_are_flagged(self, input_guardrail):
+    async def test_jailbreak_payloads_are_flagged(self, input_guardrail) -> None:
         """Jailbreak attempts should be flagged (score > 0)."""
         for payload in self.JAILBREAK_PAYLOADS:
             result = await input_guardrail.check(payload, user_id=TEST_USER_ID)
@@ -214,7 +213,7 @@ class TestInputGuardrailJailbreak:
             )
 
     @pytest.mark.asyncio
-    async def test_legitimate_educational_content_passes(self, input_guardrail):
+    async def test_legitimate_educational_content_passes(self, input_guardrail) -> None:
         """Normal educational queries should not trigger jailbreak detection."""
         legitimate_queries = [
             "Can you explain the theory of relativity?",
@@ -240,7 +239,7 @@ class TestInputGuardrailRepetition:
     """Tests for repetitive/spam content detection."""
 
     @pytest.mark.asyncio
-    async def test_repetitive_content_flagged(self, input_guardrail):
+    async def test_repetitive_content_flagged(self, input_guardrail) -> None:
         """Highly repetitive content should be flagged."""
         repetitive = "hello hello hello hello hello " * 20
         result = await input_guardrail.check(repetitive, user_id=TEST_USER_ID)
@@ -248,7 +247,7 @@ class TestInputGuardrailRepetition:
         assert result.score > 0 or result.blocked is True
 
     @pytest.mark.asyncio
-    async def test_short_content_not_flagged_repetitive(self, input_guardrail):
+    async def test_short_content_not_flagged_repetitive(self, input_guardrail) -> None:
         """Short content should not trigger repetition detection."""
         result = await input_guardrail.check("Hello world", user_id=TEST_USER_ID)
         assert result.score == 0.0
@@ -262,13 +261,13 @@ class TestOutputGuardrailBasics:
     """Basic tests for the OutputGuardrail class."""
 
     @pytest.mark.asyncio
-    async def test_empty_content_passes(self, output_guardrail):
+    async def test_empty_content_passes(self, output_guardrail) -> None:
         """Empty output should pass without being flagged."""
         result = await output_guardrail.check("")
         assert result.passed is True
 
     @pytest.mark.asyncio
-    async def test_normal_educational_response_passes(self, output_guardrail):
+    async def test_normal_educational_response_passes(self, output_guardrail) -> None:
         """A normal educational response should pass all checks."""
         response = (
             "Great question! The water cycle involves evaporation, "
@@ -283,7 +282,7 @@ class TestOutputGuardrailBasics:
         assert result.blocked is False
 
     @pytest.mark.asyncio
-    async def test_long_response_without_issues_passes(self, output_guardrail):
+    async def test_long_response_without_issues_passes(self, output_guardrail) -> None:
         """A long but normal response should pass."""
         response = "Here is an explanation of calculus. " * 100
         result = await output_guardrail.check(
@@ -301,7 +300,7 @@ class TestOutputGuardrailLeakage:
     """Tests for system prompt leakage detection."""
 
     @pytest.mark.asyncio
-    async def test_output_with_leakage_signature_is_flagged(self, output_guardrail):
+    async def test_output_with_leakage_signature_is_flagged(self, output_guardrail) -> None:
         """Output containing system prompt signatures should be flagged."""
         leaky_response = (
             "Here is the information you requested. "
@@ -317,7 +316,7 @@ class TestOutputGuardrailLeakage:
         assert result.blocked is True
 
     @pytest.mark.asyncio
-    async def test_identity_response_not_flagged_as_leakage(self, output_guardrail):
+    async def test_identity_response_not_flagged_as_leakage(self, output_guardrail) -> None:
         """Legitimate identity responses should not trigger leakage detection."""
         identity_response = (
             "I was created by Azad, as part of Aeris Labs. "
@@ -332,7 +331,7 @@ class TestOutputGuardrailLeakage:
         )
 
     @pytest.mark.asyncio
-    async def test_output_format_not_flagged(self, output_guardrail):
+    async def test_output_format_not_flagged(self, output_guardrail) -> None:
         """Following the recommended response structure should not be flagged."""
         structured_response = (
             "Here's what I can tell you about gravity:\n\n"
@@ -356,7 +355,7 @@ class TestOutputGuardrailSensitiveData:
     """Tests for sensitive data detection in output."""
 
     @pytest.mark.asyncio
-    async def test_email_in_output_is_flagged(self, output_guardrail):
+    async def test_email_in_output_is_flagged(self, output_guardrail) -> None:
         """Output containing email addresses should be flagged."""
         response = "You can contact me at student@university.edu for more help."
         result = await output_guardrail.check(
@@ -367,7 +366,7 @@ class TestOutputGuardrailSensitiveData:
         assert "sensitive_data" in result.categories or result.categories
 
     @pytest.mark.asyncio
-    async def test_api_key_in_output_is_flagged(self, output_guardrail):
+    async def test_api_key_in_output_is_flagged(self, output_guardrail) -> None:
         """Output containing API key patterns should be flagged."""
         response = "The API key is sk-abc123def456ghi789jkl."
         result = await output_guardrail.check(
@@ -377,7 +376,7 @@ class TestOutputGuardrailSensitiveData:
         assert result.blocked is True
 
     @pytest.mark.asyncio
-    async def test_sanitize_removes_email(self, output_guardrail):
+    async def test_sanitize_removes_email(self, output_guardrail) -> None:
         """Sanitize should redact email addresses."""
         content = "Contact me at user@example.com for details."
         sanitized = output_guardrail.sanitize(content)
@@ -385,7 +384,7 @@ class TestOutputGuardrailSensitiveData:
         assert "user@example.com" not in sanitized
 
     @pytest.mark.asyncio
-    async def test_sanitize_removes_api_keys(self, output_guardrail):
+    async def test_sanitize_removes_api_keys(self, output_guardrail) -> None:
         """Sanitize should redact API key patterns.
 
         Note: The pattern requires 16+ alphanumeric characters after optional
@@ -406,7 +405,7 @@ class TestOutputGuardrailHarmfulContent:
     """Tests for harmful content detection in output."""
 
     @pytest.mark.asyncio
-    async def test_harmful_instructions_flagged(self, output_guardrail):
+    async def test_harmful_instructions_flagged(self, output_guardrail) -> None:
         """Output containing step-by-step harmful instructions should be flagged.
 
         Note: The pattern requires specific phrasing about step-by-step guides

@@ -6,16 +6,16 @@ Integrates with Supabase Auth for user identity.
 
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.dependencies import get_current_user_id
 from app.infrastructure.database import get_db
 from app.models.user import User
-from app.api.dependencies import get_current_user_id
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +99,7 @@ async def update_profile(
     for field, value in update_data.items():
         setattr(user, field, value)
 
-    user.updated_at = datetime.now(timezone.utc)
+    user.updated_at = datetime.now(UTC)
     await db.flush()
     await db.commit()
 

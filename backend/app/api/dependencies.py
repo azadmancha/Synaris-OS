@@ -11,16 +11,17 @@ Provides dependency injection for:
 import logging
 import time
 import uuid
-from fastapi import Depends, Header, HTTPException, Request
+
+from fastapi import Depends, Header, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure.database import get_db
-from app.infrastructure.constants import DEV_USER_ID
+from app.api.auth import _verify_supabase_token
 from app.infrastructure.config import settings
+from app.infrastructure.constants import DEV_USER_ID
+from app.infrastructure.database import get_db
 from app.models.learning_session import LearningSession
 from app.models.user import User
-from app.api.auth import _verify_supabase_token
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,9 @@ async def get_current_user_id(
     2. Authorization: Bearer dev-token-<uuid> → Development override (for testing)
     3. No auth → DEV_USER_ID (legacy dev mode, backward compatible)
 
-    TODO(v2): Remove fallback #3 when all users have migrated to real auth.
+    NOTE: Fallback #3 (DEV_USER_ID) exists for backward compatibility with
+    the test infrastructure and dev environments. Real auth users should
+    always send an Authorization header.
     """
     if not authorization:
         logger.debug("No auth header — using DEV_USER_ID (legacy mode)")

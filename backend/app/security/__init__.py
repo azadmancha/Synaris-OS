@@ -36,16 +36,24 @@ from app.security.guardrails import (
     SecurityAuditor,
     check_input,
     check_output,
-    sanitize_output,
     get_auditor,
     get_input_guardrail,
     get_output_guardrail,
+    sanitize_output,
 )
-
 from app.security.rate_limit import (
     RateLimitResult,
     SlidingWindowRateLimiter,
     get_rate_limiter,
+    reset_rate_limiter,
+)
+from app.security.abuse import (
+    AbuseResult,
+    AbuseDetector,
+    check_abuse,
+    mark_abuse_event,
+    get_abuse_detector,
+    reset_abuse_detector,
 )
 
 __all__ = [
@@ -65,4 +73,12 @@ __all__ = [
     "RateLimitResult",
     "SlidingWindowRateLimiter",
     "get_rate_limiter",
+    "reset_rate_limiter",
+    # Abuse Detection
+    "AbuseResult",
+    "AbuseDetector",
+    "check_abuse",
+    "mark_abuse_event",
+    "get_abuse_detector",
+    "reset_abuse_detector",
 ]

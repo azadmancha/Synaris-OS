@@ -24,8 +24,7 @@ KeyManager will:
 import logging
 import os
 import time
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +43,7 @@ class KeyManager:
     Designed to work with LiteLLM's env-var-based key lookup.
     """
 
-    def __init__(self, cooldown_seconds: float = 60.0):
+    def __init__(self, cooldown_seconds: float = 60.0) -> None:
         self._cooldown = cooldown_seconds
         self._keys: list[KeyState] = []
         self._current_index: int = 0
@@ -76,7 +75,7 @@ class KeyManager:
         for key in keys:
             self.add_key(key)
 
-    def _find_next_available(self, start_index: int) -> Optional[int]:
+    def _find_next_available(self, start_index: int) -> int | None:
         """Find the next available (non-exhausted) key index starting from start_index."""
         if not self._keys:
             return None
@@ -92,7 +91,7 @@ class KeyManager:
 
         return None  # All keys exhausted
 
-    def get_current_key(self) -> Optional[str]:
+    def get_current_key(self) -> str | None:
         """Get the currently active key. Returns None if all keys exhausted."""
         idx = self._find_next_available(self._current_index)
         if idx is None:
@@ -111,7 +110,7 @@ class KeyManager:
                     f"active keys remaining: {self.active_key_count}/{self.key_count})"
                 )
                 return
-        logger.warning(f"KeyManager: tried to mark unknown key as exhausted")
+        logger.warning("KeyManager: tried to mark unknown key as exhausted")
 
     def reset_all(self) -> None:
         """Reset all keys to active (e.g., after a global rate limit window passes)."""
@@ -153,12 +152,12 @@ class KeyManager:
 
 
 # Singleton key managers per provider
-_groq: Optional[KeyManager] = None
-_gemini: Optional[KeyManager] = None
-_openrouter: Optional[KeyManager] = None
+_groq: KeyManager | None = None
+_gemini: KeyManager | None = None
+_openrouter: KeyManager | None = None
 
 
-def get_key_manager(provider_name: str) -> Optional[KeyManager]:
+def get_key_manager(provider_name: str) -> KeyManager | None:
     """Get or create the KeyManager for a provider.
 
     Parses the comma-separated API keys from settings and registers them.

@@ -12,14 +12,12 @@ Requires PostgreSQL with pgvector extension installed.
 import json
 import logging
 import uuid
-from datetime import datetime, timezone
-from typing import Optional
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.knowledge.models import KnowledgeDocument, KnowledgeChunk
 from app.knowledge.embeddings import EmbeddingService, get_embedding_service
+from app.knowledge.models import KnowledgeChunk
 from app.knowledge.search import SearchResult
 
 logger = logging.getLogger(__name__)
@@ -35,7 +33,7 @@ class PgVectorSearch:
     # Minimum similarity score (0-1) to include a result
     MIN_SCORE = 0.5
 
-    def __init__(self, embedding_service: Optional[EmbeddingService] = None):
+    def __init__(self, embedding_service: EmbeddingService | None = None) -> None:
         self._embeddings = embedding_service or get_embedding_service()
 
     async def search(
@@ -71,6 +69,7 @@ class PgVectorSearch:
 
             where_clause = " AND ".join(conditions) if conditions else "TRUE"
 
+            # where_clause is built from hardcoded condition strings with param bindings — safe
             sql = text(f"""
                 SELECT
                     kc.id,
@@ -131,7 +130,7 @@ class PgVectorSearch:
             # Simple keyword query for full-text search
             tsquery = " & ".join(query.split()[:10])  # Use first 10 words
 
-            sql = text(f"""
+            sql = text("""
                 SELECT
                     kc.id,
                     kc.content,
@@ -243,7 +242,7 @@ class PgVectorSearch:
 _search: PgVectorSearch | None = None
 
 
-def get_vector_search(embedding_service: Optional[EmbeddingService] = None) -> PgVectorSearch:
+def get_vector_search(embedding_service: EmbeddingService | None = None) -> PgVectorSearch:
     """Get or create the singleton vector search."""
     global _search
     if _search is None:

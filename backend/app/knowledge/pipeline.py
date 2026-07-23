@@ -16,12 +16,15 @@ The pipeline is designed to be:
 
 import logging
 
-from app.knowledge.sources import SourceAdapter, SourceDocument, SearchResult as SourceSearchResult
-from app.knowledge.sources.wikipedia import get_wikipedia_source
-from app.knowledge.context import LLMContext
-from app.knowledge.context.builder import get_context_builder
 from app.knowledge.cache import get_cache
+from app.knowledge.context.builder import get_context_builder
+from app.knowledge.reranking import get_reranker
 from app.knowledge.search.vector_store import get_vector_store
+from app.knowledge.sources import SearchResult as SourceSearchResult
+from app.knowledge.sources import SourceAdapter, SourceDocument
+from app.knowledge.sources.openstax import get_openstax_source
+from app.knowledge.sources.wikibooks import get_wikibooks_source
+from app.knowledge.sources.wikipedia import get_wikipedia_source
 
 logger = logging.getLogger(__name__)
 
@@ -37,19 +40,31 @@ class KnowledgePipeline:
     5. Return context for injection into AI prompt
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._sources: list[SourceAdapter] = []
         self._context_builder = get_context_builder()
         self._cache = get_cache()
         self._vector_store = get_vector_store()
+        self._reranker = get_reranker(use_llm=False)
         self._init_sources()
 
-    def _init_sources(self):
+    def _init_sources(self) -> None:
         """Initialize all available knowledge sources."""
-        wikipedia = get_wikipedia_source()
-        if wikipedia.is_available:
-            self._sources.append(wikipedia)
-            logger.info("Wikipedia source registered in pipeline")
+        sources_to_init = [
+            ("Wikipedia", get_wikipedia_source),
+            ("OpenStax", get_openstax_source),
+            ("Wikibooks", get_wikibooks_source),
+        ]
+        for name, getter in sources_to_init:
+            try:
+                source = getter()
+                if source.is_available:
+                    self._sources.append(source)
+                    logger.info(f"{name} source registered in pipeline")
+                else:
+                    logger.info(f"{name} source not available")
+            except Exception as e:
+                logger.warning(f"Failed to register {name} source: {e}")
 
     @property
     def has_sources(self) -> bool:
@@ -111,7 +126,7 @@ class KnowledgePipeline:
         except Exception as e:
             logger.warning(f"Vector store search failed: {e}")
 
-        # ── Tier 2: Live Wikipedia ────────────────────────
+        # ── Tier 2: Live Sources (Wikipedia, OpenStax, Wikibooks) ─
         # Only search if vector store didn't have enough results
         if len(all_results) < 2:
             for source in self._sources:
@@ -128,6 +143,17 @@ class KnowledgePipeline:
         if not all_results:
             logger.info(f"No results found for query: {query[:50]}")
             return KnowledgeResult.empty()
+
+        # Rerank results for better quality
+        try:
+            reranked = await self._reranker.rerank(query, all_results, top_n=8)
+            # Map reranked results back to original sort order
+            reranked_order = {r.chunk_id: i for i, r in enumerate(reranked)}
+            # Sort original results to match reranked order
+            all_results.sort(key=lambda r: reranked_order.get(r.document.id if hasattr(r, 'document') else '', 999))
+            logger.info(f"Reranker: reordered {len(all_results)} results for query '{query[:40]}'")
+        except Exception as e:
+            logger.warning(f"Reranking failed, using original order: {e}")
 
         # Build context from results
         try:
@@ -161,7 +187,7 @@ class KnowledgeResult:
         context: str = "",
         document_count: int = 0,
         query: str = "",
-    ):
+    ) -> None:
         self.has_context = has_context
         self.context = context
         self.document_count = document_count

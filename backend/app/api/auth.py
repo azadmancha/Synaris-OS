@@ -19,8 +19,8 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure.database import get_db
 from app.infrastructure.config import settings
+from app.infrastructure.database import get_db
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -64,8 +64,9 @@ async def dev_login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     Each dev email gets its own user ID so multiple dev sessions
     don't share the same chat history.
 
-    TODO(v2): Deprecate when real auth is fully rolled out.
+    DEPRECATED(v2): Dev-only. Real auth uses POST /auth/supabase.
     """
+    logger.warning("Deprecated dev login used — real auth should use POST /auth/supabase")
     # Find or create user by email (unique per email)
     result = await db.execute(select(User).where(User.email == request.email))
     user = result.scalar_one_or_none()

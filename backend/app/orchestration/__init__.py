@@ -12,6 +12,8 @@ from app.orchestration.router import (
     RequestRouter,
     route_request,
     route_request_stream,
+)
+from app.orchestration.router import (
     router as request_router,
 )
 

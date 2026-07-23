@@ -23,20 +23,20 @@
 - [x] OpenRouter support (model flexibility)
 - [x] Ollama support (optional/local)
 - [x] Prompt management system
-- [ ] Internal AI evaluation
+- [x] Internal AI evaluation
 
 > **Provider test results (July 2026):** Groq (0.4–1.2s) and OpenRouter (1.1–1.8s) are both working. Gemini is rate-limited on the current API key.
 > **🔁 Revisit Gemini as the default provider** once API quota resets — it has the most generous free tier (1,500 req/day) and offers gemini-2.0-flash for fast inference and gemini-2.5-pro for deep reasoning.
 
 ### RAG Foundation
 - [x] Wikipedia integration
-- [ ] OpenStax integration
-- [ ] Wikibooks integration
-- [ ] Document ingestion pipeline
+- [x] OpenStax integration
+- [x] Wikibooks integration
+- [x] Document ingestion pipeline (indexer)
 - [x] Embeddings generation
-- [ ] Vector database (Qdrant)
+- [x] Vector database (Qdrant)
 - [x] Semantic retrieval (pgvector)
-- [ ] Citation generation ("Learn More")
+- [x] Citation generation ("Learn More")
 
 ### Learning Features
 - [x] AI Tutor (adaptive explanations)
@@ -49,7 +49,6 @@
 ### Security (Core)
 - [x] Google OAuth (Supabase)
 - [x] JWT authentication
-- [ ] Role-based authorization
 - [x] Prompt injection protection
 - [x] Prompt leak prevention
 - [x] System prompt isolation
@@ -57,8 +56,10 @@
 - [x] Output safety filtering
 - [x] Rate limiting
 - [x] API key protection (.env)
-- [ ] Secure logging & audit trails
-- [ ] Basic abuse detection
+- [x] Secure logging & audit trails
+- [x] Basic abuse detection
+
+> Role-based authorization: not needed — v2 is student-only.
 
 ### Infrastructure
 - [x] Docker setup (dev + prod)
@@ -84,9 +85,9 @@
 
 ### Advanced Learning
 - [ ] Long-term memory system
-  - [ ] **Phase 1: Session Summaries** — AI-generated summaries of each study session stored in a `memory_summaries` table (key concepts, topics learned, struggles)
-  - [ ] **Phase 2: Cross-Session Recall** — extend `_build_conversation_context()` to inject relevant past session knowledge into AI prompts, using semantic search (pgvector) over summaries
-  - [ ] **Phase 3: Spaced Repetition & Review** — proactively suggest review sessions based on `ConceptMastery.next_review_at`, begin sessions with "Last time you studied X..."
+  - [x] **Phase 1: Session Summaries** — AI-generated summaries stored in `memory_summaries` table, API at `/user/memory` and `/sessions/{id}/memory`
+  - [x] **Phase 2: Cross-Session Recall** — pgvector `summary_embedding` column on `MemorySummary`, `_get_relevant_past_summaries()` for semantic search, `_build_conversation_context()` injects past learning into AI prompts
+  - [x] **Phase 3: Spaced Repetition & Review** — proactively suggest review sessions based on `ConceptMastery.next_review_at`, begin sessions with "Last time you studied X..."
 - [ ] Personalization engine
 - [ ] Learning analytics dashboard
 - [ ] Mastery estimation

@@ -247,11 +247,12 @@ export async function updateSessionTitle(sessionId: string, title: string): Prom
 export async function sendMessage(
   sessionId: string,
   content: string,
-  mode = 'balanced'
+  mode = 'balanced',
+  answerMode = 'teach',
 ): Promise<ChatResponse> {
   return request(`/sessions/${sessionId}/messages`, {
     method: 'POST',
-    body: { content, mode },
+    body: { content, mode, answer_mode: answerMode },
   });
 }
 
@@ -284,7 +285,8 @@ export async function sendMessageStream(
   content: string,
   mode: string = 'balanced',
   callbacks: StreamCallbacks,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  answerMode: string = 'teach',
 ): Promise<void> {
   const url = `${API_BASE}/sessions/${sessionId}/messages/stream`;
 
@@ -296,7 +298,7 @@ export async function sendMessageStream(
   const response = await fetch(url, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ content, mode }),
+    body: JSON.stringify({ content, mode, answer_mode: answerMode }),
     signal,
   });
 
@@ -711,6 +713,49 @@ export async function updateStudyPlan(
   });
 }
 
+// ─── Spaced Repetition (Phase 3) ─────────────────────
+
+export interface ConceptForReview {
+  concept_name: string;
+  subject: string;
+  mastery_level: string;
+  confidence_score: number | null;
+  times_encountered: number;
+  next_review_at: string | null;
+  days_until_review: number | null;
+}
+
+export interface ConceptsDueResponse {
+  concepts: ConceptForReview[];
+  total_due: number;
+}
+
+export async function getConceptsDue(limit: number = 10): Promise<ConceptsDueResponse> {
+  return request(`/user/memory/concepts-due?limit=${limit}`);
+}
+
+export async function recordConceptReview(data: {
+  concept_name: string;
+  subject: string;
+  correct: boolean;
+  response_time_seconds?: number | null;
+  requested_hint?: boolean;
+}): Promise<{
+  concept_name: string;
+  subject: string;
+  quality: number;
+  new_mastery_level: string;
+  new_confidence_score: number;
+  next_review_at: string;
+  next_interval_days: number;
+  passed: boolean;
+}> {
+  return request('/user/memory/concepts/review', {
+    method: 'POST',
+    body: data,
+  });
+}
+
 // ─── Convenience ───────────────────────────────────────
 
 export const api = {
@@ -736,6 +781,8 @@ export const api = {
   listQuizzes,
   getQuiz,
   submitQuizAnswers,
+  getConceptsDue,
+  recordConceptReview,
   getAnalytics,
   generateStudyPlan,
   listStudyPlans,

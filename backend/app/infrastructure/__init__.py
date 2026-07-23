@@ -1,15 +1,15 @@
 """Infrastructure layer — config, database, security, middleware."""
 
 from app.infrastructure.config import settings
+from app.infrastructure.constants import DEV_USER_EMAIL, DEV_USER_ID
 from app.infrastructure.database import (
     Base,
-    engine,
     async_session_factory,
+    close_db,
+    engine,
     get_db,
     init_db,
-    close_db,
 )
-from app.infrastructure.constants import DEV_USER_ID, DEV_USER_EMAIL
 
 __all__ = [
     "settings",

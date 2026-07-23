@@ -23,12 +23,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.dependencies import get_current_user_id
 from app.infrastructure.constants import DEV_USER_ID
 
-
 # ─── Path 1: No Authorization header ─────────────────────
 
 
 @pytest.mark.asyncio
-async def test_no_auth_header_returns_dev_user_id(db_session: AsyncSession):
+async def test_no_auth_header_returns_dev_user_id(db_session: AsyncSession) -> None:
     """When no Authorization header is provided, return DEV_USER_ID."""
     result = await get_current_user_id(authorization=None, db=db_session)
     assert result == DEV_USER_ID
@@ -38,21 +37,21 @@ async def test_no_auth_header_returns_dev_user_id(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_invalid_auth_format_returns_dev_user_id(db_session: AsyncSession):
+async def test_invalid_auth_format_returns_dev_user_id(db_session: AsyncSession) -> None:
     """When the Authorization header doesn't start with 'Bearer ', return DEV_USER_ID."""
     result = await get_current_user_id(authorization="Basic some-token", db=db_session)
     assert result == DEV_USER_ID
 
 
 @pytest.mark.asyncio
-async def test_empty_bearer_returns_dev_user_id(db_session: AsyncSession):
+async def test_empty_bearer_returns_dev_user_id(db_session: AsyncSession) -> None:
     """When 'Bearer ' is followed by only whitespace, return DEV_USER_ID."""
     result = await get_current_user_id(authorization="Bearer   ", db=db_session)
     assert result == DEV_USER_ID
 
 
 @pytest.mark.asyncio
-async def test_bearer_with_only_prefix_returns_dev_user_id(db_session: AsyncSession):
+async def test_bearer_with_only_prefix_returns_dev_user_id(db_session: AsyncSession) -> None:
     """When the header is just 'Bearer ' with no token, return DEV_USER_ID."""
     result = await get_current_user_id(authorization="Bearer ", db=db_session)
     assert result == DEV_USER_ID
@@ -62,7 +61,7 @@ async def test_bearer_with_only_prefix_returns_dev_user_id(db_session: AsyncSess
 
 
 @pytest.mark.asyncio
-async def test_valid_dev_token_returns_user_id(db_session: AsyncSession):
+async def test_valid_dev_token_returns_user_id(db_session: AsyncSession) -> None:
     """A valid dev-token-<uuid> should return that UUID."""
     expected_id = uuid.uuid4()
     token = f"dev-token-{expected_id}"
@@ -74,7 +73,7 @@ async def test_valid_dev_token_returns_user_id(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_dev_token_with_numeric_id(db_session: AsyncSession):
+async def test_dev_token_with_numeric_id(db_session: AsyncSession) -> None:
     """A dev-token with a valid UUID should work regardless of format."""
     expected_id = uuid.uuid4()
     result = await get_current_user_id(
@@ -85,7 +84,7 @@ async def test_dev_token_with_numeric_id(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_invalid_dev_token_returns_dev_user_id(db_session: AsyncSession):
+async def test_invalid_dev_token_returns_dev_user_id(db_session: AsyncSession) -> None:
     """A dev-token with an invalid UUID should return DEV_USER_ID."""
     result = await get_current_user_id(
         authorization="Bearer dev-token-not-a-valid-uuid",
@@ -95,7 +94,7 @@ async def test_invalid_dev_token_returns_dev_user_id(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_dev_token_empty_uuid_returns_dev_user_id(db_session: AsyncSession):
+async def test_dev_token_empty_uuid_returns_dev_user_id(db_session: AsyncSession) -> None:
     """A dev-token with an empty string after the prefix should return DEV_USER_ID."""
     result = await get_current_user_id(
         authorization="Bearer dev-token-",
@@ -111,7 +110,7 @@ async def test_dev_token_empty_uuid_returns_dev_user_id(db_session: AsyncSession
 async def test_supabase_token_user_exists_returns_user_id(
     db_session: AsyncSession,
     test_user,
-):
+) -> None:
     """When Supabase verifies the token and user exists by email, return the user ID."""
     mock_supabase_id = "supabase-user-123"
 
@@ -152,7 +151,7 @@ async def test_supabase_token_user_exists_returns_user_id(
 @pytest.mark.asyncio
 async def test_supabase_token_no_matching_user_returns_dev_user_id(
     db_session: AsyncSession,
-):
+) -> None:
     """When Supabase verifies the token but no user matches the email, return DEV_USER_ID."""
     # httpx.Response.json() is synchronous — use MagicMock
     mock_response = MagicMock()
@@ -191,7 +190,7 @@ async def test_supabase_token_no_matching_user_returns_dev_user_id(
 
 
 @pytest.mark.asyncio
-async def test_supabase_verification_fails_returns_dev_user_id(db_session: AsyncSession):
+async def test_supabase_verification_fails_returns_dev_user_id(db_session: AsyncSession) -> None:
     """When Supabase token verification returns None, fall back to DEV_USER_ID."""
     with patch(
         "app.api.dependencies._verify_supabase_token",
@@ -211,7 +210,7 @@ async def test_supabase_verification_fails_returns_dev_user_id(db_session: Async
 
 
 @pytest.mark.asyncio
-async def test_supabase_http_error_returns_dev_user_id(db_session: AsyncSession):
+async def test_supabase_http_error_returns_dev_user_id(db_session: AsyncSession) -> None:
     """When the HTTPX call to Supabase fails, fall back to DEV_USER_ID."""
     mock_client_instance = AsyncMock()
     mock_client_instance.get = AsyncMock(side_effect=Exception("Connection refused"))
@@ -242,7 +241,7 @@ async def test_supabase_http_error_returns_dev_user_id(db_session: AsyncSession)
 
 
 @pytest.mark.asyncio
-async def test_supabase_non_200_response_returns_dev_user_id(db_session: AsyncSession):
+async def test_supabase_non_200_response_returns_dev_user_id(db_session: AsyncSession) -> None:
     """When Supabase returns a non-200 status, we should still get DEV_USER_ID via the fallback chain."""
     # httpx.Response.json() is synchronous — use MagicMock
     # For non-200 status, json() is never called, but consistent mocking is cleaner
@@ -278,7 +277,7 @@ async def test_supabase_non_200_response_returns_dev_user_id(db_session: AsyncSe
 
 
 @pytest.mark.asyncio
-async def test_double_bearer_prefix_returns_dev_user_id(db_session: AsyncSession):
+async def test_double_bearer_prefix_returns_dev_user_id(db_session: AsyncSession) -> None:
     """If the token itself contains 'Bearer', the dev-token path should still parse correctly."""
     # Note: If header is "Bearer dev-token-<uuid>", the token is "dev-token-<uuid>"
     # which starts with "dev-token-", so it goes to the dev token path
@@ -291,7 +290,7 @@ async def test_double_bearer_prefix_returns_dev_user_id(db_session: AsyncSession
 
 
 @pytest.mark.asyncio
-async def test_valid_uuid_as_bearer_token_returns_dev_user_id(db_session: AsyncSession):
+async def test_valid_uuid_as_bearer_token_returns_dev_user_id(db_session: AsyncSession) -> None:
     """A valid UUID sent as a plain Bearer token (not dev-token) goes to Supabase path and falls back."""
     # Without mocking Supabase, a valid UUID as Bearer token should fail Supabase
     # verification and fall back to DEV_USER_ID

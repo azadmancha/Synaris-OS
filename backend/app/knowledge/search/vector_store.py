@@ -13,7 +13,6 @@ Switching to production:
     The client auto-connects to the server instead of in-memory.
 """
 
-import json
 import logging
 import uuid
 from typing import Any
@@ -23,9 +22,9 @@ from qdrant_client.http import models as qdrant_models
 from qdrant_client.http.exceptions import UnexpectedResponse
 
 from app.infrastructure.config import settings
+from app.knowledge.chunking.semantic import get_chunker
 from app.knowledge.embeddings import get_embedding_service
 from app.knowledge.search import SearchResult
-from app.knowledge.chunking.semantic import get_chunker
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +55,7 @@ class VectorStore:
     - Collection reset for re-indexing
     """
 
-    def __init__(self, url: str | None = None, api_key: str | None = None):
+    def __init__(self, url: str | None = None, api_key: str | None = None) -> None:
         """
         Initialize the vector store.
 
@@ -245,7 +244,11 @@ class VectorStore:
                         "subject": chunk.subject or "general",
                         "difficulty": chunk.difficulty or "intermediate",
                         "document_title": doc.title or "",
-                        "chunk_type": chunk.chunk_type.value if hasattr(chunk.chunk_type, "value") else str(chunk.chunk_type),
+                        "chunk_type": (
+                chunk.chunk_type.value
+                if hasattr(chunk.chunk_type, "value")
+                else str(chunk.chunk_type)
+            ),
                         "sequence": chunk.sequence,
                     }
 
@@ -407,7 +410,7 @@ class VectorStore:
             return results
 
         except Exception as e:
-            logger.error(f"Vector search failed: %s", e)
+            logger.error("Vector search failed: %s", e)
             return []
 
     async def search_by_text(

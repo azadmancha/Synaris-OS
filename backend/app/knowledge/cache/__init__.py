@@ -9,7 +9,7 @@ Architecture:
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 
@@ -23,12 +23,12 @@ class CachedEntry:
 
     def __post_init__(self):
         if not self.created_at:
-            self.created_at = datetime.now(timezone.utc).isoformat()
+            self.created_at = datetime.now(UTC).isoformat()
 
     @property
     def is_expired(self) -> bool:
         created = datetime.fromisoformat(self.created_at)
-        age = (datetime.now(timezone.utc) - created).total_seconds()
+        age = (datetime.now(UTC) - created).total_seconds()
         return age > self.ttl_seconds
 
 
@@ -38,7 +38,7 @@ class QueryCache:
     Future: Replace with Redis when available.
     """
 
-    def __init__(self, default_ttl: int = 3600):
+    def __init__(self, default_ttl: int = 3600) -> None:
         self._cache: dict[str, CachedEntry] = {}
         self._default_ttl = default_ttl
 

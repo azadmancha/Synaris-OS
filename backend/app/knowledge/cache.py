@@ -4,9 +4,9 @@ Provides a TTL-based cache to avoid redundant Wikipedia lookups
 for the same query within a short window.
 """
 
-import time
 import logging
-from typing import Any, Optional
+import time
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class MemoryCache:
     Not suitable for multi-process deployments (use Redis in prod).
     """
 
-    def __init__(self, default_ttl: int = 300):
+    def __init__(self, default_ttl: int = 300) -> None:
         self._default_ttl = default_ttl
         self._store: dict[str, tuple[float, Any]] = {}
 

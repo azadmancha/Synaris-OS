@@ -1,180 +1,228 @@
 """
-Knowledge Indexer — Pre-fetches and indexes educational content.
+Document Indexer — indexes knowledge sources into the vector store.
 
-At startup (or on demand), this module:
-1. Fetches pages from Wikipedia for common educational topics
-2. Chunks them into semantic sections
-3. Embeds each chunk
-4. Stores them in the Qdrant vector store
+Handles scheduled indexing of educational content from registered
+knowledge sources (Wikipedia, OpenStax, Wikibooks) into the Qdrant
+vector store for fast semantic retrieval.
 
-After indexing, the knowledge pipeline can query the vector store
-INSTEAD of making live Wikipedia API calls — much faster and more reliable.
+Architecture:
+    Indexer.on_startup() → for each source → fetch topics → chunk → embed → store in Qdrant
 
-Health Note:
-    Indexing errors (rate limits, dimension mismatches, network issues)
-    are caught and logged — they never crash the server. The pipeline
-    falls back to live Wikipedia search when the vector store is empty.
+Can run on:
+    1. Application startup (indexes popular topics automatically)
+    2. On-demand via API (for specific topics)
+    3. Scheduled re-indexing (for content freshness)
 """
 
-import asyncio
 import logging
-import time
 
 from app.knowledge.search.vector_store import get_vector_store
+from app.knowledge.sources import SourceAdapter, SourceDocument
+from app.knowledge.sources.openstax import get_openstax_source
+from app.knowledge.sources.wikibooks import get_wikibooks_source
 from app.knowledge.sources.wikipedia import get_wikipedia_source
 
 logger = logging.getLogger(__name__)
 
-# ── Topics to pre-index ────────────────────────────────────
 
-# Core educational topics that cover most student questions
-# Ordered by expected frequency of student queries
-PRIORITY_TOPICS = [
-    # Biology (most common learning queries)
-    "Photosynthesis", "DNA", "Evolution", "Cell (biology)", "Genetics",
-    "Protein", "Enzyme", "Virus", "Immune system", "Ecosystem",
+class DocumentIndexer:
+    """Indexes documents from knowledge sources into the vector store.
 
-    # Physics
-    "Quantum mechanics", "Thermodynamics", "Electromagnetism",
-    "Newton's laws of motion", "Theory of relativity", "Gravity",
-    "Speed of light", "Force", "Energy", "Black hole",
-
-    # Mathematics (first 10)
-    "Calculus", "Linear algebra", "Probability", "Statistics",
-    "Geometry", "Algebra", "Trigonometry", "Logarithm",
-    "Set theory", "Graph theory",
-
-    # Chemistry (first 10)
-    "Periodic table", "Chemical bond", "Chemical reaction",
-    "Organic chemistry", "Molecule", "Atom", "pH",
-    "Stoichiometry", "Catalysis", "Chemical equilibrium",
-
-    # Computer Science (first 10)
-    "Algorithm", "Data structure", "Machine learning",
-    "Artificial intelligence", "Time complexity",
-    "Computer network", "Database", "Cryptography",
-    "Recursion", "Object-oriented programming",
-]
-
-
-async def index_knowledge_base(
-    topics: list[str] | None = None,
-    reindex: bool = False,
-) -> int:
-    """Fetch and index educational content into the Qdrant vector store.
-
-    Gracefully handles errors per-topic so a single failure
-    (rate limit, network issue, dimension mismatch) doesn't
-    block the rest of the index.
-
-    Args:
-        topics: List of Wikipedia topics to index. Defaults to PRIORITY_TOPICS.
-        reindex: If True, clears the existing index first.
-
-    Returns:
-        Number of chunks indexed.
+    Manages the full indexing pipeline:
+    1. Fetch documents from a knowledge source
+    2. Chunk documents into smaller pieces
+    3. Embed each chunk
+    4. Store embeddings in Qdrant
+    5. Track indexing status per source
     """
-    topics = topics or PRIORITY_TOPICS
-    store = get_vector_store()
-    wikipedia = get_wikipedia_source()
 
-    if not wikipedia.is_available:
-        logger.warning("Wikipedia source not available — skipping knowledge indexing")
-        return 0
+    def __init__(self) -> None:
+        self._vector_store = get_vector_store()
+        self._sources: dict[str, SourceAdapter] = {}
+        self._indexed_counts: dict[str, int] = {}  # source_name -> chunk count
+        self._register_sources()
 
-    if reindex:
-        try:
-            await store.reset_collection()
-            logger.info("Collection reset for re-indexing")
-        except Exception as e:
-            logger.warning(f"Failed to reset collection (continuing anyway): {e}")
+    def _register_sources(self) -> None:
+        """Register all available knowledge sources for indexing."""
+        sources_to_register = [
+            ("wikipedia", get_wikipedia_source),
+            ("openstax", get_openstax_source),
+            ("wikibooks", get_wikibooks_source),
+        ]
 
-    logger.info("Starting knowledge indexing: %d topics", len(topics))
-    start_time = time.monotonic()
-
-    total_chunks = 0
-    indexed_count = 0
-    error_count = 0
-    skip_count = 0
-
-    for i, topic in enumerate(topics, 1):
-        try:
-            # Fetch document from Wikipedia
-            docs = await wikipedia.search(topic, limit=1)
-            if not docs:
-                skip_count += 1
-                logger.debug(f"[{i}/{len(topics)}] No results for '{topic}'")
-                await asyncio.sleep(0.3)
-                continue
-
-            # Index the document
+        for name, getter in sources_to_register:
             try:
-                chunk_count = await store.index_documents(
-                    [docs[0].document],
-                    source="wikipedia",
-                )
-            except Exception as store_err:
-                error_count += 1
-                logger.warning(f"[%d/%d] Store indexing failed for '%s': %s",
-                               i, len(topics), topic, store_err)
-                await asyncio.sleep(1.0)
+                source = getter()
+                if source.is_available:
+                    self._sources[name] = source
+                    logger.info(f"Indexer: registered source '{name}'")
+                else:
+                    logger.info(f"Indexer: source '{name}' not available (skip indexing)")
+            except Exception as e:
+                logger.warning(f"Indexer: failed to register source '{name}': {e}")
+
+    @property
+    def indexed_sources(self) -> list[str]:
+        """Return names of sources that have been indexed."""
+        return list(self._indexed_counts.keys())
+
+    @property
+    def total_indexed(self) -> int:
+        """Return total number of chunks indexed."""
+        return sum(self._indexed_counts.values())
+
+    async def index_source(self, source_name: str, topics: list[str] | None = None) -> int:
+        """Index documents from a specific knowledge source.
+
+        Args:
+            source_name: Name of the source to index (e.g. 'wikipedia').
+            topics: Specific topics to index. If None, uses the source's
+                   default popular topics list.
+
+        Returns:
+            Number of chunks indexed.
+        """
+        if source_name not in self._sources:
+            logger.warning(f"Indexer: source '{source_name}' not registered")
+            return 0
+
+        source = self._sources[source_name]
+        logger.info(f"Indexer: starting indexing of '{source_name}'")
+
+        # Get the topics to index
+        topics_to_index = topics or self._get_default_topics(source_name)
+        if not topics_to_index:
+            logger.info(f"Indexer: no topics to index for '{source_name}'")
+            return 0
+
+        total_chunks = 0
+        for topic in topics_to_index:
+            try:
+                chunks = await self._index_topic(source, topic)
+                total_chunks += chunks
+            except Exception as e:
+                logger.warning(f"Indexer: failed to index topic '{topic}' from '{source_name}': {e}")
                 continue
 
-            if chunk_count > 0:
-                indexed_count += 1
-                total_chunks += chunk_count
-                logger.info(
-                    "[%d/%d] Indexed '%s' → %d chunks (%d total)",
-                    i, len(topics), topic, chunk_count, total_chunks,
-                )
-            else:
-                skip_count += 1
-                logger.debug(f"[{i}/{len(topics)}] No chunks for '{topic}'")
+        self._indexed_counts[source_name] = total_chunks
+        logger.info(f"Indexer: finished indexing '{source_name}' — {total_chunks} chunks total")
+        return total_chunks
 
-            # Be polite to Wikipedia API — 500ms delay between requests
-            await asyncio.sleep(0.5)
+    async def index_all(self) -> dict[str, int]:
+        """Index all registered sources with their default topics.
+
+        Returns:
+            Dictionary mapping source name to number of chunks indexed.
+        """
+        results: dict[str, int] = {}
+        for source_name in self._sources:
+            count = await self.index_source(source_name)
+            results[source_name] = count
+
+        self._indexed_counts = results
+        return results
+
+    async def index_query(self, query: str, source_name: str | None = None) -> int:
+        """Index content related to a specific query (on-demand).
+
+        Useful for indexing specific topics the user asks about
+        that aren't in the pre-indexed set.
+
+        Args:
+            query: The topic or query to index.
+            source_name: Optional source to use. If None, tries all.
+
+        Returns:
+            Number of chunks indexed.
+        """
+        if source_name and source_name in self._sources:
+            return await self._index_topic(self._sources[source_name], query)
+
+        total = 0
+        for name, source in self._sources.items():
+            chunks = await self._index_topic(source, query)
+            total += chunks
+
+        return total
+
+    async def _index_topic(self, source: SourceAdapter, topic: str) -> int:
+        """Index a single topic from a source."""
+        try:
+            # Search the source for this topic
+            results = await source.search(topic, limit=3)
+            if not results:
+                return 0
+
+            # Extract documents from search results
+            documents: list[SourceDocument] = [r.document for r in results]
+
+            # Index into vector store
+            chunks = await self._vector_store.index_documents(
+                documents=documents,
+                source=source.name,
+            )
+
+            if chunks > 0:
+                logger.debug(f"Indexer: indexed {chunks} chunks for topic '{topic}' from '{source.name}'")
+
+            return chunks
 
         except Exception as e:
-            error_count += 1
-            logger.warning(
-                "[%d/%d] Failed to index '%s': %s",
-                i, len(topics), topic, e,
-            )
-            await asyncio.sleep(1.0)
-            continue
+            logger.warning(f"Indexer: topic indexing failed for '{topic}' from '{source.name}': {e}")
+            return 0
 
-    elapsed = time.monotonic() - start_time
-    summary = (
-        f"Knowledge indexing: {indexed_count}/{len(topics)} topics indexed, "
-        f"{total_chunks} chunks, "
-        f"{error_count} errors, "
-        f"{skip_count} skipped, "
-        f"in {elapsed:.1f}s"
-    )
+    def _get_default_topics(self, source_name: str) -> list[str]:
+        """Get the default topics to index for a source."""
+        from app.knowledge.sources.openstax import OpenStaxSource
+        from app.knowledge.sources.wikibooks import WikibooksSource
+        from app.knowledge.sources.wikipedia import WikipediaSource
 
-    if error_count > 0:
-        logger.warning(summary)
-    else:
-        logger.info(summary)
+        topic_mapping = {
+            "wikipedia": WikipediaSource.COMMON_TOPICS,
+            "openstax": list(OpenStaxSource.POPULAR_BOOKS.keys()),
+            "wikibooks": WikibooksSource.COMMON_BOOKS,
+        }
 
-    return total_chunks
+        return topic_mapping.get(source_name, [])
 
 
-async def quick_index() -> int:
-    """Quick index — indexes only the first 5 topics for fast startup.
+# Singleton
+_indexer: DocumentIndexer | None = None
 
-    Used during local development to get a working index quickly.
-    The full index can be triggered later via API or CLI.
 
-    Why 5: Prevents Gemini API quota exhaustion (100 embeds/min free tier)
-    during startup while still providing a working vector store for
-    common queries.
+def get_indexer() -> DocumentIndexer:
+    """Get or create the singleton document indexer."""
+    global _indexer
+    if _indexer is None:
+        _indexer = DocumentIndexer()
+    return _indexer
+
+
+async def index_on_startup() -> None:
+    """Run initial indexing of all sources on application startup.
+
+    Called from main.py during startup to pre-populate the vector store
+    with educational content from all registered sources.
     """
-    return await index_knowledge_base(topics=PRIORITY_TOPICS[:5])
+    indexer = get_indexer()
+
+    if not indexer._sources:
+        logger.info("Indexer: no sources available on startup — skipping initial indexing")
+        return
+
+    logger.info(f"Indexer: starting initial indexing of {len(indexer._sources)} source(s)")
+
+    try:
+        results = await indexer.index_all()
+        for source, count in results.items():
+            logger.info(f"Indexer: startup indexing complete for '{source}' — {count} chunks")
+        logger.info(f"Indexer: startup indexing complete — {indexer.total_indexed} total chunks")
+    except Exception as e:
+        logger.error(f"Indexer: startup indexing failed: {e}")
 
 
 __all__ = [
-    "PRIORITY_TOPICS",
-    "index_knowledge_base",
-    "quick_index",
+    "DocumentIndexer",
+    "get_indexer",
+    "index_on_startup",
 ]

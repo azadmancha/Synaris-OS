@@ -7,8 +7,8 @@ API key environment variable: GROQ_API_KEY
 Get one at: https://console.groq.com/keys
 """
 
-from collections.abc import AsyncGenerator
 import logging
+from collections.abc import AsyncGenerator
 
 from app.ai.providers.base import AIProvider, AIResponse, AIStreamChunk
 from app.infrastructure.config import settings
@@ -16,8 +16,7 @@ from app.infrastructure.config import settings
 logger = logging.getLogger(__name__)
 
 try:
-    from groq import AsyncGroq
-    from groq import GroqError
+    from groq import AsyncGroq, GroqError
     HAS_GROQ = True
 except ImportError:
     HAS_GROQ = False
@@ -36,12 +35,12 @@ class GroqProvider(AIProvider):
         "code": "llama-3.3-70b-versatile",
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._client = None
         self._configured = False
         self._init_client()
 
-    def _init_client(self):
+    def _init_client(self) -> None:
         """Initialize the Groq client if API key is available."""
         if not HAS_GROQ:
             self._configured = False

@@ -6,19 +6,18 @@ Covers:
 - PATCH /v1/user/profile — update profile
 """
 
-import pytest
 from fastapi.testclient import TestClient
 
 
 class TestGetProfile:
     """Tests for getting the user profile."""
 
-    def test_get_profile_returns_200(self, client: TestClient):
+    def test_get_profile_returns_200(self, client: TestClient) -> None:
         """GET /v1/user/profile should return 200."""
         response = client.get("/v1/user/profile")
         assert response.status_code == 200
 
-    def test_get_profile_has_required_fields(self, client: TestClient):
+    def test_get_profile_has_required_fields(self, client: TestClient) -> None:
         """Profile should have all required fields."""
         response = client.get("/v1/user/profile")
         data = response.json()
@@ -30,16 +29,16 @@ class TestGetProfile:
         assert "onboarding_completed" in data
         assert "created_at" in data
 
-    def test_get_profile_returns_dev_user(self, client: TestClient):
+    def test_get_profile_returns_dev_user(self, client: TestClient) -> None:
         """Without auth, should return the DEV_USER_ID user."""
-        from app.infrastructure.constants import DEV_USER_ID, DEV_USER_EMAIL
+        from app.infrastructure.constants import DEV_USER_EMAIL, DEV_USER_ID
 
         response = client.get("/v1/user/profile")
         data = response.json()
         assert data["id"] == str(DEV_USER_ID)
         assert data["email"] == DEV_USER_EMAIL
 
-    def test_get_profile_returns_404_for_unknown_user(self, client: TestClient):
+    def test_get_profile_returns_404_for_unknown_user(self, client: TestClient) -> None:
         """With a non-existent dev-token, should try to find user."""
         from app.infrastructure.constants import DEV_USER_ID
 
@@ -47,33 +46,33 @@ class TestGetProfile:
         data = response.json()
         assert data["id"] == str(DEV_USER_ID)
 
-    def test_get_profile_has_display_name(self, client: TestClient):
+    def test_get_profile_has_display_name(self, client: TestClient) -> None:
         """Profile should include display name."""
         response = client.get("/v1/user/profile")
         data = response.json()
         assert data["display_name"] is not None
 
-    def test_get_profile_default_theme(self, client: TestClient):
+    def test_get_profile_default_theme(self, client: TestClient) -> None:
         """Default theme preference should be 'system'."""
         response = client.get("/v1/user/profile")
         data = response.json()
         assert data["theme_preference"] == "system"
 
-    def test_get_profile_default_mode(self, client: TestClient):
+    def test_get_profile_default_mode(self, client: TestClient) -> None:
         """Default learning mode should be 'balanced'."""
         response = client.get("/v1/user/profile")
         data = response.json()
         assert data["default_mode"] == "balanced"
 
-    def test_get_profile_onboarding_default(self, client: TestClient):
+    def test_get_profile_onboarding_default(self, client: TestClient) -> None:
         """Dev user should have onboarding completed."""
         response = client.get("/v1/user/profile")
         data = response.json()
         assert data["onboarding_completed"] is True
 
-    def test_get_profile_with_auth_token(self, client: TestClient):
+    def test_get_profile_with_auth_token(self, client: TestClient) -> None:
         """Should work with a dev-token authorization header."""
-        from app.infrastructure.constants import DEV_USER_ID, DEV_USER_EMAIL
+        from app.infrastructure.constants import DEV_USER_EMAIL, DEV_USER_ID
 
         headers = {"Authorization": f"Bearer dev-token-{DEV_USER_ID}"}
         response = client.get("/v1/user/profile", headers=headers)
@@ -85,7 +84,7 @@ class TestGetProfile:
 class TestUpdateProfile:
     """Tests for updating the user profile."""
 
-    def test_update_display_name(self, client: TestClient):
+    def test_update_display_name(self, client: TestClient) -> None:
         """PATCH /v1/user/profile should update display name."""
         response = client.patch(
             "/v1/user/profile",
@@ -98,7 +97,7 @@ class TestUpdateProfile:
         response = client.get("/v1/user/profile")
         assert response.json()["display_name"] == "New Name"
 
-    def test_update_bio(self, client: TestClient):
+    def test_update_bio(self, client: TestClient) -> None:
         """Should update the bio field."""
         response = client.patch(
             "/v1/user/profile",
@@ -107,7 +106,7 @@ class TestUpdateProfile:
         assert response.status_code == 200
         assert response.json()["bio"] == "I love learning physics!"
 
-    def test_update_theme_preference(self, client: TestClient):
+    def test_update_theme_preference(self, client: TestClient) -> None:
         """Should update theme preference."""
         response = client.patch(
             "/v1/user/profile",
@@ -116,7 +115,7 @@ class TestUpdateProfile:
         assert response.status_code == 200
         assert response.json()["theme_preference"] == "dark"
 
-    def test_update_default_mode(self, client: TestClient):
+    def test_update_default_mode(self, client: TestClient) -> None:
         """Should update default learning mode."""
         response = client.patch(
             "/v1/user/profile",
@@ -125,7 +124,7 @@ class TestUpdateProfile:
         assert response.status_code == 200
         assert response.json()["default_mode"] == "deep_dive"
 
-    def test_update_onboarding_status(self, client: TestClient):
+    def test_update_onboarding_status(self, client: TestClient) -> None:
         """Should update onboarding completed status."""
         response = client.patch(
             "/v1/user/profile",
@@ -134,7 +133,7 @@ class TestUpdateProfile:
         assert response.status_code == 200
         assert response.json()["onboarding_completed"] is False
 
-    def test_partial_update_only_changes_specified_fields(self, client: TestClient):
+    def test_partial_update_only_changes_specified_fields(self, client: TestClient) -> None:
         """Updating only one field should not change others."""
         # Set initial state
         client.patch(
@@ -150,7 +149,7 @@ class TestUpdateProfile:
         assert response.json()["display_name"] == "Updated"
         assert response.json()["bio"] == "Original bio"
 
-    def test_update_with_empty_body(self, client: TestClient):
+    def test_update_with_empty_body(self, client: TestClient) -> None:
         """Updating with empty body should return current profile."""
         response = client.patch(
             "/v1/user/profile",
@@ -158,7 +157,7 @@ class TestUpdateProfile:
         )
         assert response.status_code == 200
 
-    def test_update_clearing_avatar_url(self, client: TestClient):
+    def test_update_clearing_avatar_url(self, client: TestClient) -> None:
         """Should be able to clear avatar_url by setting to null."""
         response = client.patch(
             "/v1/user/profile",
@@ -168,7 +167,7 @@ class TestUpdateProfile:
         # avatar_url could be None or empty string depending on storage
         assert response.json().get("avatar_url") in (None, "")
 
-    def test_update_returns_updated_profile(self, client: TestClient):
+    def test_update_returns_updated_profile(self, client: TestClient) -> None:
         """Update response should return the complete profile."""
         response = client.patch(
             "/v1/user/profile",

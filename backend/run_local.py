@@ -11,11 +11,11 @@ Usage:
 import asyncio
 import json
 import os
-import sys
 import subprocess
+import sys
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 from pathlib import Path
 
 HOST = "0.0.0.0"
@@ -57,7 +57,7 @@ def http(method: str, path: str, body: dict = None, timeout: int = 30):
         return 0, {"error": str(e)}
 
 
-async def main():
+async def main() -> int:
     # ── Read API keys from .env ──
     env_path = backend_dir.parent / ".env"
     env_vars = {}
@@ -82,7 +82,7 @@ async def main():
     if openrouter_key: providers.append("OpenRouter")
 
     print(f"{'='*60}")
-    print(f"  Synaris — Local Server Test")
+    print("  Synaris — Local Server Test")
     print(f"{'='*60}")
     print(f"  DB:       {db_path}")
     print(f"  Port:     http://localhost:{PORT}")

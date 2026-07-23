@@ -8,10 +8,9 @@ Library: wikipedia-api (free, no API key needed)
 """
 
 import logging
-from typing import Optional
 
-from app.knowledge.sources import SourceAdapter, SourceDocument, SearchResult
 from app.knowledge.cleaning import DocumentCleaner
+from app.knowledge.sources import SearchResult, SourceAdapter, SourceDocument
 
 logger = logging.getLogger(__name__)
 
@@ -37,13 +36,13 @@ class WikipediaSource(SourceAdapter):
         "Organic chemistry", "Linear algebra", "Statistics", "Electromagnetism",
     ]
 
-    def __init__(self, language: str = "en"):
+    def __init__(self, language: str = "en") -> None:
         self._api = None
         self._cleaner = DocumentCleaner()
         self._language = language
         self._init_api()
 
-    def _init_api(self):
+    def _init_api(self) -> None:
         """Initialize the Wikipedia API client."""
         if HAS_WIKIPEDIA:
             self._api = wikipediaapi.Wikipedia(
@@ -106,7 +105,7 @@ class WikipediaSource(SourceAdapter):
             logger.error(f"Wikipedia fetch failed for {url}: {e}")
             return None
 
-    async def _fetch_page_async(self, title: str) -> Optional[object]:
+    async def _fetch_page_async(self, title: str) -> object | None:
         """Fetch a Wikipedia page (runs sync API in executor)."""
         import asyncio
         loop = asyncio.get_running_loop()
@@ -191,7 +190,11 @@ class WikipediaSource(SourceAdapter):
             title=page.title,
             content=cleaned,
             source="wikipedia",
-            url=page.fullurl if hasattr(page, "fullurl") else f"https://en.wikipedia.org/wiki/{page.title.replace(' ', '_')}",
+            url=(
+                page.fullurl
+                if hasattr(page, "fullurl")
+                else f"https://en.wikipedia.org/wiki/{page.title.replace(' ', '_')}"
+            ),
             subject=subject,
             difficulty="intermediate",
             language=self._language,
@@ -205,7 +208,10 @@ class WikipediaSource(SourceAdapter):
             "mathematics": ["mathematics", "calculus", "algebra", "geometry", "statistics", "trigonometry"],
             "chemistry": ["chemistry", "chemical", "element", "molecule", "reaction", "organic"],
             "biology": ["biology", "cell", "genetics", "evolution", "ecology", "organism"],
-            "computer science": ["computer", "algorithm", "programming", "data structure", "software", "machine learning", "ai"],
+            "computer science": [
+                "computer", "algorithm", "programming", "data structure",
+                "software", "machine learning", "ai",
+            ],
             "economics": ["economics", "economy", "market", "supply", "demand", "finance"],
             "psychology": ["psychology", "behavior", "cognitive", "neuroscience", "personality"],
             "philosophy": ["philosophy", "logic", "ethics", "metaphysics", "epistemology"],

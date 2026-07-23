@@ -6,20 +6,21 @@ Lifespan manages startup and shutdown events:
 - Shutdown: Close database connections gracefully
 """
 
+import asyncio
 import logging
 import uuid
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
+import structlog
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from structlog.contextvars import bind_contextvars, clear_contextvars
 
-from app.infrastructure.config import settings
-from app.infrastructure.database import init_db, close_db
-from    app.infrastructure.logging import configure_logging
-import structlog
 from app.api import api_router
+from app.infrastructure.config import settings
+from app.infrastructure.database import close_db, init_db
+from app.infrastructure.logging import configure_logging
 
 # ─── Configure structured logging ─────────────────────
 
@@ -39,7 +40,7 @@ logger = structlog.get_logger(__name__)
 _sentry_initialized = False
 
 
-def init_sentry():
+def init_sentry() -> None:
     """Initialize Sentry SDK for error monitoring and performance tracing.
 
     Safe to call even if SENTRY_DSN is not configured (skips init gracefully).
@@ -58,9 +59,9 @@ def init_sentry():
     try:
         import sentry_sdk
         from sentry_sdk.integrations.fastapi import FastApiIntegration
-        from sentry_sdk.integrations.starlette import StarletteIntegration
-        from sentry_sdk.integrations.logging import LoggingIntegration
         from sentry_sdk.integrations.httpx import HttpxIntegration
+        from sentry_sdk.integrations.logging import LoggingIntegration
+        from sentry_sdk.integrations.starlette import StarletteIntegration
 
         sentry_logging = LoggingIntegration(
             level=logging.WARNING,       # Send warnings and above breadcrumbs
@@ -137,25 +138,44 @@ async def lifespan(app: FastAPI):
     if _sentry_initialized:
         logger.info("Sentry error monitoring enabled", environment=settings.app_env)
 
-    # Initialize knowledge engine — index Wikipedia content in background
+    # Initialize knowledge engine — index content in background
     try:
-        from app.knowledge.indexer import quick_index
-
-        async def _index_background():
-            try:
-                logger.info("Starting knowledge base indexing in background...")
-                indexed = await quick_index()
-                if indexed > 0:
-                    logger.info("Knowledge base indexing complete", chunks=indexed)
-                else:
-                    logger.warning("Knowledge base indexing returned 0 chunks")
-            except Exception as e:
-                logger.warning("Knowledge background indexing failed", error=str(e))
-
-        import asyncio
-        asyncio.ensure_future(_index_background())
+        from app.knowledge.indexer import index_on_startup
+        asyncio.create_task(index_on_startup())
     except Exception as e:
         logger.warning("Knowledge indexing module not available, skipping", error=str(e))
+
+    # Initialize AI Evaluator for response quality monitoring
+    try:
+        from app.ai.evaluator import get_evaluator
+        evaluator = get_evaluator()
+        logger.info(
+            "AI Evaluator initialized",
+            evaluation_history=evaluator.evaluation_count,
+        )
+    except Exception as e:
+        logger.warning("AI Evaluator module not available, skipping", error=str(e))
+
+    # Start scheduled re-indexing (every 24 hours)
+    try:
+        from app.knowledge.indexer import get_indexer
+        async def _scheduled_reindex():
+            """Re-index knowledge sources every 24 hours for content freshness."""
+            while True:
+                await asyncio.sleep(86400)  # 24 hours
+                try:
+                    indexer = get_indexer()
+                    logger.info("Starting scheduled re-indexing of knowledge sources...")
+                    results = await indexer.index_all()
+                    for source, count in results.items():
+                        logger.info(f"Scheduled re-index: {source} — {count} chunks")
+                except Exception as e:
+                    logger.warning(f"Scheduled re-indexing failed: {e}")
+
+        asyncio.create_task(_scheduled_reindex())
+        logger.info("Scheduled re-indexing started (24h interval)")
+    except Exception as e:
+        logger.warning("Scheduled re-indexing not available, skipping", error=str(e))
 
     yield
 
@@ -217,14 +237,14 @@ async def inject_request_context(request: Request, call_next):
         path=request.url.path,
     )
 
-    start = datetime.now(timezone.utc)
+    start = datetime.now(UTC)
     status_code = 500  # default if handler crashes
     try:
         response = await call_next(request)
         status_code = response.status_code
         return response
     finally:
-        duration = (datetime.now(timezone.utc) - start).total_seconds()
+        duration = (datetime.now(UTC) - start).total_seconds()
         logger.info(
             "request completed",
             status_code=status_code,

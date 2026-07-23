@@ -8,7 +8,6 @@ Covers:
 
 import uuid
 
-import pytest
 from fastapi.testclient import TestClient
 
 
@@ -27,7 +26,7 @@ class TestRateMessage:
         ai_message_id = msg_resp.json()["ai_message"]["id"]
         return session_id, ai_message_id
 
-    def test_rate_message_positive(self, client: TestClient):
+    def test_rate_message_positive(self, client: TestClient) -> None:
         """POST /v1/feedback/message with 'positive' should succeed."""
         _, msg_id = self._create_session_with_message(client)
 
@@ -40,7 +39,7 @@ class TestRateMessage:
         assert data["success"] is True
         assert data["rating"] == "positive"
 
-    def test_rate_message_negative(self, client: TestClient):
+    def test_rate_message_negative(self, client: TestClient) -> None:
         """Rating a message as negative should succeed."""
         _, msg_id = self._create_session_with_message(client)
 
@@ -51,7 +50,7 @@ class TestRateMessage:
         assert response.status_code == 200
         assert response.json()["rating"] == "negative"
 
-    def test_rate_message_reset(self, client: TestClient):
+    def test_rate_message_reset(self, client: TestClient) -> None:
         """Resetting a rating should work."""
         _, msg_id = self._create_session_with_message(client)
 
@@ -69,7 +68,7 @@ class TestRateMessage:
         assert response.status_code == 200
         assert response.json()["rating"] == "reset"
 
-    def test_rate_message_invalid_rating(self, client: TestClient):
+    def test_rate_message_invalid_rating(self, client: TestClient) -> None:
         """An invalid rating value should return 400."""
         _, msg_id = self._create_session_with_message(client)
 
@@ -79,7 +78,7 @@ class TestRateMessage:
         )
         assert response.status_code == 400
 
-    def test_rate_message_returns_404_for_nonexistent(self, client: TestClient):
+    def test_rate_message_returns_404_for_nonexistent(self, client: TestClient) -> None:
         """Rating a non-existent message should return 404."""
         fake_id = str(uuid.uuid4())
         response = client.post(
@@ -88,7 +87,7 @@ class TestRateMessage:
         )
         assert response.status_code == 404
 
-    def test_rate_message_toggle_positive_negative(self, client: TestClient):
+    def test_rate_message_toggle_positive_negative(self, client: TestClient) -> None:
         """Should be able to change rating from positive to negative."""
         _, msg_id = self._create_session_with_message(client)
 
@@ -102,7 +101,7 @@ class TestRateMessage:
         )
         assert response.json()["rating"] == "negative"
 
-    def test_rate_message_requires_message_id(self, client: TestClient):
+    def test_rate_message_requires_message_id(self, client: TestClient) -> None:
         """message_id should be required."""
         response = client.post(
             "/v1/feedback/message",
@@ -110,7 +109,7 @@ class TestRateMessage:
         )
         assert response.status_code == 422
 
-    def test_rate_message_requires_rating(self, client: TestClient):
+    def test_rate_message_requires_rating(self, client: TestClient) -> None:
         """rating should be required."""
         response = client.post(
             "/v1/feedback/message",
@@ -134,7 +133,7 @@ class TestGetMessageFeedback:
         ai_message_id = msg_resp.json()["ai_message"]["id"]
         return session_id, ai_message_id
 
-    def test_get_feedback_no_rating(self, client: TestClient):
+    def test_get_feedback_no_rating(self, client: TestClient) -> None:
         """A message with no rating should return null rating."""
         _, msg_id = self._create_session_with_message(client)
 
@@ -143,7 +142,7 @@ class TestGetMessageFeedback:
         data = response.json()
         assert data["rating"] is None
 
-    def test_get_feedback_after_positive(self, client: TestClient):
+    def test_get_feedback_after_positive(self, client: TestClient) -> None:
         """After rating positive, get should return 'positive'."""
         _, msg_id = self._create_session_with_message(client)
 
@@ -155,7 +154,7 @@ class TestGetMessageFeedback:
         response = client.get(f"/v1/feedback/message/{msg_id}")
         assert response.json()["rating"] == "positive"
 
-    def test_get_feedback_after_negative(self, client: TestClient):
+    def test_get_feedback_after_negative(self, client: TestClient) -> None:
         """After rating negative, get should return 'negative'."""
         _, msg_id = self._create_session_with_message(client)
 
@@ -167,7 +166,7 @@ class TestGetMessageFeedback:
         response = client.get(f"/v1/feedback/message/{msg_id}")
         assert response.json()["rating"] == "negative"
 
-    def test_get_feedback_after_reset(self, client: TestClient):
+    def test_get_feedback_after_reset(self, client: TestClient) -> None:
         """After reset, get should return null rating."""
         _, msg_id = self._create_session_with_message(client)
 
@@ -183,7 +182,7 @@ class TestGetMessageFeedback:
         response = client.get(f"/v1/feedback/message/{msg_id}")
         assert response.json()["rating"] is None
 
-    def test_get_feedback_returns_404_for_nonexistent(self, client: TestClient):
+    def test_get_feedback_returns_404_for_nonexistent(self, client: TestClient) -> None:
         """Getting feedback for non-existent message should return 404."""
         fake_id = str(uuid.uuid4())
         response = client.get(f"/v1/feedback/message/{fake_id}")

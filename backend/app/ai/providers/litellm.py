@@ -20,11 +20,11 @@ Provider prefix format:
 Requires the appropriate API key for whatever provider you use.
 """
 
-from collections.abc import AsyncGenerator
 import logging
+from collections.abc import AsyncGenerator
 
 from app.ai.providers.base import AIProvider, AIResponse, AIStreamChunk
-from app.ai.providers.key_manager import get_key_manager, get_env_var_for_provider
+from app.ai.providers.key_manager import get_env_var_for_provider, get_key_manager
 from app.infrastructure.config import settings
 
 
@@ -38,7 +38,7 @@ class ProviderRetryError(Exception):
     The router catches this exception and automatically tries
     the next available provider in the priority chain.
     """
-    def __init__(self, message: str, error_type: str = "retryable"):
+    def __init__(self, message: str, error_type: str = "retryable") -> None:
         self.error_type = error_type
         super().__init__(message)
 
@@ -68,7 +68,7 @@ def _get_provider_prefix(model: str) -> str:
     return model.split("/")[0] if "/" in model else ""
 
 
-def _setup_key_for_model(model: str) -> Optional[str]:
+def _setup_key_for_model(model: str) -> str | None:
     """Set up the API key for a model's provider.
 
     If the provider has multiple keys configured (comma-separated in .env),
@@ -131,7 +131,7 @@ class LiteLLMProvider(AIProvider):
         "openrouter": "OPENROUTER_API_KEY",
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._configured = HAS_LITELLM
         if self._configured:
             logger.info("LiteLLM provider initialized (reads API keys from env)")
@@ -435,7 +435,6 @@ class LiteLLMProvider(AIProvider):
         returns an AIResponse with a user-friendly message.
         """
         error_msg = str(error).lower()
-        error_str = str(error)
 
         # ── Retryable: raise exception → router tries next provider ──
 
@@ -508,7 +507,8 @@ class LiteLLMProvider(AIProvider):
             "openrouter": ("OpenRouter API key", "https://openrouter.ai/keys", "OPENROUTER_API_KEY"),
         }
 
-        provider_info = hints.get(provider, (f"{provider.upper()}_API_KEY", "", env_var or f"{provider.upper()}_API_KEY"))
+        fallback = (f"{provider.upper()}_API_KEY", "", env_var or f"{provider.upper()}_API_KEY")
+        provider_info = hints.get(provider, fallback)
         name, url, key_var = provider_info
 
         setup = (

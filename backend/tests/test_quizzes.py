@@ -19,7 +19,6 @@ from fastapi.testclient import TestClient
 
 from app.security.guardrails import GuardrailResult
 
-
 # ─── Sample quiz data for mocking ──────────────────────────
 
 SAMPLE_QUIZ_JSON = json.dumps({
@@ -129,7 +128,7 @@ BASE = "/v1/sessions/{sid}/quizzes"
 class TestQuizGeneration:
     """Tests for the quiz generation endpoint."""
 
-    def test_generate_quiz_returns_201(self, patched_quiz_app: TestClient, session_id: str):
+    def test_generate_quiz_returns_201(self, patched_quiz_app: TestClient, session_id: str) -> None:
         """Should create a quiz and return 201 with quiz data."""
         response = patched_quiz_app.post(
             BASE.format(sid=session_id) + "/generate",
@@ -144,7 +143,7 @@ class TestQuizGeneration:
         assert data["is_complete"] is False
         assert len(data["questions"]) == 3
 
-    def test_generate_quiz_strips_answers(self, patched_quiz_app: TestClient, session_id: str):
+    def test_generate_quiz_strips_answers(self, patched_quiz_app: TestClient, session_id: str) -> None:
         """Questions should not include correct_answer or explanation when unanswered."""
         response = patched_quiz_app.post(
             BASE.format(sid=session_id) + "/generate",
@@ -157,7 +156,7 @@ class TestQuizGeneration:
             assert q["user_answer"] is None
             assert q["is_correct"] is None
 
-    def test_generate_quiz_no_session_returns_404(self, patched_quiz_app: TestClient):
+    def test_generate_quiz_no_session_returns_404(self, patched_quiz_app: TestClient) -> None:
         """Should return 404 for a non-existent session."""
         response = patched_quiz_app.post(
             "/v1/sessions/00000000-0000-0000-0000-000000000000/quizzes/generate",
@@ -165,7 +164,7 @@ class TestQuizGeneration:
         )
         assert response.status_code == 404
 
-    def test_generate_quiz_blocks_malicious_input(self, patched_quiz_app: TestClient, session_id: str):
+    def test_generate_quiz_blocks_malicious_input(self, patched_quiz_app: TestClient, session_id: str) -> None:
         """Should block quiz generation with malicious input."""
         with patch("app.api.quizzes.check_input", _mock_check_input_block):
             response = patched_quiz_app.post(
@@ -179,7 +178,7 @@ class TestQuizGeneration:
 class TestQuizList:
     """Tests for listing quizzes."""
 
-    def test_list_quizzes_returns_empty(self, patched_quiz_app: TestClient, session_id: str):
+    def test_list_quizzes_returns_empty(self, patched_quiz_app: TestClient, session_id: str) -> None:
         """Should return empty list when no quizzes exist."""
         response = patched_quiz_app.get(BASE.format(sid=session_id))
         assert response.status_code == 200
@@ -187,7 +186,7 @@ class TestQuizList:
         assert data["quizzes"] == []
         assert data["total"] == 0
 
-    def test_list_quizzes_after_generation(self, patched_quiz_app: TestClient, session_id: str):
+    def test_list_quizzes_after_generation(self, patched_quiz_app: TestClient, session_id: str) -> None:
         """Should list quizzes after generating one."""
         # Generate a quiz first
         patched_quiz_app.post(
@@ -201,7 +200,7 @@ class TestQuizList:
         assert data["total"] == 1
         assert data["quizzes"][0]["topic"] == "Quantum Mechanics"
 
-    def test_list_quizzes_no_session_returns_404(self, patched_quiz_app: TestClient):
+    def test_list_quizzes_no_session_returns_404(self, patched_quiz_app: TestClient) -> None:
         """Should return 404 for non-existent session."""
         response = patched_quiz_app.get(
             "/v1/sessions/00000000-0000-0000-0000-000000000000/quizzes"
@@ -212,7 +211,7 @@ class TestQuizList:
 class TestQuizRetrieval:
     """Tests for getting a specific quiz."""
 
-    def test_get_quiz_returns_questions(self, patched_quiz_app: TestClient, session_id: str):
+    def test_get_quiz_returns_questions(self, patched_quiz_app: TestClient, session_id: str) -> None:
         """Should return quiz with questions."""
         # Generate a quiz
         gen_resp = patched_quiz_app.post(
@@ -228,7 +227,7 @@ class TestQuizRetrieval:
         assert data["id"] == quiz_id
         assert len(data["questions"]) == 3
 
-    def test_get_quiz_not_found(self, patched_quiz_app: TestClient, session_id: str):
+    def test_get_quiz_not_found(self, patched_quiz_app: TestClient, session_id: str) -> None:
         """Should return 404 for non-existent quiz."""
         response = patched_quiz_app.get(
             BASE.format(sid=session_id) + "/00000000-0000-0000-0000-000000000000"
@@ -239,7 +238,7 @@ class TestQuizRetrieval:
 class TestQuizAnswering:
     """Tests for submitting answers and scoring."""
 
-    def test_submit_answers_returns_score(self, patched_quiz_app: TestClient, session_id: str):
+    def test_submit_answers_returns_score(self, patched_quiz_app: TestClient, session_id: str) -> None:
         """Should score answers correctly."""
         # Generate a quiz
         gen_resp = patched_quiz_app.post(
@@ -268,7 +267,7 @@ class TestQuizAnswering:
         assert data["correct_count"] == 2
         assert data["answered_count"] == 3
 
-    def test_submit_answers_shows_correct_answers(self, patched_quiz_app: TestClient, session_id: str):
+    def test_submit_answers_shows_correct_answers(self, patched_quiz_app: TestClient, session_id: str) -> None:
         """After answering, correct answers should be visible."""
         gen_resp = patched_quiz_app.post(
             BASE.format(sid=session_id) + "/generate",
@@ -285,7 +284,7 @@ class TestQuizAnswering:
             assert q["correct_answer"] is not None, f"Question {q['id']} should show correct answer"
             assert q["explanation"] is not None, f"Question {q['id']} should show explanation"
 
-    def test_submit_answers_marks_complete(self, patched_quiz_app: TestClient, session_id: str):
+    def test_submit_answers_marks_complete(self, patched_quiz_app: TestClient, session_id: str) -> None:
         """Submitting all answers should mark the quiz as complete."""
         gen_resp = patched_quiz_app.post(
             BASE.format(sid=session_id) + "/generate",
@@ -308,7 +307,7 @@ class TestQuizAnswering:
         assert data["is_complete"] is True
         assert data["status"] == "completed"
 
-    def test_submit_answers_quiz_not_found(self, patched_quiz_app: TestClient, session_id: str):
+    def test_submit_answers_quiz_not_found(self, patched_quiz_app: TestClient, session_id: str) -> None:
         """Should return 404 for non-existent quiz."""
         response = patched_quiz_app.post(
             BASE.format(sid=session_id) + "/00000000-0000-0000-0000-000000000000/answer",
@@ -316,7 +315,7 @@ class TestQuizAnswering:
         )
         assert response.status_code == 404
 
-    def test_all_wrong_answers(self, patched_quiz_app: TestClient, session_id: str):
+    def test_all_wrong_answers(self, patched_quiz_app: TestClient, session_id: str) -> None:
         """Should give score of 0 when all answers are wrong."""
         gen_resp = patched_quiz_app.post(
             BASE.format(sid=session_id) + "/generate",

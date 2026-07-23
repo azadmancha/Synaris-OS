@@ -26,19 +26,19 @@ export function QuizAnswering({
   const isSubmitting = phase === 'submitting';
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-sm transition-all dark:border-gray-700 dark:bg-[#151728]">
+    <div className="glass-card overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
+      <div className="flex items-center justify-between border-b border-gray-700/40 px-5 py-3">
         <div className="flex items-center gap-2">
           <span className="text-lg">🧠</span>
-          <span className="text-sm font-semibold text-gray-900 dark:text-[#EDEDEE]">{quiz.topic}</span>
+          <span className="text-sm font-semibold text-glass-primary">{quiz.topic}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+          <span className="text-[10px] font-medium uppercase tracking-wider text-gray-500">
             {answeredCount}/{questions.length} Answered
           </span>
           {onClose && (
-            <button onClick={onClose} className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-[#1C1E2B] dark:hover:text-gray-300" title="Close quiz">
+            <button onClick={onClose} className="rounded-lg p-1 text-gray-500 transition-colors hover:bg-white/[0.05] hover:text-gray-300" title="Close quiz">
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -48,9 +48,9 @@ export function QuizAnswering({
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 w-full bg-gray-100 dark:bg-gray-700">
+      <div className="h-1 w-full bg-gray-800">
         <div
-          className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-500"
+          className="h-full bg-gradient-to-r from-synapse-neon-purple to-indigo-500 shadow-glow-sm transition-all duration-500"
           style={{ width: `${(answeredCount / Math.max(questions.length, 1)) * 100}%` }}
         />
       </div>
@@ -66,10 +66,10 @@ export function QuizAnswering({
                 disabled={isSubmitting}
                 className={`h-2 rounded-full transition-all ${
                   i === currentIdx
-                    ? 'w-6 bg-purple-600'
+                    ? 'w-6 bg-synapse-neon-purple shadow-glow-sm'
                     : answers[q.id]?.trim()
-                      ? 'w-2 bg-purple-300 dark:bg-purple-600'
-                      : 'w-2 bg-gray-300 dark:bg-gray-600'
+                      ? 'w-2 bg-synapse-neon-purple/50'
+                      : 'w-2 bg-gray-700'
                 }`}
                 title={`Question ${i + 1}`}
               />
@@ -80,10 +80,10 @@ export function QuizAnswering({
         {currentQuestion && (
           <div className="animate-message-in space-y-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
                 Question {currentIdx + 1} of {questions.length}
               </p>
-              <p className="mt-1 text-sm font-medium leading-relaxed text-gray-900 dark:text-[#EDEDEE]">
+              <p className="mt-1 text-sm font-medium leading-relaxed text-gray-200">
                 {currentQuestion.question}
               </p>
             </div>
@@ -145,7 +145,7 @@ export function QuizAnswering({
             <button
               onClick={() => onNavigate(Math.max(0, currentIdx - 1))}
               disabled={currentIdx === 0}
-              className="rounded-lg px-4 py-2 text-xs font-medium text-gray-500 transition-all hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30 dark:hover:bg-[#1C1E2B] dark:hover:text-gray-300"
+              className="rounded-lg px-4 py-2 text-xs font-medium text-gray-500 transition-all hover:bg-white/[0.05] hover:text-gray-300 disabled:cursor-not-allowed disabled:opacity-30"
             >
               ← Previous
             </button>
@@ -154,7 +154,7 @@ export function QuizAnswering({
                 <button
                   onClick={onSubmit}
                   disabled={!allAnswered}
-                  className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-5 py-2 text-xs font-medium text-white shadow-sm transition-all hover:from-purple-700 hover:to-indigo-700 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-synapse-neon-purple to-indigo-600 px-5 py-2 text-xs font-medium text-white shadow-glow-sm transition-all duration-200 hover:shadow-glow-purple hover:brightness-110 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
                 >
                   Submit Answers
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -164,7 +164,7 @@ export function QuizAnswering({
               ) : (
                 <button
                   onClick={() => onNavigate(Math.min(questions.length - 1, currentIdx + 1))}
-                  className="flex items-center gap-1.5 rounded-xl bg-purple-600 px-5 py-2 text-xs font-medium text-white shadow-sm transition-all hover:bg-purple-700 active:scale-[0.97]"
+                  className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-synapse-neon-purple to-indigo-600 px-5 py-2 text-xs font-medium text-white shadow-glow-sm transition-all duration-200 hover:shadow-glow-purple hover:brightness-110 active:scale-[0.97]"
                 >
                   Next →
                 </button>
@@ -175,7 +175,7 @@ export function QuizAnswering({
 
         {isSubmitting && (
           <div className="mt-5 flex items-center justify-center gap-2 py-2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-synapse-neon-purple border-t-transparent" />
             <span className="text-xs text-gray-500">Scoring your answers...</span>
           </div>
         )}

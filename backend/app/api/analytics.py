@@ -6,20 +6,20 @@ to provide a comprehensive learning dashboard with progress tracking and insight
 """
 
 import uuid
-from datetime import datetime, timezone, timedelta
 from collections import Counter
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from sqlalchemy import select, func, desc
+from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.dependencies import get_current_user_id
 from app.infrastructure.database import get_db
+from app.models.concept_mastery import ConceptMastery
 from app.models.learning_session import LearningSession
 from app.models.message import Message
 from app.models.quiz import Quiz
-from app.models.concept_mastery import ConceptMastery
-from app.api.dependencies import get_current_user_id
 
 router = APIRouter(prefix="/user", tags=["analytics"])
 
@@ -34,7 +34,7 @@ def _naive(dt: datetime | None) -> datetime | None:
     if dt is None:
         return None
     if dt.tzinfo is not None:
-        return dt.astimezone(timezone.utc).replace(tzinfo=None)
+        return dt.astimezone(UTC).replace(tzinfo=None)
     return dt
 
 
@@ -157,7 +157,7 @@ async def get_analytics(
     # SQLAlchemy's DateTime(timezone=True) returns aware datetimes on PostgreSQL
     # but naive datetimes on SQLite. Converting everything to naive UTC avoids
     # "can't compare offset-naive and offset-aware datetimes" errors on any backend.
-    now_utc = datetime.now(timezone.utc)
+    now_utc = datetime.now(UTC)
     today_start = now_utc.replace(hour=0, minute=0, second=0, microsecond=0).replace(tzinfo=None)
 
     # ── Sessions ──────────────────────────────────────────
@@ -229,7 +229,11 @@ async def get_analytics(
     # Recent quizzes
     recent_quizzes_data = []
     for q in quizzes[:5]:
-        pct = round(q.score / q.total_points * 100, 1) if q.score is not None and q.total_points and q.total_points > 0 else None
+        pct = (
+            round(q.score / q.total_points * 100, 1)
+            if q.score is not None and q.total_points and q.total_points > 0
+            else None
+        )
         recent_quizzes_data.append(QuizPerformanceSummary(
             quiz_id=str(q.id),
             topic=q.topic,

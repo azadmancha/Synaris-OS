@@ -11,14 +11,13 @@ Covers:
 
 import uuid
 
-import pytest
 from fastapi.testclient import TestClient
 
 
 class TestCreateSession:
     """Tests for creating learning sessions."""
 
-    def test_create_session_returns_201(self, client: TestClient):
+    def test_create_session_returns_201(self, client: TestClient) -> None:
         """POST /v1/sessions should return 201 Created."""
         response = client.post(
             "/v1/sessions",
@@ -26,7 +25,7 @@ class TestCreateSession:
         )
         assert response.status_code == 201
 
-    def test_create_session_has_required_fields(self, client: TestClient):
+    def test_create_session_has_required_fields(self, client: TestClient) -> None:
         """Created session should have all required fields."""
         response = client.post(
             "/v1/sessions",
@@ -41,7 +40,7 @@ class TestCreateSession:
         assert "message_count" in data
         assert "created_at" in data
 
-    def test_create_session_default_mode_is_balanced(self, client: TestClient):
+    def test_create_session_default_mode_is_balanced(self, client: TestClient) -> None:
         """Without specifying mode, should default to 'balanced'."""
         response = client.post(
             "/v1/sessions",
@@ -50,7 +49,7 @@ class TestCreateSession:
         data = response.json()
         assert data["mode"] == "balanced"
 
-    def test_create_session_default_status_is_active(self, client: TestClient):
+    def test_create_session_default_status_is_active(self, client: TestClient) -> None:
         """New sessions should have 'active' status."""
         response = client.post(
             "/v1/sessions",
@@ -59,7 +58,7 @@ class TestCreateSession:
         data = response.json()
         assert data["status"] == "active"
 
-    def test_create_session_default_title_from_subject(self, client: TestClient):
+    def test_create_session_default_title_from_subject(self, client: TestClient) -> None:
         """Title should default to the subject name."""
         response = client.post(
             "/v1/sessions",
@@ -68,7 +67,7 @@ class TestCreateSession:
         data = response.json()
         assert data["title"] == "biology"
 
-    def test_create_session_with_custom_title(self, client: TestClient):
+    def test_create_session_with_custom_title(self, client: TestClient) -> None:
         """Should be able to set a custom title."""
         response = client.post(
             "/v1/sessions",
@@ -77,7 +76,7 @@ class TestCreateSession:
         data = response.json()
         assert data["title"] == "My Custom Session"
 
-    def test_create_session_default_title_without_subject(self, client: TestClient):
+    def test_create_session_default_title_without_subject(self, client: TestClient) -> None:
         """Without subject or title, should default to 'New Session'."""
         response = client.post(
             "/v1/sessions",
@@ -86,7 +85,7 @@ class TestCreateSession:
         data = response.json()
         assert data["title"] == "New Session"
 
-    def test_create_session_initial_message_count_zero(self, client: TestClient):
+    def test_create_session_initial_message_count_zero(self, client: TestClient) -> None:
         """New sessions should have 0 messages."""
         response = client.post(
             "/v1/sessions",
@@ -95,7 +94,7 @@ class TestCreateSession:
         data = response.json()
         assert data["message_count"] == 0
 
-    def test_create_session_id_is_uuid(self, client: TestClient):
+    def test_create_session_id_is_uuid(self, client: TestClient) -> None:
         """Session ID should be a valid UUID string."""
         response = client.post(
             "/v1/sessions",
@@ -104,7 +103,7 @@ class TestCreateSession:
         data = response.json()
         uuid.UUID(data["id"])  # Should not raise
 
-    def test_create_session_with_all_modes(self, client: TestClient):
+    def test_create_session_with_all_modes(self, client: TestClient) -> None:
         """Should be able to create sessions with different modes."""
         for mode in ["quick", "balanced", "deep_dive", "expert"]:
             response = client.post(
@@ -118,7 +117,7 @@ class TestCreateSession:
 class TestListSessions:
     """Tests for listing learning sessions."""
 
-    def test_list_sessions_returns_empty_list_initially(self, client: TestClient):
+    def test_list_sessions_returns_empty_list_initially(self, client: TestClient) -> None:
         """With no sessions created, list should be empty."""
         response = client.get("/v1/sessions")
         assert response.status_code == 200
@@ -126,7 +125,7 @@ class TestListSessions:
         assert data["sessions"] == []
         assert data["total"] == 0
 
-    def test_list_sessions_returns_created_sessions(self, client: TestClient):
+    def test_list_sessions_returns_created_sessions(self, client: TestClient) -> None:
         """Created sessions should appear in the list."""
         client.post("/v1/sessions", json={"subject": "physics"})
         client.post("/v1/sessions", json={"subject": "mathematics"})
@@ -136,7 +135,7 @@ class TestListSessions:
         assert data["total"] == 2
         assert len(data["sessions"]) == 2
 
-    def test_list_sessions_ordered_by_newest_first(self, client: TestClient):
+    def test_list_sessions_ordered_by_newest_first(self, client: TestClient) -> None:
         """Sessions should be ordered with newest first."""
         r1 = client.post("/v1/sessions", json={"subject": "first"})
         r2 = client.post("/v1/sessions", json={"subject": "second"})
@@ -147,7 +146,7 @@ class TestListSessions:
         assert sessions[0]["id"] == r2.json()["id"]
         assert sessions[1]["id"] == r1.json()["id"]
 
-    def test_list_sessions_respects_limit(self, client: TestClient):
+    def test_list_sessions_respects_limit(self, client: TestClient) -> None:
         """List should respect the limit parameter."""
         for i in range(5):
             client.post("/v1/sessions", json={"subject": f"topic-{i}"})
@@ -157,7 +156,7 @@ class TestListSessions:
         assert len(data["sessions"]) == 2
         assert data["total"] == 2
 
-    def test_list_sessions_respects_offset(self, client: TestClient):
+    def test_list_sessions_respects_offset(self, client: TestClient) -> None:
         """List should respect the offset parameter."""
         for i in range(3):
             client.post("/v1/sessions", json={"subject": f"topic-{i}"})
@@ -167,7 +166,7 @@ class TestListSessions:
         data = response.json()
         assert len(data["sessions"]) == 2  # topics 2, 1 (newest first)
 
-    def test_list_sessions_has_message_count(self, client: TestClient):
+    def test_list_sessions_has_message_count(self, client: TestClient) -> None:
         """Listed sessions should include message counts."""
         client.post("/v1/sessions", json={"subject": "physics"})
         response = client.get("/v1/sessions")
@@ -179,7 +178,7 @@ class TestListSessions:
 class TestGetSession:
     """Tests for getting a single session."""
 
-    def test_get_session_returns_session(self, client: TestClient):
+    def test_get_session_returns_session(self, client: TestClient) -> None:
         """GET /v1/sessions/{id} should return the session."""
         create_resp = client.post("/v1/sessions", json={"subject": "physics"})
         session_id = create_resp.json()["id"]
@@ -190,13 +189,13 @@ class TestGetSession:
         assert data["id"] == session_id
         assert data["subject"] == "physics"
 
-    def test_get_session_returns_404_for_nonexistent(self, client: TestClient):
+    def test_get_session_returns_404_for_nonexistent(self, client: TestClient) -> None:
         """Getting a non-existent session should return 404."""
         fake_id = "00000000-0000-0000-0000-000000000000"
         response = client.get(f"/v1/sessions/{fake_id}")
         assert response.status_code == 404
 
-    def test_get_session_returns_422_for_invalid_uuid(self, client: TestClient):
+    def test_get_session_returns_422_for_invalid_uuid(self, client: TestClient) -> None:
         """Getting a session with an invalid UUID should return 422."""
         response = client.get("/v1/sessions/not-a-uuid")
         assert response.status_code == 422
@@ -205,7 +204,7 @@ class TestGetSession:
 class TestUpdateSession:
     """Tests for updating a session."""
 
-    def test_update_title(self, client: TestClient):
+    def test_update_title(self, client: TestClient) -> None:
         """PATCH /v1/sessions/{id} should update the title."""
         create_resp = client.post("/v1/sessions", json={"subject": "physics"})
         session_id = create_resp.json()["id"]
@@ -217,7 +216,7 @@ class TestUpdateSession:
         assert response.status_code == 200
         assert response.json()["title"] == "Updated Title"
 
-    def test_update_subject(self, client: TestClient):
+    def test_update_subject(self, client: TestClient) -> None:
         """PATCH should update the subject."""
         create_resp = client.post("/v1/sessions", json={"subject": "physics"})
         session_id = create_resp.json()["id"]
@@ -229,7 +228,7 @@ class TestUpdateSession:
         assert response.status_code == 200
         assert response.json()["subject"] == "chemistry"
 
-    def test_update_partial_no_side_effects(self, client: TestClient):
+    def test_update_partial_no_side_effects(self, client: TestClient) -> None:
         """Updating only title should not change other fields."""
         create_resp = client.post("/v1/sessions", json={"subject": "physics"})
         session_id = create_resp.json()["id"]
@@ -242,7 +241,7 @@ class TestUpdateSession:
         assert data["title"] == "New Title"
         assert data["subject"] == "physics"  # Should be unchanged
 
-    def test_update_returns_404_for_nonexistent(self, client: TestClient):
+    def test_update_returns_404_for_nonexistent(self, client: TestClient) -> None:
         """Updating a non-existent session should return 404."""
         fake_id = "00000000-0000-0000-0000-000000000000"
         response = client.patch(
@@ -251,7 +250,7 @@ class TestUpdateSession:
         )
         assert response.status_code == 404
 
-    def test_update_with_empty_body(self, client: TestClient):
+    def test_update_with_empty_body(self, client: TestClient) -> None:
         """Updating with an empty body should return the session unchanged."""
         create_resp = client.post("/v1/sessions", json={"subject": "physics"})
         session_id = create_resp.json()["id"]
@@ -266,7 +265,7 @@ class TestUpdateSession:
 class TestDeleteSession:
     """Tests for deleting a session."""
 
-    def test_delete_session_returns_success(self, client: TestClient):
+    def test_delete_session_returns_success(self, client: TestClient) -> None:
         """DELETE /v1/sessions/{id} should return success."""
         create_resp = client.post("/v1/sessions", json={"subject": "physics"})
         session_id = create_resp.json()["id"]
@@ -275,7 +274,7 @@ class TestDeleteSession:
         assert response.status_code == 200
         assert response.json()["message"] == "Session deleted"
 
-    def test_delete_session_removes_from_list(self, client: TestClient):
+    def test_delete_session_removes_from_list(self, client: TestClient) -> None:
         """After deletion, the session should not appear in the list."""
         create_resp = client.post("/v1/sessions", json={"subject": "physics"})
         session_id = create_resp.json()["id"]
@@ -286,7 +285,7 @@ class TestDeleteSession:
         ids = [s["id"] for s in response.json()["sessions"]]
         assert session_id not in ids
 
-    def test_delete_returns_404_for_nonexistent(self, client: TestClient):
+    def test_delete_returns_404_for_nonexistent(self, client: TestClient) -> None:
         """Deleting a non-existent session should return 404."""
         fake_id = "00000000-0000-0000-0000-000000000000"
         response = client.delete(f"/v1/sessions/{fake_id}")

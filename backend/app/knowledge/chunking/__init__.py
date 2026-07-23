@@ -10,9 +10,8 @@ Architecture:
 Types (DocumentChunk, ChunkType) are in types.py to avoid circular imports.
 """
 
-from app.knowledge.chunking.types import ChunkType, DocumentChunk
 from app.knowledge.chunking.semantic import SemanticChunker, get_chunker
-
+from app.knowledge.chunking.types import ChunkType, DocumentChunk
 
 __all__ = [
     "ChunkType",

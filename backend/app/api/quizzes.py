@@ -7,24 +7,23 @@ AI routing infrastructure for generation.
 """
 
 import json
-import uuid
-
 import re
-import structlog
-from datetime import datetime, timezone
+import uuid
+from datetime import UTC, datetime
 from typing import Any
 
+import structlog
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from sqlalchemy import select, desc
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure.database import get_db, async_session_factory
-from app.models.quiz import Quiz
-from app.models.learning_session import LearningSession
-from app.api.dependencies import get_current_user_id, check_rate_limit, verify_session
 from app.ai.prompts import get_quiz_prompt, get_quiz_system_prompt
+from app.api.dependencies import check_rate_limit, get_current_user_id, verify_session
+from app.infrastructure.database import async_session_factory, get_db
+from app.models.learning_session import LearningSession
+from app.models.quiz import Quiz
 from app.orchestration.router import route_request, route_request_stream
 from app.security import check_input, check_output
 
@@ -244,7 +243,7 @@ async def generate_quiz_stream(
             },
         )
 
-    session = await verify_session(session_id, user_id, db)
+    await verify_session(session_id, user_id, db)
 
     prompt = get_quiz_prompt(
         topic=request.topic,
@@ -303,7 +302,7 @@ async def generate_quiz_stream(
         # ── Save Quiz to DB ────────────────────────────────
         async with async_session_factory() as save_session:
             try:
-                now = datetime.now(timezone.utc)
+                now = datetime.now(UTC)
                 quiz = Quiz(
                     id=uuid.uuid4(),
                     session_id=session_id,
@@ -394,7 +393,7 @@ async def generate_quiz(
             },
         )
 
-    session = await verify_session(session_id, user_id, db)
+    await verify_session(session_id, user_id, db)
 
     # ── Generate Quiz via AI ────────────────────────────────
     prompt = get_quiz_prompt(
@@ -485,7 +484,7 @@ async def generate_practice_quiz(
     user_id_str = str(user_id)
     session_id_str = str(session_id)
 
-    session = await verify_session(session_id, user_id, db)
+    await verify_session(session_id, user_id, db)
 
     # Determine topic — pick weakest if not specified
     topic = request.topic
@@ -550,7 +549,11 @@ async def generate_practice_quiz(
     if input_result.blocked:
         raise HTTPException(
             status_code=400,
-            detail={"message": input_result.message, "code": "content_blocked", "category": input_result.categories[0] if input_result.categories else "unknown"},
+            detail={
+                "message": input_result.message,
+                "code": "content_blocked",
+                "category": input_result.categories[0] if input_result.categories else "unknown",
+            },
         )
 
     prompt = (
@@ -630,7 +633,7 @@ async def list_quizzes(
 ):
     """List quizzes for a session."""
     # Verify session ownership
-    session = await verify_session(session_id, user_id, db)
+    await verify_session(session_id, user_id, db)
 
     result = await db.execute(
         select(Quiz)
@@ -659,7 +662,7 @@ async def get_quiz(
 ):
     """Get a specific quiz with questions (answers stripped if not yet answered)."""
     # Verify session ownership
-    session = await verify_session(session_id, user_id, db)
+    await verify_session(session_id, user_id, db)
 
     result = await db.execute(
         select(Quiz).where(
@@ -689,7 +692,7 @@ async def submit_answers(
     the correct answer. For short_answer questions, a case-insensitive
     substring match is used. Returns the quiz with full results.
     """
-    session = await verify_session(session_id, user_id, db)
+    await verify_session(session_id, user_id, db)
 
     result = await db.execute(
         select(Quiz).where(
@@ -732,7 +735,7 @@ async def submit_answers(
     quiz.score = correct
     quiz.total_points = len(questions)
     quiz.status = "completed"
-    quiz.completed_at = datetime.now(timezone.utc)
+    quiz.completed_at = datetime.now(UTC)
 
     await db.flush()
     await db.commit()
@@ -768,8 +771,13 @@ def _check_answer(user_answer: str, correct_answer: str, question_type: str) -> 
     # Also exact-ish match for short phrases
     if len(ca) <= 50:
         return ca in ua or ua in ca
-    # For longer expected answers, check the user's answer contains key words
-    key_words = set(ca.split()) - {"the", "a", "an", "is", "are", "was", "were", "to", "of", "in", "for", "on", "with", "by", "at", "from", "as"}
+
+    # For longer expected answers, check key word containment
+    stop_words = {
+        "the", "a", "an", "is", "are", "was", "were", "to", "of",
+        "in", "for", "on", "with", "by", "at", "from", "as",
+    }
+    key_words = set(ca.split()) - stop_words
     if not key_words:
         return ca in ua or ua in ca
     matched = sum(1 for w in key_words if w in ua)

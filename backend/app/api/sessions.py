@@ -6,16 +6,16 @@ Uses a shared dev user constant until real auth is implemented.
 """
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select, desc
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.dependencies import get_current_user_id
 from app.infrastructure.database import get_db
 from app.models.learning_session import LearningSession
-from app.api.dependencies import get_current_user_id
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
@@ -83,7 +83,7 @@ async def create_session(
         subject=request.subject,
         title=request.title or request.subject or "New Session",
         status="active",
-        started_at=datetime.now(timezone.utc),
+        started_at=datetime.now(UTC),
     )
     db.add(session)
     await db.flush()
@@ -154,7 +154,7 @@ async def update_session(
     if request.subject is not None:
         session.subject = request.subject
 
-    session.updated_at = datetime.now(timezone.utc)
+    session.updated_at = datetime.now(UTC)
     await db.flush()
     await db.commit()
     return _serialize_session(session)

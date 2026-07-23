@@ -9,9 +9,14 @@ Not just RAG — a full Knowledge Engine that learns from multiple
 sources and provides structured, citable educational content.
 """
 
-from app.knowledge.embeddings import EmbeddingService, EmbeddingResult
 from app.knowledge.context import ContextBuilder, ContextDocument, LLMContext, get_context_builder
-from app.knowledge.pipeline import KnowledgePipeline, KnowledgeResult, get_knowledge_pipeline, augment_with_knowledge
+from app.knowledge.embeddings import EmbeddingResult, EmbeddingService
+from app.knowledge.pipeline import (
+    KnowledgePipeline,
+    KnowledgeResult,
+    augment_with_knowledge,
+    get_knowledge_pipeline,
+)
 
 __all__ = [
     "EmbeddingService",

@@ -52,8 +52,8 @@ _SIMPLE_PATTERNS = [
     r"^(what('s| is)\s+\w+\s+(mean|stand for))",     # "What does CPU mean?", "What's API stand for"
     r"^(what does\s+\w+\s+(mean|stand for|refer to))",  # "What does API stand for?"
     r"^(what\s+(is|are)\s+\w+\s+(used for|made of|made from))",  # "What is X used for?"
-    r"^(what('s| is)\s+(the\s+)?(difference|opposite|synonym|antonym))",  # "What's the difference?"
-    r"^(what\s+(color|size|shape|weight|height|length|width|depth)\s+(is|are))",  # "What color is the sky?"
+    r"^(what('s| is)\s+(the\s+)?(difference|opposite|synonym|antonym))",
+    r"^(what\s+(color|size|shape|weight|height|length|width|depth)\s+(is|are))",
     r"^(what\s+(is|are)\s+\w+\s+called)",            # "What are baby cats called?"
     r"^(what\s+is\s+\w+\s*[?]?$)",                   # "What is entropy?" (single-word topic only)
 
@@ -101,7 +101,7 @@ _SIMPLE_PATTERNS = [
     r"^(how do you (spell|pronounce|say))\s+\w+",     # "How do you spell parallel?"
 
     # ── Usage / Purpose ──
-    r"^(what('s| is)\s+\w+\s+(for|used for|about))",  # "What's Python for?", "What is calculus about?"
+    r"^(what('s| is)\s+\w+\s+(for|used for|about))",
 
     # ── Short standalone questions ──
     r"^(why|why not|how|how come|when|where|who|which one|what next|and then|so what)\s*[?]?$",
@@ -122,7 +122,7 @@ _MATH_PATTERNS = [
     r"(matrix|vector|tensor|eigenvalue|eigenvector)",
     r"(theorem|lemma|proof|axiom|postulate)",
     r"(polynomial|quadratic|logarithm|exponential|trigonometric)",
-    r"(\u2211|\u222b|\u03c0|\u221a|\u221e|\u2202|\u2207|\u0394|\u03bb|\u03b8|\u03c6)",  # Sum, integral, pi, sqrt symbols
+    r"(\u2211|\u222b|\u03c0|\u221a|\u221e|\u2202|\u2207|\u0394|\u03bb|\u03b8|\u03c6)",
     r"(calculus|algebra|geometry|topology|statistics|probability)",
     r"\$\w+\$",  # Already has LaTeX
     r"\\frac|\\sum|\\int|\\sqrt|\\alpha|\\beta|\\gamma",

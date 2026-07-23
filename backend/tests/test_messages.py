@@ -7,9 +7,7 @@ Covers:
 - GET /v1/sessions/{id}/messages — get messages
 """
 
-import uuid
 
-import pytest
 from fastapi.testclient import TestClient
 
 
@@ -21,7 +19,7 @@ class TestSendMessage:
         resp = client.post("/v1/sessions", json={"subject": "physics"})
         return resp.json()["id"]
 
-    def test_send_message_returns_200(self, client: TestClient):
+    def test_send_message_returns_200(self, client: TestClient) -> None:
         """POST /v1/sessions/{id}/messages should return 200."""
         session_id = self._create_session(client)
         response = client.post(
@@ -30,7 +28,7 @@ class TestSendMessage:
         )
         assert response.status_code == 200
 
-    def test_send_message_returns_chat_response(self, client: TestClient):
+    def test_send_message_returns_chat_response(self, client: TestClient) -> None:
         """Response should have user_message and ai_message."""
         session_id = self._create_session(client)
         response = client.post(
@@ -42,7 +40,7 @@ class TestSendMessage:
         assert "ai_message" in data
         assert "mode" in data
 
-    def test_send_message_user_message_has_correct_role(self, client: TestClient):
+    def test_send_message_user_message_has_correct_role(self, client: TestClient) -> None:
         """User message should have role 'user'."""
         session_id = self._create_session(client)
         response = client.post(
@@ -53,7 +51,7 @@ class TestSendMessage:
         assert data["user_message"]["role"] == "user"
         assert data["user_message"]["content"] == "Hello"
 
-    def test_send_message_ai_message_has_correct_role(self, client: TestClient):
+    def test_send_message_ai_message_has_correct_role(self, client: TestClient) -> None:
         """AI message should have role 'assistant'."""
         session_id = self._create_session(client)
         response = client.post(
@@ -63,7 +61,7 @@ class TestSendMessage:
         data = response.json()
         assert data["ai_message"]["role"] == "assistant"
 
-    def test_send_message_ai_message_has_content(self, client: TestClient):
+    def test_send_message_ai_message_has_content(self, client: TestClient) -> None:
         """AI message should have non-empty content."""
         session_id = self._create_session(client)
         response = client.post(
@@ -73,7 +71,7 @@ class TestSendMessage:
         data = response.json()
         assert len(data["ai_message"]["content"]) > 0
 
-    def test_send_message_with_different_modes(self, client: TestClient):
+    def test_send_message_with_different_modes(self, client: TestClient) -> None:
         """Should work with different learning modes."""
         session_id = self._create_session(client)
         for mode in ["quick", "balanced", "deep_dive", "expert"]:
@@ -84,7 +82,7 @@ class TestSendMessage:
             assert response.status_code == 200
             assert response.json()["mode"] == mode
 
-    def test_send_message_increments_message_count(self, client: TestClient):
+    def test_send_message_increments_message_count(self, client: TestClient) -> None:
         """Session message count should increase after sending a message."""
         session_id = self._create_session(client)
 
@@ -102,7 +100,7 @@ class TestSendMessage:
         session_resp = client.get(f"/v1/sessions/{session_id}")
         assert session_resp.json()["message_count"] == 2
 
-    def test_send_message_requires_existing_session(self, client: TestClient):
+    def test_send_message_requires_existing_session(self, client: TestClient) -> None:
         """Sending to a non-existent session should return 404."""
         fake_id = "00000000-0000-0000-0000-000000000000"
         response = client.post(
@@ -111,7 +109,7 @@ class TestSendMessage:
         )
         assert response.status_code == 404
 
-    def test_send_message_has_sequence_numbers(self, client: TestClient):
+    def test_send_message_has_sequence_numbers(self, client: TestClient) -> None:
         """Messages should have sequential sequence numbers."""
         session_id = self._create_session(client)
         response = client.post(
@@ -122,7 +120,7 @@ class TestSendMessage:
         assert data["user_message"]["sequence_number"] == 1
         assert data["ai_message"]["sequence_number"] == 2
 
-    def test_send_message_ai_message_has_model_used(self, client: TestClient):
+    def test_send_message_ai_message_has_model_used(self, client: TestClient) -> None:
         """AI message should indicate which model was used."""
         session_id = self._create_session(client)
         response = client.post(
@@ -141,13 +139,14 @@ class TestSendMessageSecurity:
         resp = client.post("/v1/sessions", json={"subject": "physics"})
         return resp.json()["id"]
 
-    def test_blocked_input_returns_400(self, client: TestClient):
+    def test_blocked_input_returns_400(self, client: TestClient) -> None:
         """When input guardrail blocks content, should return 400.
 
         Uses patch on app.api.messages.check_input (the point-of-use)
         to ensure the mock intercepts the already-imported reference.
         """
-        from unittest.mock import patch, AsyncMock
+        from unittest.mock import patch
+
         from app.security.guardrails import GuardrailResult
 
         async def blocked_check(content, user_id="unknown"):
@@ -182,7 +181,7 @@ class TestGetMessages:
             json={"content": content, "mode": "balanced"},
         )
 
-    def test_get_messages_returns_list(self, client: TestClient):
+    def test_get_messages_returns_list(self, client: TestClient) -> None:
         """GET /v1/sessions/{id}/messages should return a list."""
         session_id = self._create_session(client)
         self._send_message(client, session_id, "Hello")
@@ -192,7 +191,7 @@ class TestGetMessages:
         assert "messages" in data
         assert "total" in data
 
-    def test_get_messages_returns_sent_messages(self, client: TestClient):
+    def test_get_messages_returns_sent_messages(self, client: TestClient) -> None:
         """Messages should appear after sending."""
         session_id = self._create_session(client)
         self._send_message(client, session_id, "What is calculus?")
@@ -203,7 +202,7 @@ class TestGetMessages:
         assert data["messages"][0]["role"] == "user"
         assert data["messages"][1]["role"] == "assistant"
 
-    def test_get_messages_ordered_by_sequence(self, client: TestClient):
+    def test_get_messages_ordered_by_sequence(self, client: TestClient) -> None:
         """Messages should be ordered by sequence number."""
         session_id = self._create_session(client)
         self._send_message(client, session_id, "Message 1")
@@ -215,7 +214,7 @@ class TestGetMessages:
         seqs = [m["sequence_number"] for m in messages]
         assert seqs == sorted(seqs)
 
-    def test_get_messages_empty_session(self, client: TestClient):
+    def test_get_messages_empty_session(self, client: TestClient) -> None:
         """A session with no messages should return empty list."""
         session_id = self._create_session(client)
         response = client.get(f"/v1/sessions/{session_id}/messages")
@@ -224,13 +223,13 @@ class TestGetMessages:
         assert data["messages"] == []
         assert data["total"] == 0
 
-    def test_get_messages_requires_existing_session(self, client: TestClient):
+    def test_get_messages_requires_existing_session(self, client: TestClient) -> None:
         """Getting messages from non-existent session should return 404."""
         fake_id = "00000000-0000-0000-0000-000000000000"
         response = client.get(f"/v1/sessions/{fake_id}/messages")
         assert response.status_code == 404
 
-    def test_get_messages_respects_limit(self, client: TestClient):
+    def test_get_messages_respects_limit(self, client: TestClient) -> None:
         """Should respect the limit parameter."""
         session_id = self._create_session(client)
         self._send_message(client, session_id, "First")

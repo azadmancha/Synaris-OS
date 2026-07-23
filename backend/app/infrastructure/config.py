@@ -2,11 +2,19 @@
 
 Part of the Infrastructure layer.
 All config is loaded from environment variables / .env file.
+Looks for .env in the backend/ dir first, then the project root.
 """
 
-from typing import Optional
+from pathlib import Path
+
 from pydantic import Field
 from pydantic_settings import BaseSettings
+
+# Find project root (parent of backend/ directory)
+_project_root = Path(__file__).resolve().parent.parent.parent.parent
+_env_files = [".env"]
+if _project_root.joinpath(".env").exists():
+    _env_files.append(str(_project_root / ".env"))
 
 
 class Settings(BaseSettings):
@@ -25,20 +33,20 @@ class Settings(BaseSettings):
 
     # Qdrant (legacy — Synaris now uses pgvector)
     qdrant_url: str = "http://localhost:6333"
-    qdrant_api_key: Optional[str] = None
+    qdrant_api_key: str | None = None
 
     # Supabase Auth
-    supabase_url: Optional[str] = None
-    supabase_anon_key: Optional[str] = None
-    supabase_service_key: Optional[str] = Field(None, validation_alias="SUPABASE_SERVICE_ROLE_KEY")
+    supabase_url: str | None = None
+    supabase_anon_key: str | None = None
+    supabase_service_key: str | None = Field(None, validation_alias="SUPABASE_SERVICE_ROLE_KEY")
 
     # LLM Providers
-    openrouter_api_key: Optional[str] = None
-    anthropic_api_key: Optional[str] = None
-    openai_api_key: Optional[str] = None
-    deepseek_api_key: Optional[str] = None
-    groq_api_key: Optional[str] = None
-    gemini_api_key: Optional[str] = None
+    openrouter_api_key: str | None = None
+    anthropic_api_key: str | None = None
+    openai_api_key: str | None = None
+    deepseek_api_key: str | None = None
+    groq_api_key: str | None = None
+    gemini_api_key: str | None = None
 
     # ── Model Configuration ────────────────────────────────
     # Each provider supports a global override (sets all slots) and
@@ -47,25 +55,25 @@ class Settings(BaseSettings):
 
     # OpenRouter Model Configuration
     openrouter_model: str = "openrouter/free"
-    openrouter_fast_model: Optional[str] = None
-    openrouter_balanced_model: Optional[str] = None
-    openrouter_deep_model: Optional[str] = None
-    openrouter_code_model: Optional[str] = None
-    openrouter_research_model: Optional[str] = None
+    openrouter_fast_model: str | None = None
+    openrouter_balanced_model: str | None = None
+    openrouter_deep_model: str | None = None
+    openrouter_code_model: str | None = None
+    openrouter_research_model: str | None = None
 
     # Gemini Model Configuration
     gemini_model: str = "gemini-2.0-flash"
-    gemini_fast_model: Optional[str] = None
-    gemini_balanced_model: Optional[str] = None
-    gemini_deep_model: Optional[str] = None
-    gemini_research_model: Optional[str] = None
+    gemini_fast_model: str | None = None
+    gemini_balanced_model: str | None = None
+    gemini_deep_model: str | None = None
+    gemini_research_model: str | None = None
 
     # Groq Model Configuration
     groq_model: str = "llama-3.3-70b-versatile"
-    groq_fast_model: Optional[str] = None
-    groq_balanced_model: Optional[str] = None
-    groq_deep_model: Optional[str] = None
-    groq_code_model: Optional[str] = None
+    groq_fast_model: str | None = None
+    groq_balanced_model: str | None = None
+    groq_deep_model: str | None = None
+    groq_code_model: str | None = None
 
     # ── LiteLLM Model Configuration ─────────────────────────
     # LiteLLM is the primary provider layer. Set ONE model per mode
@@ -78,22 +86,22 @@ class Settings(BaseSettings):
     #   deepseek/deepseek-chat
     #   anthropic/claude-3-opus-20240229
     litellm_model: str = "groq/llama-3.3-70b-versatile"
-    litellm_fast_model: Optional[str] = None
-    litellm_balanced_model: Optional[str] = None
-    litellm_deep_model: Optional[str] = None
-    litellm_code_model: Optional[str] = None
-    litellm_research_model: Optional[str] = None
+    litellm_fast_model: str | None = None
+    litellm_balanced_model: str | None = None
+    litellm_deep_model: str | None = None
+    litellm_code_model: str | None = None
+    litellm_research_model: str | None = None
 
     # Search APIs
-    brave_api_key: Optional[str] = None
-    tavily_api_key: Optional[str] = None
+    brave_api_key: str | None = None
+    tavily_api_key: str | None = None
 
     # Rate Limiting
     rate_limit_requests: int = 60
     rate_limit_window: int = 60
 
     # ── Error Monitoring (Sentry) ─────────────────────────
-    sentry_dsn: Optional[str] = None
+    sentry_dsn: str | None = None
     # Sample rate for performance traces (0.0 to 1.0). 0.1 = 10% in production.
     sentry_traces_sample_rate: float = 1.0
     # Sample rate for profiling (0.0 to 1.0). Requires Sentry profiling.
@@ -112,7 +120,7 @@ class Settings(BaseSettings):
     cors_origins_extra: str = ""
 
     model_config = {
-        "env_file": ".env",
+        "env_file": _env_files,
         "env_file_encoding": "utf-8",
         "case_sensitive": False,
         "extra": "ignore",  # Allow extra env vars (e.g. NEXT_PUBLIC_*, SUPABASE_PROJECT_REF)

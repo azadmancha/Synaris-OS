@@ -9,8 +9,8 @@ API key environment variable: OPENROUTER_API_KEY
 Get one at: https://openrouter.ai/keys
 """
 
-from collections.abc import AsyncGenerator
 import logging
+from collections.abc import AsyncGenerator
 
 from app.ai.providers.base import AIProvider, AIResponse, AIStreamChunk
 from app.infrastructure.config import settings
@@ -38,12 +38,12 @@ class OpenRouterProvider(AIProvider):
         "research": "google/gemini-2.0-flash-001",
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._client = None
         self._configured = False
         self._init_client()
 
-    def _init_client(self):
+    def _init_client(self) -> None:
         """Initialize the OpenRouter client if API key is available."""
         if not HAS_OPENAI:
             self._configured = False

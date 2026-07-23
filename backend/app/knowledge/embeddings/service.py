@@ -20,8 +20,7 @@ import asyncio
 import hashlib
 import logging
 import math
-import time
-from typing import Sequence
+from collections.abc import Sequence
 
 from app.infrastructure.config import settings
 
@@ -46,7 +45,7 @@ except ImportError:
 class EmbeddingResult:
     """Result of embedding a single text."""
 
-    def __init__(self, text: str, vector: list[float], model: str, dimension: int):
+    def __init__(self, text: str, vector: list[float], model: str, dimension: int) -> None:
         self.text = text
         self.vector = vector
         self.model = model
@@ -82,7 +81,7 @@ class EmbeddingService:
     - Returns consistent dimension embeddings regardless of source
     """
 
-    def __init__(self, api_key: str | None = None):
+    def __init__(self, api_key: str | None = None) -> None:
         self._gemini_client = None
         self._has_gemini = False
 
@@ -148,7 +147,6 @@ class EmbeddingService:
 
     async def _gemini_embed_with_retry(self, text: str) -> EmbeddingResult:
         """Embed via Gemini API with exponential backoff on rate limits."""
-        last_error = None
         for attempt in range(_MAX_RETRIES + 1):
             try:
                 response = self._gemini_client.models.embed_content(
@@ -167,7 +165,6 @@ class EmbeddingService:
                 )
             except genai_errors.ClientError as e:
                 if "429" in str(e) or "rate" in str(e).lower():
-                    last_error = e
                     if attempt < _MAX_RETRIES:
                         backoff = _INITIAL_BACKOFF * (2 ** attempt)
                         logger.warning(
@@ -195,7 +192,6 @@ class EmbeddingService:
         self, texts: Sequence[str],
     ) -> list[EmbeddingResult]:
         """Embed multiple texts via Gemini API with retry on rate limits."""
-        last_error = None
         for attempt in range(_MAX_RETRIES + 1):
             try:
                 response = self._gemini_client.models.embed_content(
@@ -216,7 +212,6 @@ class EmbeddingService:
                 return results
             except genai_errors.ClientError as e:
                 if "429" in str(e) or "rate" in str(e).lower():
-                    last_error = e
                     if attempt < _MAX_RETRIES:
                         backoff = _INITIAL_BACKOFF * (2 ** attempt)
                         logger.warning(
