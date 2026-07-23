@@ -10,7 +10,17 @@ vi.mock('next/navigation', () => ({
 
 // Mock next/link
 vi.mock('next/link', () => ({
-  default: ({ children, href, className, onClick }: { children: React.ReactNode; href: string; className?: string; onClick?: () => void }) => (
+  default: ({
+    children,
+    href,
+    className,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    href: string;
+    className?: string;
+    onClick?: () => void;
+  }) => (
     <a href={href} className={className} onClick={onClick}>
       {children}
     </a>
@@ -24,7 +34,11 @@ vi.mock('@/hooks/useDarkMode', () => ({
 
 // Mock SynarisWordmark
 vi.mock('@/components/brand/SynarisLogo', () => ({
-  SynarisWordmark: ({ size }: { size: string }) => <div data-testid="synaris-wordmark" data-size={size}>SynarisWordmark</div>,
+  SynarisWordmark: ({ size }: { size: string }) => (
+    <div data-testid="synaris-wordmark" data-size={size}>
+      SynarisWordmark
+    </div>
+  ),
 }));
 
 // Mock ThemeToggle
@@ -36,8 +50,18 @@ vi.mock('@/components/layout/ThemeToggle', () => ({
   ),
 }));
 
-const mockUser: AuthUser = { id: 'user-1', name: 'Alice Johnson', email: 'alice@example.com', avatarUrl: null };
-const mockUserWithAvatar: AuthUser = { id: 'user-2', name: 'Bob Smith', email: 'bob@example.com', avatarUrl: 'https://example.com/avatar.jpg' };
+const mockUser: AuthUser = {
+  id: 'user-1',
+  name: 'Alice Johnson',
+  email: 'alice@example.com',
+  avatarUrl: null,
+};
+const mockUserWithAvatar: AuthUser = {
+  id: 'user-2',
+  name: 'Bob Smith',
+  email: 'bob@example.com',
+  avatarUrl: 'https://example.com/avatar.jpg',
+};
 
 describe('AppLayout', () => {
   const defaultProps = {

@@ -39,7 +39,14 @@ interface AppLayoutProps {
  * Shared layout with SynarisWordmark header, nav links, dark mode toggle, and footer.
  * Eliminates ~80 lines of duplicated header markup from every page.
  */
-export function AppLayout({ children, activeNav, user, isGuest, onSignOut, maxWidth = 'max-w-5xl' }: AppLayoutProps) {
+export function AppLayout({
+  children,
+  activeNav,
+  user,
+  isGuest,
+  onSignOut,
+  maxWidth = 'max-w-5xl',
+}: AppLayoutProps) {
   const { dark, toggleDark } = useDarkMode();
   const router = useRouter();
 
@@ -80,7 +87,11 @@ export function AppLayout({ children, activeNav, user, isGuest, onSignOut, maxWi
             {user && (
               <div className="flex items-center gap-2">
                 {user.avatarUrl ? (
-                  <img src={user.avatarUrl} alt="" className="h-7 w-7 rounded-full ring-2 ring-gray-200 dark:ring-gray-700" />
+                  <img
+                    src={user.avatarUrl}
+                    alt=""
+                    className="h-7 w-7 rounded-full ring-2 ring-gray-200 dark:ring-gray-700"
+                  />
                 ) : (
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-[10px] font-medium text-white ring-2 ring-gray-200 dark:ring-gray-700">
                     {user.name.charAt(0).toUpperCase()}
@@ -102,9 +113,7 @@ export function AppLayout({ children, activeNav, user, isGuest, onSignOut, maxWi
         </div>
       </header>
 
-      <div className={`mx-auto px-4 py-8 sm:px-6 ${maxWidth}`}>
-        {children}
-      </div>
+      <div className={`mx-auto px-4 py-8 sm:px-6 ${maxWidth}`}>{children}</div>
 
       {/* ── Footer ── */}
       <footer className="border-t border-gray-200 py-6 text-center text-xs text-gray-400 dark:border-gray-700">

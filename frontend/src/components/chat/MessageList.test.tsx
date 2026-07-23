@@ -145,7 +145,12 @@ describe('MessageList', () => {
   it('renders multiple messages in order', () => {
     const messages = [
       createMockMessage({ id: '1', role: 'user', content: 'First message', sequence_number: 1 }),
-      createMockMessage({ id: '2', role: 'assistant', content: 'First response', sequence_number: 2 }),
+      createMockMessage({
+        id: '2',
+        role: 'assistant',
+        content: 'First response',
+        sequence_number: 2,
+      }),
       createMockMessage({ id: '3', role: 'user', content: 'Second message', sequence_number: 3 }),
     ];
     const props = createMockProps({ messages });
@@ -257,7 +262,15 @@ describe('MessageList', () => {
   });
 
   it('handles missing message id gracefully', () => {
-    const messages = [{ role: 'user' as const, content: 'No ID', content_type: 'text', sequence_number: 1, created_at: new Date().toISOString() }];
+    const messages = [
+      {
+        role: 'user' as const,
+        content: 'No ID',
+        content_type: 'text',
+        sequence_number: 1,
+        created_at: new Date().toISOString(),
+      },
+    ];
     const props = createMockProps({ messages: messages as Message[] });
     expect(() => render(<MessageList {...props} />)).not.toThrow();
   });

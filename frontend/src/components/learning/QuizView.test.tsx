@@ -6,21 +6,36 @@ import * as apiModule from '@/lib/api';
 import type { Quiz, QuizStreamCallbacks } from '@/lib/api';
 
 const QUESTION_MULTI: apiModule.Question = {
-  id: 'q1', question: 'What is Planck length?', type: 'multiple_choice',
+  id: 'q1',
+  question: 'What is Planck length?',
+  type: 'multiple_choice',
   options: ['1.6e-35 m', '6.6e-34 m', '3.0e-8 m', '1.0e-15 m'],
-  correct_answer: '1.6e-35 m', user_answer: null, is_correct: null, explanation: 'Planck length is B.',
+  correct_answer: '1.6e-35 m',
+  user_answer: null,
+  is_correct: null,
+  explanation: 'Planck length is B.',
 };
 
 const QUESTION_TF: apiModule.Question = {
-  id: 'q2', question: 'Is light a wave?', type: 'true_false',
-  options: ['True', 'False'], correct_answer: 'True',
-  user_answer: null, is_correct: null, explanation: 'Light is both wave and particle.',
+  id: 'q2',
+  question: 'Is light a wave?',
+  type: 'true_false',
+  options: ['True', 'False'],
+  correct_answer: 'True',
+  user_answer: null,
+  is_correct: null,
+  explanation: 'Light is both wave and particle.',
 };
 
 const QUESTION_SHORT: apiModule.Question = {
-  id: 'q3', question: 'Explain quantum entanglement', type: 'short_answer',
-  options: null, correct_answer: 'When particles are correlated',
-  user_answer: null, is_correct: null, explanation: 'Entanglement links particles.',
+  id: 'q3',
+  question: 'Explain quantum entanglement',
+  type: 'short_answer',
+  options: null,
+  correct_answer: 'When particles are correlated',
+  user_answer: null,
+  is_correct: null,
+  explanation: 'Entanglement links particles.',
 };
 
 const MOCK_QUIZ: Quiz = {
@@ -56,7 +71,8 @@ const SUBMITTED_QUIZ: Quiz = {
   is_complete: true,
   questions: MOCK_QUIZ.questions.map((q) => ({
     ...q,
-    user_answer: q.id === 'q1' ? '1.6e-35 m' : q.id === 'q2' ? 'True' : 'When particles are correlated',
+    user_answer:
+      q.id === 'q1' ? '1.6e-35 m' : q.id === 'q2' ? 'True' : 'When particles are correlated',
     is_correct: q.id !== 'q3',
   })),
 };
@@ -74,7 +90,13 @@ describe('QuizView', () => {
 
   function setupGenerateMock(result: Partial<Quiz> = MOCK_QUIZ) {
     generateQuizStreamSpy.mockImplementation(
-      (_sid: string, _topic: string, _diff: string, _count: number, callbacks: QuizStreamCallbacks) => {
+      (
+        _sid: string,
+        _topic: string,
+        _diff: string,
+        _count: number,
+        callbacks: QuizStreamCallbacks,
+      ) => {
         return new Promise<void>((resolve) => {
           setTimeout(() => {
             callbacks.onDone?.(result as Quiz);
@@ -116,9 +138,12 @@ describe('QuizView', () => {
     render(<QuizView {...defaultProps} prefillTopic="Quantum Physics" />);
     fireEvent.click(screen.getByText('Generate Quiz'));
 
-    await waitFor(() => {
-      expect(screen.getByText(/Creating questions/)).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Creating questions/)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it('transitions to answering phase when generation completes', async () => {
@@ -127,9 +152,12 @@ describe('QuizView', () => {
     render(<QuizView {...defaultProps} prefillTopic="Physics" />);
     fireEvent.click(screen.getByText('Generate Quiz'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Submit Answers')).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Submit Answers')).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it('shows the generated quiz topic in the header', async () => {
@@ -138,9 +166,12 @@ describe('QuizView', () => {
     render(<QuizView {...defaultProps} prefillTopic="Quantum Physics" />);
     fireEvent.click(screen.getByText('Generate Quiz'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Quantum Physics')).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Quantum Physics')).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it('shows question count in answering phase', async () => {
@@ -149,14 +180,23 @@ describe('QuizView', () => {
     render(<QuizView {...defaultProps} prefillTopic="Math" />);
     fireEvent.click(screen.getByText('Generate Quiz'));
 
-    await waitFor(() => {
-      expect(screen.getByText(/Question 1 of 3/)).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Question 1 of 3/)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it('handles API error during generation', async () => {
     generateQuizStreamSpy.mockImplementation(
-      (_sid: string, _topic: string, _diff: string, _count: number, callbacks: QuizStreamCallbacks) => {
+      (
+        _sid: string,
+        _topic: string,
+        _diff: string,
+        _count: number,
+        callbacks: QuizStreamCallbacks,
+      ) => {
         return new Promise<void>((resolve) => {
           setTimeout(() => {
             callbacks.onError?.('API rate limit exceeded');
@@ -169,9 +209,12 @@ describe('QuizView', () => {
     render(<QuizView {...defaultProps} prefillTopic="Physics" />);
     fireEvent.click(screen.getByText('Generate Quiz'));
 
-    await waitFor(() => {
-      expect(defaultProps.onError).toHaveBeenCalledWith('API rate limit exceeded');
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('API rate limit exceeded');
+      },
+      { timeout: 3000 },
+    );
   });
 
   it('calls onClose when close button is clicked in idle', () => {
@@ -188,9 +231,12 @@ describe('QuizView', () => {
     render(<QuizView {...defaultProps} prefillTopic="Physics" />);
     fireEvent.click(screen.getByText('Generate Quiz'));
 
-    await waitFor(() => {
-      expect(screen.getByText(/Question 1 of 3/)).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Question 1 of 3/)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
     fireEvent.click(screen.getByText('A'));
     expect(screen.getByText(/Next/)).toBeInTheDocument();
@@ -203,34 +249,48 @@ describe('QuizView', () => {
     render(<QuizView {...defaultProps} prefillTopic="Physics" />);
     fireEvent.click(screen.getByText('Generate Quiz'));
 
-    await waitFor(() => {
-      expect(screen.getByText(/Question 1 of 3/)).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Question 1 of 3/)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
     // Use getAllByRole to find option buttons, then pick the first one by text content
-    const optionButtons = screen.getAllByRole('button').filter(
-      (b) => b.textContent?.includes('6e-35') || b.textContent?.includes('6e-34'),
-    );
+    const optionButtons = screen
+      .getAllByRole('button')
+      .filter((b) => b.textContent?.includes('6e-35') || b.textContent?.includes('6e-34'));
     fireEvent.click(optionButtons[0]!);
     fireEvent.click(screen.getByText(/Next/));
 
-    await waitFor(() => {
-      expect(screen.getByText(/Question 2 of 3/)).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Question 2 of 3/)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
     fireEvent.click(screen.getByText('True'));
     fireEvent.click(screen.getByText(/Next/));
 
-    await waitFor(() => {
-      expect(screen.getByText(/Question 3 of 3/)).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Question 3 of 3/)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
-    fireEvent.change(screen.getByPlaceholderText('Type your answer...'), { target: { value: 'When particles are correlated' } });
+    fireEvent.change(screen.getByPlaceholderText('Type your answer...'), {
+      target: { value: 'When particles are correlated' },
+    });
     fireEvent.click(screen.getByText('Submit Answers'));
 
-    await waitFor(() => {
-      expect(submitQuizAnswersSpy).toHaveBeenCalled();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(submitQuizAnswersSpy).toHaveBeenCalled();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it('shows review phase after submission', async () => {
@@ -247,33 +307,47 @@ describe('QuizView', () => {
     render(<QuizView {...defaultProps} prefillTopic="Physics" />);
     fireEvent.click(screen.getByText('Generate Quiz'));
 
-    await waitFor(() => {
-      expect(screen.getByText(/Question 1 of 3/)).toBeInTheDocument();
-    }, { timeout: 3000 });
-
-    const optionButtons = screen.getAllByRole('button').filter(
-      (b) => b.textContent?.includes('6e-35') || b.textContent?.includes('6e-34'),
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Question 1 of 3/)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
     );
+
+    const optionButtons = screen
+      .getAllByRole('button')
+      .filter((b) => b.textContent?.includes('6e-35') || b.textContent?.includes('6e-34'));
     fireEvent.click(optionButtons[0]!);
     fireEvent.click(screen.getByText(/Next/));
 
-    await waitFor(() => {
-      expect(screen.getByText(/Question 2 of 3/)).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Question 2 of 3/)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
     fireEvent.click(screen.getByText('True'));
     fireEvent.click(screen.getByText(/Next/));
 
-    await waitFor(() => {
-      expect(screen.getByText(/Question 3 of 3/)).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Question 3 of 3/)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
-    fireEvent.change(screen.getByPlaceholderText('Type your answer...'), { target: { value: 'wrong answer' } });
+    fireEvent.change(screen.getByPlaceholderText('Type your answer...'), {
+      target: { value: 'wrong answer' },
+    });
     fireEvent.click(screen.getByText('Submit Answers'));
 
-    await waitFor(() => {
-      expect(screen.getByText(/2.*3 Correct/)).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/2.*3 Correct/)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it('has New Quiz button in review phase', async () => {
@@ -283,33 +357,47 @@ describe('QuizView', () => {
     render(<QuizView {...defaultProps} prefillTopic="Physics" />);
     fireEvent.click(screen.getByText('Generate Quiz'));
 
-    await waitFor(() => {
-      expect(screen.getByText(/Question 1 of 3/)).toBeInTheDocument();
-    }, { timeout: 3000 });
-
-    const optionButtons = screen.getAllByRole('button').filter(
-      (b) => b.textContent?.includes('6e-35') || b.textContent?.includes('6e-34'),
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Question 1 of 3/)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
     );
+
+    const optionButtons = screen
+      .getAllByRole('button')
+      .filter((b) => b.textContent?.includes('6e-35') || b.textContent?.includes('6e-34'));
     fireEvent.click(optionButtons[0]!);
     fireEvent.click(screen.getByText(/Next/));
 
-    await waitFor(() => {
-      expect(screen.getByText(/Question 2 of 3/)).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Question 2 of 3/)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
     fireEvent.click(screen.getByText('True'));
     fireEvent.click(screen.getByText(/Next/));
 
-    await waitFor(() => {
-      expect(screen.getByText(/Question 3 of 3/)).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Question 3 of 3/)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
 
-    fireEvent.change(screen.getByPlaceholderText('Type your answer...'), { target: { value: 'answer' } });
+    fireEvent.change(screen.getByPlaceholderText('Type your answer...'), {
+      target: { value: 'answer' },
+    });
     fireEvent.click(screen.getByText('Submit Answers'));
 
-    await waitFor(() => {
-      expect(screen.getByText('New Quiz')).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('New Quiz')).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
   });
 
   it('handles submit API error gracefully', async () => {
@@ -319,18 +407,24 @@ describe('QuizView', () => {
     render(<QuizView {...defaultProps} prefillTopic="Physics" />);
     fireEvent.click(screen.getByText('Generate Quiz'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Submit Answers')).toBeInTheDocument();
-    }, { timeout: 3000 });
-
-    const optionButtons = screen.getAllByRole('button').filter(
-      (b) => b.textContent?.includes('6e-35') || b.textContent?.includes('6e-34'),
+    await waitFor(
+      () => {
+        expect(screen.getByText('Submit Answers')).toBeInTheDocument();
+      },
+      { timeout: 3000 },
     );
+
+    const optionButtons = screen
+      .getAllByRole('button')
+      .filter((b) => b.textContent?.includes('6e-35') || b.textContent?.includes('6e-34'));
     fireEvent.click(optionButtons[0]!);
     fireEvent.click(screen.getByText('Submit Answers'));
 
-    await waitFor(() => {
-      expect(defaultProps.onError).toHaveBeenCalledWith('Network error');
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Network error');
+      },
+      { timeout: 3000 },
+    );
   });
 });

@@ -18,9 +18,11 @@ interface DepthSelectorProps {
 
 export function DepthSelector({ depth, onChange, disabled, size = 'sm' }: DepthSelectorProps) {
   return (
-    <div className={`inline-flex rounded-xl border border-gray-700/50 bg-[#1a1d2e]/80 p-1 ${
-      size === 'md' ? 'gap-1' : ''
-    }`}>
+    <div
+      className={`inline-flex rounded-xl border border-gray-700/50 bg-[#1a1d2e]/80 p-1 ${
+        size === 'md' ? 'gap-1' : ''
+      }`}
+    >
       {DEPTH_OPTIONS.map((d) => {
         const isActive = depth === d.value;
         return (

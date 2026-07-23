@@ -15,8 +15,14 @@ interface QuizAnsweringProps {
 }
 
 export function QuizAnswering({
-  quiz, currentIdx, answers, phase,
-  onSelectAnswer, onSubmit, onNavigate, onClose,
+  quiz,
+  currentIdx,
+  answers,
+  phase,
+  onSelectAnswer,
+  onSubmit,
+  onNavigate,
+  onClose,
 }: QuizAnsweringProps) {
   const questions = quiz.questions || [];
   const currentQuestion = questions[currentIdx];
@@ -38,8 +44,18 @@ export function QuizAnswering({
             {answeredCount}/{questions.length} Answered
           </span>
           {onClose && (
-            <button onClick={onClose} className="rounded-lg p-1 text-gray-500 transition-colors hover:bg-white/[0.05] hover:text-gray-300" title="Close quiz">
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <button
+              onClick={onClose}
+              className="rounded-lg p-1 text-gray-500 transition-colors hover:bg-white/[0.05] hover:text-gray-300"
+              title="Close quiz"
+            >
+              <svg
+                className="h-3.5 w-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -157,7 +173,13 @@ export function QuizAnswering({
                   className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-synapse-neon-purple to-indigo-600 px-5 py-2 text-xs font-medium text-white shadow-glow-sm transition-all duration-200 hover:shadow-glow-purple hover:brightness-110 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
                 >
                   Submit Answers
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg
+                    className="h-3.5 w-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </button>

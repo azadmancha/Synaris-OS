@@ -17,11 +17,18 @@ interface AnswerModeSelectorProps {
   size?: 'sm' | 'md';
 }
 
-export function AnswerModeSelector({ mode, onChange, disabled, size = 'sm' }: AnswerModeSelectorProps) {
+export function AnswerModeSelector({
+  mode,
+  onChange,
+  disabled,
+  size = 'sm',
+}: AnswerModeSelectorProps) {
   return (
-    <div className={`inline-flex rounded-xl border border-gray-700/50 bg-[#1a1d2e]/80 p-1 ${
-      size === 'md' ? 'gap-0.5' : ''
-    }`}>
+    <div
+      className={`inline-flex rounded-xl border border-gray-700/50 bg-[#1a1d2e]/80 p-1 ${
+        size === 'md' ? 'gap-0.5' : ''
+      }`}
+    >
       {ANSWER_MODES.map((m) => {
         const isActive = mode === m.value;
         return (

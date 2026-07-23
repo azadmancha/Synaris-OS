@@ -30,7 +30,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <div>Child content</div>
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText('Child content')).toBeInTheDocument();
   });
@@ -39,7 +39,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <BuggyComponent shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     expect(screen.getByText(/An unexpected error occurred/)).toBeInTheDocument();
@@ -51,7 +51,7 @@ describe('ErrorBoundary', () => {
       <ErrorBoundary>
         <BuggyComponent shouldThrow={true} />
         <div>Should not appear</div>
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.queryByText('Should not appear')).not.toBeInTheDocument();
   });
@@ -60,7 +60,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <BuggyComponent shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText('⚠️')).toBeInTheDocument();
   });
@@ -69,7 +69,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary fallback={<div>Custom error UI</div>}>
         <BuggyComponent shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText('Custom error UI')).toBeInTheDocument();
     expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
@@ -79,7 +79,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <BuggyComponent shouldThrow={false} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText('I render fine')).toBeInTheDocument();
   });
@@ -95,7 +95,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <BuggyComponent shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     fireEvent.click(screen.getByText('Refresh Page'));
@@ -108,7 +108,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <BuggyComponent shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.queryByText(/Test error message/)).not.toBeInTheDocument();
   });
@@ -119,7 +119,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <BuggyComponent shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText('Error details')).toBeInTheDocument();
   });
@@ -128,12 +128,13 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary componentName="MyComponent">
         <BuggyComponent shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(sentry.captureException).toHaveBeenCalled();
-    const callArg = (sentry.captureException as ReturnType<typeof vi.fn>).mock
-      .calls[0]?.[1] as { tags: { component: string } };
+    const callArg = (sentry.captureException as ReturnType<typeof vi.fn>).mock.calls[0]?.[1] as {
+      tags: { component: string };
+    };
     expect(callArg?.tags?.component).toBe('MyComponent');
   });
 
@@ -141,12 +142,13 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <BuggyComponent shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(sentry.captureException).toHaveBeenCalled();
-    const callArg = (sentry.captureException as ReturnType<typeof vi.fn>).mock
-      .calls[0]?.[1] as { tags: { component: string } };
+    const callArg = (sentry.captureException as ReturnType<typeof vi.fn>).mock.calls[0]?.[1] as {
+      tags: { component: string };
+    };
     expect(callArg?.tags?.component).toBe('ErrorBoundary');
   });
 
@@ -154,14 +156,14 @@ describe('ErrorBoundary', () => {
     const { rerender } = render(
       <ErrorBoundary>
         <BuggyComponent shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
 
     rerender(
       <ErrorBoundary>
         <BuggyComponent shouldThrow={false} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
   });

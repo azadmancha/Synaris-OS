@@ -53,7 +53,8 @@ export function useAuth(isGuest: boolean, requireOnboarding = false): UseAuthRes
           }
 
           const email = authUser.email || `${authUser.id}@synaris.app`;
-          const displayName = authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Learner';
+          const displayName =
+            authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Learner';
           const avatarUrl = authUser.user_metadata?.avatar_url || null;
 
           // Check onboarding (learn page only)
@@ -66,19 +67,29 @@ export function useAuth(isGuest: boolean, requireOnboarding = false): UseAuthRes
 
           // Set auth token
           try {
-            const { data: { session } } = await supabase.auth.getSession();
+            const {
+              data: { session },
+            } = await supabase.auth.getSession();
             if (session?.access_token) {
-              const loginResult = await api.supabaseLogin(session.access_token, email, displayName, avatarUrl);
+              const loginResult = await api.supabaseLogin(
+                session.access_token,
+                email,
+                displayName,
+                avatarUrl,
+              );
               if (!cancelled) api.setAuthToken(loginResult.token);
             }
-          } catch { /* ok */ }
+          } catch {
+            /* ok */
+          }
         } else {
           // ── Guest mode flow ──
           let guestId = sessionStorage.getItem('synaris_guest_id');
           if (!guestId) {
-            guestId = (typeof crypto !== 'undefined' && crypto.randomUUID)
-              ? crypto.randomUUID().slice(0, 8)
-              : Math.random().toString(36).slice(2, 10);
+            guestId =
+              typeof crypto !== 'undefined' && crypto.randomUUID
+                ? crypto.randomUUID().slice(0, 8)
+                : Math.random().toString(36).slice(2, 10);
             sessionStorage.setItem('synaris_guest_id', guestId);
           }
           const guestEmail = `guest-${guestId}@synaris.app`;
@@ -87,7 +98,12 @@ export function useAuth(isGuest: boolean, requireOnboarding = false): UseAuthRes
           const loginResult = await api.login(guestEmail, guestName);
           if (!cancelled) {
             api.setAuthToken(loginResult.token);
-            setUser({ id: loginResult.user_id, name: guestName, email: guestEmail, avatarUrl: null });
+            setUser({
+              id: loginResult.user_id,
+              name: guestName,
+              email: guestEmail,
+              avatarUrl: null,
+            });
           }
         }
       } catch (err) {
@@ -101,7 +117,9 @@ export function useAuth(isGuest: boolean, requireOnboarding = false): UseAuthRes
     }
 
     initAuth();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [isGuest, router, requireOnboarding]);
 
   const handleSignOut = useCallback(async () => {

@@ -96,7 +96,9 @@ describe('AnswerOption', () => {
   });
 
   it('shows incorrect styling when revealed, selected, and wrong', () => {
-    const { container } = render(<AnswerOption {...baseProps} revealed={true} selected={true} isCorrect={false} />);
+    const { container } = render(
+      <AnswerOption {...baseProps} revealed={true} selected={true} isCorrect={false} />,
+    );
 
     const btn = container.querySelector('button');
     expect(btn?.className).toContain('border-synapse-neon-red/40');
@@ -118,7 +120,9 @@ describe('AnswerOption', () => {
   });
 
   it('shows X icon when revealed, selected, and wrong', () => {
-    const { container } = render(<AnswerOption {...baseProps} revealed={true} selected={true} isCorrect={false} />);
+    const { container } = render(
+      <AnswerOption {...baseProps} revealed={true} selected={true} isCorrect={false} />,
+    );
 
     const svgs = container.querySelectorAll('svg');
     expect(svgs.length).toBeGreaterThan(0);
@@ -173,7 +177,14 @@ describe('ShortAnswerInput', () => {
   });
 
   it('shows correct answer when revealed and correctAnswer provided', () => {
-    render(<ShortAnswerInput {...baseProps} revealed={true} value="My ans" correctAnswer="The correct one" />);
+    render(
+      <ShortAnswerInput
+        {...baseProps}
+        revealed={true}
+        value="My ans"
+        correctAnswer="The correct one"
+      />,
+    );
 
     expect(screen.getByText('My ans')).toBeInTheDocument();
     expect(screen.getByText('The correct one')).toBeInTheDocument();
@@ -183,7 +194,9 @@ describe('ShortAnswerInput', () => {
     const onChange = vi.fn();
     render(<ShortAnswerInput {...baseProps} onChange={onChange} />);
 
-    fireEvent.change(screen.getByPlaceholderText('Type your answer...'), { target: { value: 'new value' } });
+    fireEvent.change(screen.getByPlaceholderText('Type your answer...'), {
+      target: { value: 'new value' },
+    });
     expect(onChange).toHaveBeenCalledWith('new value');
   });
 
@@ -194,21 +207,32 @@ describe('ShortAnswerInput', () => {
   });
 
   it('shows correct border when revealed and correct', () => {
-    const { container } = render(<ShortAnswerInput {...baseProps} revealed={true} isCorrect={true} />);
+    const { container } = render(
+      <ShortAnswerInput {...baseProps} revealed={true} isCorrect={true} />,
+    );
 
     const displayDiv = container.querySelector('.border-synapse-neon-green\\/30');
     expect(displayDiv).toBeInTheDocument();
   });
 
   it('shows incorrect border when revealed and wrong', () => {
-    const { container } = render(<ShortAnswerInput {...baseProps} revealed={true} isCorrect={false} />);
+    const { container } = render(
+      <ShortAnswerInput {...baseProps} revealed={true} isCorrect={false} />,
+    );
 
     const displayDiv = container.querySelector('.border-synapse-neon-red\\/30');
     expect(displayDiv).toBeInTheDocument();
   });
 
   it('shows expected answer label when revealed with correctAnswer', () => {
-    render(<ShortAnswerInput {...baseProps} revealed={true} value="wrong" correctAnswer="right answer" />);
+    render(
+      <ShortAnswerInput
+        {...baseProps}
+        revealed={true}
+        value="wrong"
+        correctAnswer="right answer"
+      />,
+    );
 
     expect(screen.getByText('Expected answer')).toBeInTheDocument();
   });

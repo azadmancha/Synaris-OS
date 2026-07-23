@@ -12,7 +12,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn(
-    'Supabase credentials not found. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env'
+    'Supabase credentials not found. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env',
   );
 }
 
@@ -35,7 +35,6 @@ function getSiteUrl(): string {
 }
 
 // ─── Auth helpers ─────────────────────────────────────
-
 
 // ─── Google OAuth ────────────────────────────────────
 

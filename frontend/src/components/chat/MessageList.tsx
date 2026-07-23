@@ -10,12 +10,48 @@ import { MessageActions, stripFollowUpSection } from '@/components/chat/MessageA
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 const SUGGESTED_TOPICS = [
-  { emoji: '🔬', label: 'Quantum Mechanics', query: 'Explain quantum mechanics simply', gradient: 'from-blue-500 to-indigo-600', glow: 'shadow-glow-blue' },
-  { emoji: '🧮', label: 'Calculus', query: 'What is calculus and why is it important?', gradient: 'from-purple-500 to-pink-600', glow: 'shadow-glow-purple' },
-  { emoji: '🧬', label: 'Genetics', query: 'Explain DNA replication step by step', gradient: 'from-synapse-neon-green to-emerald-600', glow: 'shadow-glow-green' },
-  { emoji: '⚡', label: 'Thermodynamics', query: 'What are the laws of thermodynamics?', gradient: 'from-amber-500 to-orange-600', glow: 'shadow-glow-sm' },
-  { emoji: '🐍', label: 'Python', query: 'Teach me Python programming basics', gradient: 'from-synapse-neon-cyan to-blue-600', glow: 'shadow-glow-cyan' },
-  { emoji: '🌍', label: 'Climate', query: 'What causes climate change?', gradient: 'from-emerald-500 to-teal-600', glow: 'shadow-glow-green' },
+  {
+    emoji: '🔬',
+    label: 'Quantum Mechanics',
+    query: 'Explain quantum mechanics simply',
+    gradient: 'from-blue-500 to-indigo-600',
+    glow: 'shadow-glow-blue',
+  },
+  {
+    emoji: '🧮',
+    label: 'Calculus',
+    query: 'What is calculus and why is it important?',
+    gradient: 'from-purple-500 to-pink-600',
+    glow: 'shadow-glow-purple',
+  },
+  {
+    emoji: '🧬',
+    label: 'Genetics',
+    query: 'Explain DNA replication step by step',
+    gradient: 'from-synapse-neon-green to-emerald-600',
+    glow: 'shadow-glow-green',
+  },
+  {
+    emoji: '⚡',
+    label: 'Thermodynamics',
+    query: 'What are the laws of thermodynamics?',
+    gradient: 'from-amber-500 to-orange-600',
+    glow: 'shadow-glow-sm',
+  },
+  {
+    emoji: '🐍',
+    label: 'Python',
+    query: 'Teach me Python programming basics',
+    gradient: 'from-synapse-neon-cyan to-blue-600',
+    glow: 'shadow-glow-cyan',
+  },
+  {
+    emoji: '🌍',
+    label: 'Climate',
+    query: 'What causes climate change?',
+    gradient: 'from-emerald-500 to-teal-600',
+    glow: 'shadow-glow-green',
+  },
 ];
 
 // ─── Subtle Particle Background ─────────────────────────
@@ -34,7 +70,10 @@ function StartupParticles() {
     let mouseX = 0;
     let mouseY = 0;
 
-    const resize = () => { cvs.width = window.innerWidth; cvs.height = window.innerHeight; };
+    const resize = () => {
+      cvs.width = window.innerWidth;
+      cvs.height = window.innerHeight;
+    };
     resize();
     window.addEventListener('resize', resize);
 
@@ -49,20 +88,34 @@ function StartupParticles() {
       hue: Math.random() * 60 + 200,
     }));
 
-    const onMouse = (e: MouseEvent) => { mouseX = e.clientX; mouseY = e.clientY; };
+    const onMouse = (e: MouseEvent) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    };
     window.addEventListener('mousemove', onMouse);
 
     const canvas2d = ctx; // TypeScript narrowing fix
     function draw() {
       canvas2d.clearRect(0, 0, cvs.width, cvs.height);
       for (const p of particles) {
-        const dx = mouseX - p.x, dy = mouseY - p.y, dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 150) { const force = (150 - dist) / 150 * 0.015; p.vx -= dx * force; p.vy -= dy * force; }
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0) p.x = cvs.width; if (p.x > cvs.width) p.x = 0;
-        if (p.y < 0) p.y = cvs.height; if (p.y > cvs.height) p.y = 0;
-        p.vx *= 0.999; p.vy *= 0.999;
-        canvas2d.beginPath(); canvas2d.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        const dx = mouseX - p.x,
+          dy = mouseY - p.y,
+          dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          const force = ((150 - dist) / 150) * 0.015;
+          p.vx -= dx * force;
+          p.vy -= dy * force;
+        }
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = cvs.width;
+        if (p.x > cvs.width) p.x = 0;
+        if (p.y < 0) p.y = cvs.height;
+        if (p.y > cvs.height) p.y = 0;
+        p.vx *= 0.999;
+        p.vy *= 0.999;
+        canvas2d.beginPath();
+        canvas2d.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         canvas2d.fillStyle = `hsla(${p.hue}, 50%, 50%, ${p.opacity})`;
         canvas2d.fill();
       }
@@ -73,26 +126,44 @@ function StartupParticles() {
         for (let j = i + 1; j < particles.length; j++) {
           const b = particles[j];
           if (!b) continue;
-          const dx = a.x - b.x, dy = a.y - b.y, dist = Math.sqrt(dx * dx + dy * dy);
+          const dx = a.x - b.x,
+            dy = a.y - b.y,
+            dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 80) {
-            canvas2d.beginPath(); canvas2d.moveTo(a.x, a.y); canvas2d.lineTo(b.x, b.y);
+            canvas2d.beginPath();
+            canvas2d.moveTo(a.x, a.y);
+            canvas2d.lineTo(b.x, b.y);
             canvas2d.strokeStyle = `hsla(210, 50%, 55%, ${(1 - dist / 80) * 0.04})`;
-            canvas2d.lineWidth = 0.5; canvas2d.stroke();
+            canvas2d.lineWidth = 0.5;
+            canvas2d.stroke();
           }
         }
       }
       animId = requestAnimationFrame(draw);
     }
     draw();
-    return () => { cancelAnimationFrame(animId); window.removeEventListener('resize', resize); window.removeEventListener('mousemove', onMouse); };
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', onMouse);
+    };
   }, []);
 
-  return <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-0" aria-hidden="true" />;
+  return (
+    <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-0" aria-hidden="true" />
+  );
 }
 
 // ─── Startup Screen (Enhanced) ───────────────────────────
 
-function StartupScreen({ user, depth, onChangeDepth, answerMode, onChangeAnswerMode, onSendMessage }: {
+function StartupScreen({
+  user,
+  depth,
+  onChangeDepth,
+  answerMode,
+  onChangeAnswerMode,
+  onSendMessage,
+}: {
   user: AuthUser | null;
   depth: Depth;
   answerMode: AnswerMode;
@@ -118,8 +189,16 @@ function StartupScreen({ user, depth, onChangeDepth, answerMode, onChangeAnswerM
           <span className="text-gradient inline-block">
             Welcome{user ? ', ' : ''}
             {user ? (
-              <span className="inline-block overflow-hidden whitespace-nowrap animate-typewriter border-r-2 border-synapse-neon-blue align-bottom"
-                style={{ width: '0', animationDelay: '0.3s', animationFillMode: 'forwards', maxWidth: '15ch' } as React.CSSProperties}
+              <span
+                className="inline-block overflow-hidden whitespace-nowrap animate-typewriter border-r-2 border-synapse-neon-blue align-bottom"
+                style={
+                  {
+                    width: '0',
+                    animationDelay: '0.3s',
+                    animationFillMode: 'forwards',
+                    maxWidth: '15ch',
+                  } as React.CSSProperties
+                }
               >
                 {user.name.split(' ')[0]}
               </span>
@@ -134,10 +213,15 @@ function StartupScreen({ user, depth, onChangeDepth, answerMode, onChangeAnswerM
       </div>
 
       {/* ── Suggested Topics ── */}
-      <div className="animate-scale-in" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' } as React.CSSProperties}>
+      <div
+        className="animate-scale-in"
+        style={{ animationDelay: '0.2s', animationFillMode: 'forwards' } as React.CSSProperties}
+      >
         <div className="mb-4 flex items-center justify-center gap-3">
           <span className="h-px w-8 bg-gradient-to-r from-transparent to-gray-700" />
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-glass-tertiary">Try asking about</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-glass-tertiary">
+            Try asking about
+          </p>
           <span className="h-px w-8 bg-gradient-to-l from-transparent to-gray-700" />
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -146,16 +230,27 @@ function StartupScreen({ user, depth, onChangeDepth, answerMode, onChangeAnswerM
               key={topic.label}
               onClick={() => onSendMessage(topic.query)}
               className="group relative overflow-hidden rounded-2xl border border-gray-700/40 bg-white/[0.02] p-4 text-left transition-all duration-300 hover:-translate-y-1 hover:border-gray-600/60 hover:bg-white/[0.04] hover:shadow-card-hover animate-scale-in opacity-0"
-              style={{ animationDelay: `${0.3 + i * 0.08}s`, animationFillMode: 'forwards' } as React.CSSProperties}
+              style={
+                {
+                  animationDelay: `${0.3 + i * 0.08}s`,
+                  animationFillMode: 'forwards',
+                } as React.CSSProperties
+              }
             >
               {/* Hover glow overlay */}
-              <div className={`absolute -inset-px rounded-2xl opacity-0 transition-all duration-500 group-hover:opacity-100 bg-gradient-to-br ${topic.gradient} blur-lg`} />
+              <div
+                className={`absolute -inset-px rounded-2xl opacity-0 transition-all duration-500 group-hover:opacity-100 bg-gradient-to-br ${topic.gradient} blur-lg`}
+              />
 
               <div className="relative z-10 flex items-center gap-3 group-hover:animate-float-card">
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${topic.gradient} transition-transform duration-300 group-hover:scale-110`}>
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${topic.gradient} transition-transform duration-300 group-hover:scale-110`}
+                >
                   <span className="text-lg">{topic.emoji}</span>
                 </div>
-                <span className="text-sm font-medium text-glass-secondary group-hover:text-glass-primary transition-colors duration-300">{topic.label}</span>
+                <span className="text-sm font-medium text-glass-secondary group-hover:text-glass-primary transition-colors duration-300">
+                  {topic.label}
+                </span>
               </div>
             </button>
           ))}
@@ -163,19 +258,32 @@ function StartupScreen({ user, depth, onChangeDepth, answerMode, onChangeAnswerM
       </div>
 
       {/* ── Divider ── */}
-      <div className="flex items-center gap-4 animate-scale-in" style={{ animationDelay: '0.6s', animationFillMode: 'forwards' } as React.CSSProperties}>
+      <div
+        className="flex items-center gap-4 animate-scale-in"
+        style={{ animationDelay: '0.6s', animationFillMode: 'forwards' } as React.CSSProperties}
+      >
         <span className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-700/30 to-transparent" />
       </div>
 
       {/* ── Depth Selector ── */}
-      <div className="animate-scale-in text-center" style={{ animationDelay: '0.7s', animationFillMode: 'forwards' } as React.CSSProperties}>
-        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-glass-tertiary">Learning Depth</p>
+      <div
+        className="animate-scale-in text-center"
+        style={{ animationDelay: '0.7s', animationFillMode: 'forwards' } as React.CSSProperties}
+      >
+        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-glass-tertiary">
+          Learning Depth
+        </p>
         <DepthSelector depth={depth} onChange={onChangeDepth} size="md" />
       </div>
 
       {/* ── Answer Mode Selector ── */}
-      <div className="animate-scale-in text-center" style={{ animationDelay: '0.8s', animationFillMode: 'forwards' } as React.CSSProperties}>
-        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-glass-tertiary">Answer Mode</p>
+      <div
+        className="animate-scale-in text-center"
+        style={{ animationDelay: '0.8s', animationFillMode: 'forwards' } as React.CSSProperties}
+      >
+        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-glass-tertiary">
+          Answer Mode
+        </p>
         <AnswerModeSelector mode={answerMode} onChange={onChangeAnswerMode} size="md" />
       </div>
     </div>
@@ -228,14 +336,33 @@ interface MessageListProps {
 }
 
 export const MessageList = forwardRef<HTMLDivElement, MessageListProps>(function MessageList(
-  { messages, streamingContent, isStreaming, isLoading, depth, answerMode, user, onSendMessage, onFeedback, onChangeDepth, onChangeAnswerMode },
+  {
+    messages,
+    streamingContent,
+    isStreaming,
+    isLoading,
+    depth,
+    answerMode,
+    user,
+    onSendMessage,
+    onFeedback,
+    onChangeDepth,
+    onChangeAnswerMode,
+  },
   messagesEndRef,
 ) {
   if (messages.length === 0 && !isStreaming) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-6 relative">
         <StartupParticles />
-        <StartupScreen user={user} depth={depth} onChangeDepth={onChangeDepth} answerMode={answerMode} onChangeAnswerMode={onChangeAnswerMode} onSendMessage={onSendMessage} />
+        <StartupScreen
+          user={user}
+          depth={depth}
+          onChangeDepth={onChangeDepth}
+          answerMode={answerMode}
+          onChangeAnswerMode={onChangeAnswerMode}
+          onSendMessage={onSendMessage}
+        />
       </div>
     );
   }
@@ -244,15 +371,23 @@ export const MessageList = forwardRef<HTMLDivElement, MessageListProps>(function
     <div className="mx-auto max-w-3xl px-4 py-6">
       <div className="space-y-6">
         {messages.map((msg, i) => (
-          <div key={msg.id || i} className={`animate-message-in ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-            <div className={`inline-block max-w-[85%] rounded-2xl px-5 py-3.5 text-sm leading-relaxed sm:max-w-[75%] ${
-              msg.role === 'user'
-                ? 'bg-gradient-to-r from-synapse-neon-blue to-indigo-600 text-white shadow-glow-sm'
-                : 'border border-gray-700/30 bg-white/[0.03] text-gray-200'
-            }`}>
+          <div
+            key={msg.id || i}
+            className={`animate-message-in ${msg.role === 'user' ? 'text-right' : 'text-left'}`}
+          >
+            <div
+              className={`inline-block max-w-[85%] rounded-2xl px-5 py-3.5 text-sm leading-relaxed sm:max-w-[75%] ${
+                msg.role === 'user'
+                  ? 'bg-gradient-to-r from-synapse-neon-blue to-indigo-600 text-white shadow-glow-sm'
+                  : 'border border-gray-700/30 bg-white/[0.03] text-gray-200'
+              }`}
+            >
               {msg.role === 'assistant' ? (
                 <>
-                  <MarkdownRenderer content={stripFollowUpSection(msg.content)} className="text-sm" />
+                  <MarkdownRenderer
+                    content={stripFollowUpSection(msg.content)}
+                    className="text-sm"
+                  />
                   <MessageActions
                     messageId={msg.id}
                     message={msg.content}

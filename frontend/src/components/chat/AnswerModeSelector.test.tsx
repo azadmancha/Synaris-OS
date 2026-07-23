@@ -63,7 +63,9 @@ describe('AnswerModeSelector', () => {
 
   it('disables all buttons when disabled prop is true', () => {
     const onChange = vi.fn();
-    const { container } = render(<AnswerModeSelector mode="teach" onChange={onChange} disabled={true} />);
+    const { container } = render(
+      <AnswerModeSelector mode="teach" onChange={onChange} disabled={true} />,
+    );
 
     const buttons = container.querySelectorAll('button');
     buttons.forEach((btn) => {

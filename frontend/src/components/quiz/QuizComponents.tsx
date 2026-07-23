@@ -20,7 +20,15 @@ interface AnswerOptionProps {
   onSelect: () => void;
 }
 
-export function AnswerOption({ label, text, selected, revealed, isCorrect, disabled, onSelect }: AnswerOptionProps) {
+export function AnswerOption({
+  label,
+  text,
+  selected,
+  revealed,
+  isCorrect,
+  disabled,
+  onSelect,
+}: AnswerOptionProps) {
   let border = 'border-gray-700/40';
   let bg = 'bg-white/[0.03]';
   let labelBg = 'bg-gray-800/50';
@@ -54,23 +62,55 @@ export function AnswerOption({ label, text, selected, revealed, isCorrect, disab
       disabled={disabled || revealed}
       className={`group flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-all duration-200 active:scale-[0.99] ${border} ${bg} ${hoverStyle} text-gray-200 disabled:cursor-default`}
     >
-      <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-semibold transition-colors ${labelBg} ${labelText}`}>
+      <span
+        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-semibold transition-colors ${labelBg} ${labelText}`}
+      >
         {label}
       </span>
       <span className="flex-1 leading-snug">{text}</span>
       {revealed && isCorrect && (
-        <svg className="h-5 w-5 shrink-0 text-synapse-neon-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg
+          className="h-5 w-5 shrink-0 text-synapse-neon-green"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
         </svg>
       )}
       {revealed && selected && !isCorrect && (
-        <svg className="h-5 w-5 shrink-0 text-synapse-neon-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg
+          className="h-5 w-5 shrink-0 text-synapse-neon-red"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
         </svg>
       )}
       {selected && !revealed && (
-        <svg className="h-5 w-5 shrink-0 text-synapse-neon-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg
+          className="h-5 w-5 shrink-0 text-synapse-neon-purple"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
         </svg>
       )}
     </button>
@@ -88,7 +128,14 @@ interface ShortAnswerInputProps {
   onChange: (val: string) => void;
 }
 
-export function ShortAnswerInput({ value, revealed, isCorrect, correctAnswer, disabled, onChange }: ShortAnswerInputProps) {
+export function ShortAnswerInput({
+  value,
+  revealed,
+  isCorrect,
+  correctAnswer,
+  disabled,
+  onChange,
+}: ShortAnswerInputProps) {
   if (revealed) {
     return (
       <div className="space-y-2">
@@ -105,7 +152,9 @@ export function ShortAnswerInput({ value, revealed, isCorrect, correctAnswer, di
           <div className="flex items-start gap-2 rounded-xl border border-synapse-neon-blue/20 bg-synapse-neon-blue/5 px-4 py-3 text-sm">
             <span className="mt-0.5 shrink-0 text-synapse-neon-blue">💡</span>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-synapse-neon-blue">Expected answer</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-synapse-neon-blue">
+                Expected answer
+              </p>
               <p className="mt-0.5 text-gray-300">{correctAnswer}</p>
             </div>
           </div>

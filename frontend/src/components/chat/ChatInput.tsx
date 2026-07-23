@@ -21,9 +21,17 @@ interface ChatInputProps {
 }
 
 export function ChatInput({
-  value, onChange, onSend, onKeyDown,
-  depth, onChangeDepth, answerMode, onChangeAnswerMode,
-  isLoading, showControls, inputRef,
+  value,
+  onChange,
+  onSend,
+  onKeyDown,
+  depth,
+  onChangeDepth,
+  answerMode,
+  onChangeAnswerMode,
+  isLoading,
+  showControls,
+  inputRef,
 }: ChatInputProps) {
   return (
     <div className="border-t border-gray-800/50 bg-[#0F1117]/90 px-4 py-4 backdrop-blur-xl">
@@ -31,11 +39,21 @@ export function ChatInput({
         {showControls && (
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <DepthSelector depth={depth} onChange={onChangeDepth} disabled={isLoading} />
-            <AnswerModeSelector mode={answerMode} onChange={onChangeAnswerMode} disabled={isLoading} />
+            <AnswerModeSelector
+              mode={answerMode}
+              onChange={onChangeAnswerMode}
+              disabled={isLoading}
+            />
           </div>
         )}
 
-        <form onSubmit={(e) => { e.preventDefault(); onSend(); }} className="group relative flex items-center gap-2">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSend();
+          }}
+          className="group relative flex items-center gap-2"
+        >
           {/* Glow border effect on focus */}
           <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-synapse-neon-blue/0 via-synapse-neon-blue/0 to-synapse-neon-purple/0 transition-all duration-300 group-focus-within:from-synapse-neon-blue/20 group-focus-within:via-synapse-neon-blue/10 group-focus-within:to-synapse-neon-purple/20 group-focus-within:shadow-glow-blue" />
 
@@ -57,16 +75,33 @@ export function ChatInput({
           >
             <span className="flex items-center gap-2">
               Send
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                />
               </svg>
             </span>
           </button>
         </form>
 
         <p className="mt-3 text-center text-xs text-gray-600">
-          Press <kbd className="rounded-md border border-gray-700 bg-gray-800/50 px-1.5 py-0.5 font-mono text-[10px] text-gray-400">Enter</kbd> to send ·
-          <kbd className="rounded-md border border-gray-700 bg-gray-800/50 px-1.5 py-0.5 font-mono text-[10px] text-gray-400">Shift+Enter</kbd> for new line
+          Press{' '}
+          <kbd className="rounded-md border border-gray-700 bg-gray-800/50 px-1.5 py-0.5 font-mono text-[10px] text-gray-400">
+            Enter
+          </kbd>{' '}
+          to send ·
+          <kbd className="rounded-md border border-gray-700 bg-gray-800/50 px-1.5 py-0.5 font-mono text-[10px] text-gray-400">
+            Shift+Enter
+          </kbd>{' '}
+          for new line
         </p>
       </div>
     </div>

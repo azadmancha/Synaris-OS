@@ -112,8 +112,8 @@ describe('ChatInput', () => {
     const props = createMockProps({ showControls: true });
     render(<ChatInput {...props} />);
 
-    expect(screen.getByText('Quick')).toBeInTheDocument();  // DepthSelector option
-    expect(screen.getByText('Hint')).toBeInTheDocument();    // AnswerModeSelector option
+    expect(screen.getByText('Quick')).toBeInTheDocument(); // DepthSelector option
+    expect(screen.getByText('Hint')).toBeInTheDocument(); // AnswerModeSelector option
   });
 
   it('hides controls when showControls is false', () => {

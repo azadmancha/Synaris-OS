@@ -42,8 +42,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-COPY backend/requirements.txt .
+# Install production dependencies (core — no dev/test packages)
+COPY backend/requirements-core.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
@@ -59,6 +59,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 EXPOSE 8000
 
-# Railway injects a PORT env var (usually 8080). The shell-form CMD
-# below reads it dynamically, falling back to 8000 if not set.
-CMD exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+# Railway injects a PORT env var (usually 8080). sh -c reads it dynamically.
+# JSON exec form is used to satisfy Docker's CMD lint recommendation.
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

@@ -44,7 +44,9 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
   if (!content) return null;
 
   return (
-    <div className={`prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap break-words [&_.katex]:text-base [&_.katex-display]:my-3 [&_.katex-display]:overflow-x-auto ${className}`}>
+    <div
+      className={`prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap break-words [&_.katex]:text-base [&_.katex-display]:my-3 [&_.katex-display]:overflow-x-auto ${className}`}
+    >
       <ReactMarkdown
         remarkPlugins={[remarkMath]}
         rehypePlugins={[rehypeKatex]}
@@ -132,10 +134,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
           },
           td({ children, ...props }) {
             return (
-              <td
-                className="px-3 py-2 text-xs text-gray-600 dark:text-gray-400"
-                {...props}
-              >
+              <td className="px-3 py-2 text-xs text-gray-600 dark:text-gray-400" {...props}>
                 {children}
               </td>
             );

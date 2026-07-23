@@ -88,7 +88,9 @@ export function captureException(
  * Set the current user for Sentry error tracking.
  * Call after login/authentication to link errors to users.
  */
-export function setSentryUser(user: { id: string; email?: string; username?: string } | null): void {
+export function setSentryUser(
+  user: { id: string; email?: string; username?: string } | null,
+): void {
   if (!SENTRY_DSN) return;
 
   try {

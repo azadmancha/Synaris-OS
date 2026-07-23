@@ -220,9 +220,9 @@ describe('ChatSidebar', () => {
 
     const closeBtn = screen.getByRole('button', { name: '' }); // The close SVG button
     // The close button is an SVG inside a button — find by parent
-    const headerCloseBtns = screen.getAllByText('').filter(
-      (el) => el.tagName === 'svg' && el.closest('button')
-    );
+    const headerCloseBtns = screen
+      .getAllByText('')
+      .filter((el) => el.tagName === 'svg' && el.closest('button'));
     // Just check the close button exists - it's the lg:hidden one
     const aside = document.querySelector('aside');
     const closeButton = aside?.querySelector('.lg\\:hidden');

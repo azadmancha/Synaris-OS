@@ -54,7 +54,11 @@ export default function AuthCallbackPage() {
 
       // Check for hash parameters (Supabase email confirmation)
       const hash = window.location.hash;
-      if (hash.includes('type=signup') || hash.includes('type=recovery') || hash.includes('type=email_change')) {
+      if (
+        hash.includes('type=signup') ||
+        hash.includes('type=recovery') ||
+        hash.includes('type=email_change')
+      ) {
         if (redirectRef.current) return;
         redirectRef.current = true;
         setStatus('success');
@@ -68,7 +72,9 @@ export default function AuthCallbackPage() {
     }
 
     // Also listen for auth state changes as a backup
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
         if (redirectRef.current) return;
         redirectRef.current = true;
@@ -100,8 +106,8 @@ export default function AuthCallbackPage() {
           </h2>
           <p className="mt-2 text-sm text-gray-500">{error}</p>
           <p className="mt-1 text-xs text-gray-400">
-            This usually happens if Google sign-in didn&apos;t complete properly.
-            Try again from the home page.
+            This usually happens if Google sign-in didn&apos;t complete properly. Try again from the
+            home page.
           </p>
           <div className="mt-6 flex items-center justify-center gap-3">
             <a

@@ -57,7 +57,7 @@ describe('ThemeToggle', () => {
 
     // Light mode — knob at start (translate-x-0)
     const { container: lightContainer, rerender } = render(
-      <ThemeToggle dark={false} onToggle={onToggle} />
+      <ThemeToggle dark={false} onToggle={onToggle} />,
     );
     const lightKnob = lightContainer.querySelector('.translate-x-0');
     expect(lightKnob).toBeTruthy();
@@ -73,21 +73,17 @@ describe('ThemeToggle', () => {
 
     // Light mode — sun should be visible (scale-100 opacity-100)
     const { container: lightContainer, rerender } = render(
-      <ThemeToggle dark={false} onToggle={onToggle} />
+      <ThemeToggle dark={false} onToggle={onToggle} />,
     );
     const lightIcons = lightContainer.querySelectorAll('.scale-100');
     // The sun icon div should have scale-100 + opacity-100
-    const sunDiv = Array.from(lightIcons).find(
-      (el) => el.className.includes('opacity-100')
-    );
+    const sunDiv = Array.from(lightIcons).find((el) => el.className.includes('opacity-100'));
     expect(sunDiv).toBeTruthy();
 
     // Dark mode — moon should be visible
     rerender(<ThemeToggle dark={true} onToggle={onToggle} />);
     const darkIcons = lightContainer.querySelectorAll('.scale-100');
-    const moonDiv = Array.from(darkIcons).find(
-      (el) => el.className.includes('opacity-100')
-    );
+    const moonDiv = Array.from(darkIcons).find((el) => el.className.includes('opacity-100'));
     expect(moonDiv).toBeTruthy();
   });
 });

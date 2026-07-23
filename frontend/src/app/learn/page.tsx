@@ -15,14 +15,16 @@ import { useDarkMode } from '@/hooks/useDarkMode';
 /** Wrapper that provides a Suspense boundary for useSearchParams. */
 export default function LearnPage() {
   return (
-    <Suspense fallback={
-      <main className="flex min-h-screen items-center justify-center bg-white dark:bg-[#0F1117]">
-        <div className="text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-          <p className="mt-4 text-sm text-gray-500">Loading Synaris...</p>
-        </div>
-      </main>
-    }>
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-white dark:bg-[#0F1117]">
+          <div className="text-center">
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+            <p className="mt-4 text-sm text-gray-500">Loading Synaris...</p>
+          </div>
+        </main>
+      }
+    >
       <LearnPageContent />
     </Suspense>
   );
@@ -50,9 +52,25 @@ function LearnPageContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // ── Phase 3: Spaced Repetition ──────────────────────
-  const [conceptsDue, setConceptsDue] = useState<{concepts: {concept_name: string; subject: string; mastery_level: string; confidence_score: number | null; times_encountered: number; next_review_at: string | null; days_until_review: number | null}[]; total_due: number} | null>(null);
+  const [conceptsDue, setConceptsDue] = useState<{
+    concepts: {
+      concept_name: string;
+      subject: string;
+      mastery_level: string;
+      confidence_score: number | null;
+      times_encountered: number;
+      next_review_at: string | null;
+      days_until_review: number | null;
+    }[];
+    total_due: number;
+  } | null>(null);
   const [reviewingConcept, setReviewingConcept] = useState<string | null>(null);
-  const [reviewResult, setReviewResult] = useState<{concept_name: string; passed: boolean; new_mastery_level: string; quality: number} | null>(null);
+  const [reviewResult, setReviewResult] = useState<{
+    concept_name: string;
+    passed: boolean;
+    new_mastery_level: string;
+    quality: number;
+  } | null>(null);
 
   // ── Persist answer mode to localStorage ────────────
   // Restore on mount, save on change
@@ -76,10 +94,14 @@ function LearnPageContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  useEffect(() => { scrollToBottom(); }, [messages, streamingContent, scrollToBottom]);
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, streamingContent, scrollToBottom]);
 
   useEffect(() => {
-    return () => { streamAbortRef.current?.abort(); };
+    return () => {
+      streamAbortRef.current?.abort();
+    };
   }, []);
 
   // ── Lazy Session Creation ────────────────────────────
@@ -112,7 +134,9 @@ function LearnPageContent() {
     try {
       const sessionList = await api.listSessions();
       setSessions(sessionList.sessions || []);
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   // ── Phase 3: Review a concept ─────────────────────────
@@ -150,40 +174,54 @@ function LearnPageContent() {
     setMessages((prev) => [...prev, tempUserMsg]);
 
     try {
-      await api.sendMessageStream(session.id, text, depth, {
-        onUserMessage: (userMsg) => {
-          setMessages((prev) => {
-            const updated = [...prev];
-            const tempIdx = updated.findIndex((m) => m.id === tempUserMsg.id);
-            if (tempIdx !== -1) updated[tempIdx] = userMsg;
-            else updated.push(userMsg);
-            return updated;
-          });
-        },
-        onToken: (token) => setStreamingContent((prev) => prev + token),
-        onDone: ({ ai_message }) => {
-          setMessages((prev) => [...prev, ai_message]);
-          setStreamingContent('');
-          setIsStreaming(false);
-          setIsLoading(false);
-          const isDefaultTitle = !session.title || session.title === 'New Session' || session.title === 'Untitled' || session.title === session.subject;
-          if (isDefaultTitle && text) {
-            const newTitle = text.length > 60 ? text.slice(0, 60) + '...' : text;
-            api.updateSessionTitle(session.id, newTitle).then((updated) => {
-              setSession(updated);
+      await api.sendMessageStream(
+        session.id,
+        text,
+        depth,
+        {
+          onUserMessage: (userMsg) => {
+            setMessages((prev) => {
+              const updated = [...prev];
+              const tempIdx = updated.findIndex((m) => m.id === tempUserMsg.id);
+              if (tempIdx !== -1) updated[tempIdx] = userMsg;
+              else updated.push(userMsg);
+              return updated;
+            });
+          },
+          onToken: (token) => setStreamingContent((prev) => prev + token),
+          onDone: ({ ai_message }) => {
+            setMessages((prev) => [...prev, ai_message]);
+            setStreamingContent('');
+            setIsStreaming(false);
+            setIsLoading(false);
+            const isDefaultTitle =
+              !session.title ||
+              session.title === 'New Session' ||
+              session.title === 'Untitled' ||
+              session.title === session.subject;
+            if (isDefaultTitle && text) {
+              const newTitle = text.length > 60 ? text.slice(0, 60) + '...' : text;
+              api
+                .updateSessionTitle(session.id, newTitle)
+                .then((updated) => {
+                  setSession(updated);
+                  refreshSessions();
+                })
+                .catch(() => {});
+            } else {
               refreshSessions();
-            }).catch(() => {});
-          } else {
-            refreshSessions();
-          }
+            }
+          },
+          onError: (errMsg) => {
+            setError(errMsg);
+            setIsStreaming(false);
+            setIsLoading(false);
+            setStreamingContent('');
+          },
         },
-        onError: (errMsg) => {
-          setError(errMsg);
-          setIsStreaming(false);
-          setIsLoading(false);
-          setStreamingContent('');
-        },
-      }, abortController.signal, answerMode);
+        abortController.signal,
+        answerMode,
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
       setIsStreaming(false);
@@ -193,7 +231,10 @@ function LearnPageContent() {
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
   }
 
   function handleFeedback(_messageId: string, _rating: 'positive' | 'negative') {
@@ -327,13 +368,21 @@ function LearnPageContent() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-900/20">
             <span className="text-3xl">⚠️</span>
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-[#EDEDEE]">Connection Error</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-[#EDEDEE]">
+            Connection Error
+          </h2>
           <p className="mt-1 text-sm text-gray-500">{error}</p>
           <div className="mt-6 flex items-center justify-center gap-3">
-            <button onClick={() => window.location.reload()} className="rounded-full bg-blue-600 px-6 py-2 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-[0.98]">
+            <button
+              onClick={() => window.location.reload()}
+              className="rounded-full bg-blue-600 px-6 py-2 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-[0.98]"
+            >
               Retry
             </button>
-            <a href="/" className="rounded-full border border-gray-300 px-6 py-2 text-sm font-medium text-gray-600 transition-all hover:border-gray-400 dark:border-gray-600 dark:text-gray-400">
+            <a
+              href="/"
+              className="rounded-full border border-gray-300 px-6 py-2 text-sm font-medium text-gray-600 transition-all hover:border-gray-400 dark:border-gray-600 dark:text-gray-400"
+            >
               Go Home
             </a>
           </div>
@@ -355,10 +404,13 @@ function LearnPageContent() {
         onLoadSession={handleLoadSession}
         onDeleteSession={handleDeleteSession}
         onRenameSession={(id, title) => {
-          api.updateSessionTitle(id, title).then(() => {
-            setSessions((prev) => prev.map((x) => x.id === id ? { ...x, title } : x));
-            if (session?.id === id) setSession({ ...session, title });
-          }).catch(() => {});
+          api
+            .updateSessionTitle(id, title)
+            .then(() => {
+              setSessions((prev) => prev.map((x) => (x.id === id ? { ...x, title } : x)));
+              if (session?.id === id) setSession({ ...session, title });
+            })
+            .catch(() => {});
         }}
         onCloseSidebar={() => setSidebarOpen(false)}
       />
@@ -382,22 +434,43 @@ function LearnPageContent() {
               <div className="group rounded-xl border border-synapse-neon-amber/30 bg-gradient-to-r from-synapse-neon-amber/5 to-transparent p-4 transition-all duration-200 hover:border-synapse-neon-amber/50 hover:shadow-glow-sm">
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-synapse-neon-amber/20 to-synapse-neon-amber/5">
-                    <svg className="h-4 w-4 text-synapse-neon-amber" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    <svg
+                      className="h-4 w-4 text-synapse-neon-amber"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
                     </svg>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-glass-primary">
-                        <span className="text-synapse-neon-amber">{conceptsDue.total_due}</span> concept{conceptsDue.total_due !== 1 ? 's' : ''} due for review
+                        <span className="text-synapse-neon-amber">{conceptsDue.total_due}</span>{' '}
+                        concept{conceptsDue.total_due !== 1 ? 's' : ''} due for review
                       </p>
                       <button
                         onClick={() => setConceptsDue(null)}
                         className="shrink-0 rounded-lg p-1 text-gray-500 transition-colors hover:bg-white/[0.08] hover:text-gray-300"
                         title="Dismiss"
                       >
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        <svg
+                          className="h-3.5 w-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
                         </svg>
                       </button>
                     </div>
@@ -420,7 +493,9 @@ function LearnPageContent() {
                     {reviewingConcept && (
                       <div className="mt-2 flex items-center gap-2">
                         <span className="h-3 w-3 animate-spin rounded-full border-2 border-synapse-neon-amber border-t-transparent" />
-                        <span className="text-[10px] text-synapse-neon-amber/70">Reviewing {reviewingConcept}...</span>
+                        <span className="text-[10px] text-synapse-neon-amber/70">
+                          Reviewing {reviewingConcept}...
+                        </span>
                       </div>
                     )}
                   </div>
@@ -432,11 +507,13 @@ function LearnPageContent() {
           {/* Phase 3: Review Result Notification */}
           {reviewResult && (
             <div className="mx-auto mt-2 w-full max-w-3xl px-4 animate-[fadeUp_0.3s_ease-out]">
-              <div className={`rounded-xl border p-3 transition-all ${
-                reviewResult.passed
-                  ? 'border-synapse-neon-green/30 bg-gradient-to-r from-synapse-neon-green/5 to-transparent'
-                  : 'border-synapse-neon-red/30 bg-gradient-to-r from-synapse-neon-red/5 to-transparent'
-              }`}>
+              <div
+                className={`rounded-xl border p-3 transition-all ${
+                  reviewResult.passed
+                    ? 'border-synapse-neon-green/30 bg-gradient-to-r from-synapse-neon-green/5 to-transparent'
+                    : 'border-synapse-neon-red/30 bg-gradient-to-r from-synapse-neon-red/5 to-transparent'
+                }`}
+              >
                 <div className="flex items-center gap-3">
                   <span className="text-sm">{reviewResult.passed ? '✅' : '🔄'}</span>
                   <div className="min-w-0 flex-1">
@@ -446,15 +523,25 @@ function LearnPageContent() {
                         : `Keep practicing "${reviewResult.concept_name}"`}
                     </p>
                     <p className="text-[10px] text-gray-500">
-                      Mastery: <span className="font-medium text-synapse-neon-amber">{reviewResult.new_mastery_level}</span>
-                      {' · '}Quality: <span className="font-medium">{reviewResult.quality.toFixed(1)}/5.0</span>
+                      Mastery:{' '}
+                      <span className="font-medium text-synapse-neon-amber">
+                        {reviewResult.new_mastery_level}
+                      </span>
+                      {' · '}Quality:{' '}
+                      <span className="font-medium">{reviewResult.quality.toFixed(1)}/5.0</span>
                     </p>
                   </div>
                   <button
                     onClick={() => setReviewResult(null)}
                     className="shrink-0 rounded-lg p-1 text-gray-500 transition-colors hover:bg-white/[0.08]"
                   >
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <svg
+                      className="h-3 w-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
@@ -469,14 +556,14 @@ function LearnPageContent() {
             streamingContent={streamingContent}
             isStreaming={isStreaming}
             isLoading={isLoading}
-          depth={depth}
-          user={user}
-          onSendMessage={(text) => handleSend(undefined, text)}
-          onFeedback={handleFeedback}
-          onChangeDepth={setDepth}
-          answerMode={answerMode}
-          onChangeAnswerMode={handleChangeAnswerMode}
-        />
+            depth={depth}
+            user={user}
+            onSendMessage={(text) => handleSend(undefined, text)}
+            onFeedback={handleFeedback}
+            onChangeDepth={setDepth}
+            answerMode={answerMode}
+            onChangeAnswerMode={handleChangeAnswerMode}
+          />
         </div>
 
         {/* Error banner */}
@@ -486,8 +573,19 @@ function LearnPageContent() {
               <div className="flex items-center gap-2">
                 <span>⚠️</span>
                 <span>{error}</span>
-                <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-red-600">
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                <button
+                  onClick={() => setError(null)}
+                  className="ml-auto text-red-400 hover:text-red-600"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
             </div>

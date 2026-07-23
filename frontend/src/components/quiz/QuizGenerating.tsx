@@ -20,8 +20,7 @@ export function QuizGenerating({ topic, streamingText, onCancel }: QuizGeneratin
           <p className="text-xs text-gray-400">
             {streamingText.length === 0
               ? `Creating questions about ${topic}...`
-              : `Generated ${streamingText.length} characters so far...`
-            }
+              : `Generated ${streamingText.length} characters so far...`}
           </p>
         </div>
         {onCancel && (
@@ -30,7 +29,13 @@ export function QuizGenerating({ topic, streamingText, onCancel }: QuizGeneratin
             className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-white/[0.05] hover:text-gray-300"
             title="Cancel generation"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -43,7 +48,9 @@ export function QuizGenerating({ topic, streamingText, onCancel }: QuizGeneratin
         ) : (
           <div className="overflow-hidden rounded-xl border border-gray-700/30 bg-[#0F1117]">
             <div className="flex items-center justify-between border-b border-gray-700/30 px-3 py-1.5">
-              <span className="text-[9px] font-medium uppercase tracking-wider text-gray-500">Live Preview</span>
+              <span className="text-[9px] font-medium uppercase tracking-wider text-gray-500">
+                Live Preview
+              </span>
               <span className="text-[9px] text-gray-500">{streamingText.length} chars</span>
             </div>
             <div className="max-h-48 overflow-y-auto p-3">

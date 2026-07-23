@@ -127,14 +127,19 @@ export interface LoginResponse {
 
 // ─── Feedback ──────────────────────────────────────────
 
-export async function rateMessage(messageId: string, rating: 'positive' | 'negative' | 'reset'): Promise<{ message_id: string; rating: string; success: boolean }> {
+export async function rateMessage(
+  messageId: string,
+  rating: 'positive' | 'negative' | 'reset',
+): Promise<{ message_id: string; rating: string; success: boolean }> {
   return request('/feedback/message', {
     method: 'POST',
     body: { message_id: messageId, rating },
   });
 }
 
-export async function getMessageFeedback(messageId: string): Promise<{ message_id: string; rating: string | null }> {
+export async function getMessageFeedback(
+  messageId: string,
+): Promise<{ message_id: string; rating: string | null }> {
   return request(`/feedback/message/${messageId}`);
 }
 
@@ -197,7 +202,7 @@ export async function supabaseLogin(
   accessToken: string,
   email: string,
   name?: string,
-  avatarUrl?: string
+  avatarUrl?: string,
 ): Promise<LoginResponse> {
   return request('/auth/supabase', {
     method: 'POST',
@@ -257,7 +262,7 @@ export async function sendMessage(
 }
 
 export async function getMessages(
-  sessionId: string
+  sessionId: string,
 ): Promise<{ messages: Message[]; total: number }> {
   return request(`/sessions/${sessionId}/messages`);
 }
@@ -463,7 +468,7 @@ export async function generateQuiz(
   sessionId: string,
   topic: string,
   difficulty: string = 'balanced',
-  questionCount: number = 5
+  questionCount: number = 5,
 ): Promise<Quiz> {
   return request(`/sessions/${sessionId}/quizzes/generate`, {
     method: 'POST',
@@ -487,7 +492,7 @@ export async function generateQuizStream(
   difficulty: string = 'balanced',
   questionCount: number = 5,
   callbacks: QuizStreamCallbacks,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<void> {
   const url = `${API_BASE}/sessions/${sessionId}/quizzes/generate/stream`;
 
@@ -542,7 +547,7 @@ export async function getQuiz(sessionId: string, quizId: string): Promise<Quiz> 
 export async function submitQuizAnswers(
   sessionId: string,
   quizId: string,
-  answers: { question_id: string; user_answer: string }[]
+  answers: { question_id: string; user_answer: string }[],
 ): Promise<Quiz> {
   return request(`/sessions/${sessionId}/quizzes/${quizId}/answer`, {
     method: 'POST',
@@ -694,7 +699,7 @@ export async function generateStudyPlan(data: StudyPlanGenerateRequest): Promise
 
 export async function listStudyPlans(
   limit: number = 10,
-  offset: number = 0
+  offset: number = 0,
 ): Promise<StudyPlanListResponse> {
   return request(`/study-plans?limit=${limit}&offset=${offset}`);
 }
@@ -705,7 +710,7 @@ export async function getStudyPlan(planId: string): Promise<StudyPlan> {
 
 export async function updateStudyPlan(
   planId: string,
-  data: { title?: string; status?: string }
+  data: { title?: string; status?: string },
 ): Promise<StudyPlan> {
   return request(`/study-plans/${planId}`, {
     method: 'PATCH',

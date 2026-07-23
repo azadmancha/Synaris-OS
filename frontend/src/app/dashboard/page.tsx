@@ -27,7 +27,15 @@ function AmbientBackground() {
 
 // ─── Animated Counter ────────────────────────────────────
 
-function AnimatedCounter({ value, suffix = '', duration = 1200 }: { value: number; suffix?: string; duration?: number }) {
+function AnimatedCounter({
+  value,
+  suffix = '',
+  duration = 1200,
+}: {
+  value: number;
+  suffix?: string;
+  duration?: number;
+}) {
   const [display, setDisplay] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const counted = useRef(false);
@@ -49,7 +57,12 @@ function AnimatedCounter({ value, suffix = '', duration = 1200 }: { value: numbe
     requestAnimationFrame(animate);
   }, [value, duration]);
 
-  return <span ref={ref}>{display}{suffix}</span>;
+  return (
+    <span ref={ref}>
+      {display}
+      {suffix}
+    </span>
+  );
 }
 
 // ─── Feature Cards ───────────────────────────────────────
@@ -93,7 +106,8 @@ const FEATURES: FeatureCardData[] = [
     id: 'study-plan',
     icon: '🗺️',
     title: 'Study Plan',
-    description: 'AI-generated personalized learning paths with weekly milestones and practice exercises.',
+    description:
+      'AI-generated personalized learning paths with weekly milestones and practice exercises.',
     href: '/study-plan',
     status: 'ready',
     gradient: 'from-emerald-500 to-teal-600',
@@ -115,7 +129,8 @@ const FEATURES: FeatureCardData[] = [
     id: 'roadmap',
     icon: '🚀',
     title: 'Coming Features',
-    description: 'Knowledge maps, study groups, spaced repetition, handwriting recognition, and more.',
+    description:
+      'Knowledge maps, study groups, spaced repetition, handwriting recognition, and more.',
     href: '#',
     status: 'coming_soon',
     gradient: 'from-synapse-neon-cyan to-synapse-neon-blue',
@@ -127,9 +142,19 @@ const FEATURES: FeatureCardData[] = [
 // ─── Stat Card (Neon Edition) ────────────────────────────
 
 function StatCard({
-  label, value, icon, accent = 'blue', subtitle, delay = 0,
+  label,
+  value,
+  icon,
+  accent = 'blue',
+  subtitle,
+  delay = 0,
 }: {
-  label: string; value: string | number; icon: string; accent?: string; subtitle?: string; delay?: number;
+  label: string;
+  value: string | number;
+  icon: string;
+  accent?: string;
+  subtitle?: string;
+  delay?: number;
 }) {
   const accentColors: Record<string, string> = {
     blue: 'border-synapse-neon-blue/20 group-hover:border-synapse-neon-blue/40',
@@ -153,26 +178,37 @@ function StatCard({
       className="group animate-card-enter opacity-0"
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'forwards' }}
     >
-      <div className={`glass-card relative overflow-hidden p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover ${accentColors[accent]} ${glowColors[accent]}`}>
+      <div
+        className={`glass-card relative overflow-hidden p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover ${accentColors[accent]} ${glowColors[accent]}`}
+      >
         {/* Hover glow effect */}
         <div className="absolute -inset-1 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
         <div className="relative flex items-center gap-3">
-          <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${
-            accent === 'green' ? 'from-emerald-500 to-teal-600' :
-            accent === 'purple' ? 'from-purple-500 to-pink-600' :
-            accent === 'amber' ? 'from-amber-500 to-orange-600' :
-            accent === 'cyan' ? 'from-cyan-500 to-blue-600' :
-            accent === 'pink' ? 'from-pink-500 to-rose-600' :
-            'from-blue-500 to-indigo-600'
-          }`}>
+          <div
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${
+              accent === 'green'
+                ? 'from-emerald-500 to-teal-600'
+                : accent === 'purple'
+                  ? 'from-purple-500 to-pink-600'
+                  : accent === 'amber'
+                    ? 'from-amber-500 to-orange-600'
+                    : accent === 'cyan'
+                      ? 'from-cyan-500 to-blue-600'
+                      : accent === 'pink'
+                        ? 'from-pink-500 to-rose-600'
+                        : 'from-blue-500 to-indigo-600'
+            }`}
+          >
             <span className="text-lg">{icon}</span>
           </div>
           <div className="min-w-0">
             <p className="text-xl font-bold tracking-tight text-glass-primary">
               {typeof value === 'number' ? <AnimatedCounter value={value} /> : value}
             </p>
-            <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400/80">{label}</p>
+            <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400/80">
+              {label}
+            </p>
             {subtitle && <p className="mt-0.5 text-[9px] text-gray-500/60">{subtitle}</p>}
           </div>
         </div>
@@ -183,7 +219,15 @@ function StatCard({
 
 // ─── Activity Bar ────────────────────────────────────────
 
-function ActivityBar({ day, max, index }: { day: { date: string; sessions: number; messages: number }; max: number; index: number }) {
+function ActivityBar({
+  day,
+  max,
+  index,
+}: {
+  day: { date: string; sessions: number; messages: number };
+  max: number;
+  index: number;
+}) {
   const height = max > 0 ? (day.sessions / max) * 100 : 0;
   const [animHeight, setAnimHeight] = useState(0);
 
@@ -194,7 +238,9 @@ function ActivityBar({ day, max, index }: { day: { date: string; sessions: numbe
 
   return (
     <div className="group flex flex-1 flex-col items-center gap-1.5">
-      <span className={`text-[9px] font-medium transition-all duration-300 ${day.sessions > 0 ? 'text-synapse-neon-blue/70' : 'text-gray-600'}`}>
+      <span
+        className={`text-[9px] font-medium transition-all duration-300 ${day.sessions > 0 ? 'text-synapse-neon-blue/70' : 'text-gray-600'}`}
+      >
         {day.sessions}
       </span>
       <div className="flex h-20 w-full items-end justify-center">
@@ -225,7 +271,9 @@ function MasteryBadge({ level }: { level: string }) {
     undiscovered: 'border-gray-600 bg-gray-800/50 text-gray-500',
   };
   return (
-    <span className={`rounded-full border px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${colors[level] || colors.undiscovered}`}>
+    <span
+      className={`rounded-full border px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${colors[level] || colors.undiscovered}`}
+    >
       {level}
     </span>
   );
@@ -235,11 +283,12 @@ function MasteryBadge({ level }: { level: string }) {
 
 function QuizScoreBar({ percentage }: { percentage: number | null }) {
   if (percentage === null) return <span className="text-[10px] text-gray-500">—</span>;
-  const color = percentage >= 80
-    ? 'from-synapse-neon-green to-emerald-400'
-    : percentage >= 50
-      ? 'from-synapse-neon-amber to-amber-400'
-      : 'from-synapse-neon-red to-red-400';
+  const color =
+    percentage >= 80
+      ? 'from-synapse-neon-green to-emerald-400'
+      : percentage >= 50
+        ? 'from-synapse-neon-amber to-amber-400'
+        : 'from-synapse-neon-red to-red-400';
   return (
     <div className="flex items-center gap-2">
       <div className="h-1.5 w-full max-w-24 overflow-hidden rounded-full bg-gray-800">
@@ -285,13 +334,35 @@ function MistakeAnalysisSection({ analytics }: { analytics: AnalyticsResponse })
       {worstTopic && (
         <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: 'Weakest Topic', value: worstTopic.topic, color: 'border-red-500/20 bg-red-500/5', textColor: 'text-red-400' },
-            { label: 'Accuracy', value: `${Math.round(worstTopic.accuracy * 100)}%`, color: 'border-orange-500/20 bg-orange-500/5', textColor: 'text-orange-400' },
-            { label: 'Mistakes', value: `${worstTopic.mistake_count}/${worstTopic.total_questions}`, color: 'border-amber-500/20 bg-amber-500/5', textColor: 'text-amber-400' },
-            { label: 'Weak Topics', value: weakest_topics.length, color: 'border-gray-600/30 bg-gray-800/30', textColor: 'text-gray-300' },
+            {
+              label: 'Weakest Topic',
+              value: worstTopic.topic,
+              color: 'border-red-500/20 bg-red-500/5',
+              textColor: 'text-red-400',
+            },
+            {
+              label: 'Accuracy',
+              value: `${Math.round(worstTopic.accuracy * 100)}%`,
+              color: 'border-orange-500/20 bg-orange-500/5',
+              textColor: 'text-orange-400',
+            },
+            {
+              label: 'Mistakes',
+              value: `${worstTopic.mistake_count}/${worstTopic.total_questions}`,
+              color: 'border-amber-500/20 bg-amber-500/5',
+              textColor: 'text-amber-400',
+            },
+            {
+              label: 'Weak Topics',
+              value: weakest_topics.length,
+              color: 'border-gray-600/30 bg-gray-800/30',
+              textColor: 'text-gray-300',
+            },
           ].map((item) => (
             <div key={item.label} className={`rounded-xl border ${item.color} p-3`}>
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-500">{item.label}</p>
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-500">
+                {item.label}
+              </p>
               <p className={`mt-1 text-sm font-bold ${item.textColor} capitalize`}>{item.value}</p>
             </div>
           ))}
@@ -301,11 +372,18 @@ function MistakeAnalysisSection({ analytics }: { analytics: AnalyticsResponse })
       {/* Weak topics list */}
       {weakest_topics.length > 1 && (
         <div className="mb-5">
-          <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-gray-500">Topics by weakness</p>
+          <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+            Topics by weakness
+          </p>
           <div className="space-y-2">
             {weakest_topics.map((t) => {
               const pct = Math.round(t.accuracy * 100);
-              const barColor = pct >= 80 ? 'from-synapse-neon-green to-emerald-400' : pct >= 50 ? 'from-synapse-neon-amber to-amber-400' : 'from-synapse-neon-red to-red-400';
+              const barColor =
+                pct >= 80
+                  ? 'from-synapse-neon-green to-emerald-400'
+                  : pct >= 50
+                    ? 'from-synapse-neon-amber to-amber-400'
+                    : 'from-synapse-neon-red to-red-400';
               return (
                 <div key={t.topic} className="flex items-center gap-3">
                   <span className="w-24 truncate text-xs font-medium text-gray-300 capitalize sm:w-32">
@@ -322,9 +400,15 @@ function MistakeAnalysisSection({ analytics }: { analytics: AnalyticsResponse })
                   <span className="w-12 text-right text-[10px] text-gray-500">
                     {t.mistake_count}/{t.total_questions}
                   </span>
-                  <span className={`w-10 text-right text-[10px] font-semibold ${
-                    pct >= 80 ? 'text-synapse-neon-green' : pct >= 50 ? 'text-synapse-neon-amber' : 'text-synapse-neon-red'
-                  }`}>
+                  <span
+                    className={`w-10 text-right text-[10px] font-semibold ${
+                      pct >= 80
+                        ? 'text-synapse-neon-green'
+                        : pct >= 50
+                          ? 'text-synapse-neon-amber'
+                          : 'text-synapse-neon-red'
+                    }`}
+                  >
                     {pct}%
                   </span>
                 </div>
@@ -337,12 +421,17 @@ function MistakeAnalysisSection({ analytics }: { analytics: AnalyticsResponse })
       {/* Recent mistakes */}
       {recent_mistakes.length > 0 && (
         <div>
-          <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-gray-500">Recent Mistakes</p>
+          <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+            Recent Mistakes
+          </p>
           <div className="space-y-2">
             {recent_mistakes.map((m, i) => {
               const isExpanded = expanded === `mistake-${i}`;
               return (
-                <div key={i} className="overflow-hidden rounded-xl border border-gray-700/50 transition-all duration-200">
+                <div
+                  key={i}
+                  className="overflow-hidden rounded-xl border border-gray-700/50 transition-all duration-200"
+                >
                   <button
                     onClick={() => setExpanded(isExpanded ? null : `mistake-${i}`)}
                     className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/[0.02]"
@@ -364,7 +453,10 @@ function MistakeAnalysisSection({ analytics }: { analytics: AnalyticsResponse })
                     </div>
                     <svg
                       className={`h-3 w-3 shrink-0 text-gray-500 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
@@ -374,18 +466,26 @@ function MistakeAnalysisSection({ analytics }: { analytics: AnalyticsResponse })
                     <div className="border-t border-gray-700/50 px-4 py-3">
                       <div className="grid gap-3 sm:grid-cols-2">
                         <div>
-                          <p className="text-[9px] font-semibold uppercase tracking-widest text-red-400">Your Answer</p>
+                          <p className="text-[9px] font-semibold uppercase tracking-widest text-red-400">
+                            Your Answer
+                          </p>
                           <p className="mt-1 text-xs text-gray-300">{m.user_answer}</p>
                         </div>
                         <div>
-                          <p className="text-[9px] font-semibold uppercase tracking-widest text-synapse-neon-green">Correct Answer</p>
+                          <p className="text-[9px] font-semibold uppercase tracking-widest text-synapse-neon-green">
+                            Correct Answer
+                          </p>
                           <p className="mt-1 text-xs text-gray-300">{m.correct_answer}</p>
                         </div>
                       </div>
                       {m.explanation && (
                         <div className="mt-3">
-                          <p className="text-[9px] font-semibold uppercase tracking-widest text-synapse-neon-blue">Explanation</p>
-                          <p className="mt-1 text-xs leading-relaxed text-gray-400">{m.explanation}</p>
+                          <p className="text-[9px] font-semibold uppercase tracking-widest text-synapse-neon-blue">
+                            Explanation
+                          </p>
+                          <p className="mt-1 text-xs leading-relaxed text-gray-400">
+                            {m.explanation}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -407,20 +507,26 @@ function StudyPlanProgress({ plans }: { plans: StudyPlan[] }) {
   const activePlan = plans.find((p) => p.status === 'active') || plans[0];
   if (!activePlan) return null;
 
-  const weeksElapsed = Math.max(0, Math.floor(
-    (Date.now() - new Date(activePlan.created_at).getTime()) / (7 * 24 * 60 * 60 * 1000)
-  ));
-  const completedMilestones = activePlan.milestones.filter((m) => m.week <= weeksElapsed);
-  const progress = activePlan.milestones.length > 0
-    ? Math.min(1, completedMilestones.length / activePlan.milestones.length)
-    : 0;
-  const nextMilestone = activePlan.milestones.find((m) => m.week > weeksElapsed);
-  const goalLabel = (
-    activePlan.goal === 'exam_prep' ? '🎯 Exam Prep' :
-    activePlan.goal === 'skill_building' ? '🛠️ Skill Building' :
-    activePlan.goal === 'research' ? '🔬 Research' :
-    '🧠 Curiosity'
+  const weeksElapsed = Math.max(
+    0,
+    Math.floor(
+      (Date.now() - new Date(activePlan.created_at).getTime()) / (7 * 24 * 60 * 60 * 1000),
+    ),
   );
+  const completedMilestones = activePlan.milestones.filter((m) => m.week <= weeksElapsed);
+  const progress =
+    activePlan.milestones.length > 0
+      ? Math.min(1, completedMilestones.length / activePlan.milestones.length)
+      : 0;
+  const nextMilestone = activePlan.milestones.find((m) => m.week > weeksElapsed);
+  const goalLabel =
+    activePlan.goal === 'exam_prep'
+      ? '🎯 Exam Prep'
+      : activePlan.goal === 'skill_building'
+        ? '🛠️ Skill Building'
+        : activePlan.goal === 'research'
+          ? '🔬 Research'
+          : '🧠 Curiosity';
 
   return (
     <section className="glass-card animate-slide-up overflow-hidden border-synapse-neon-green/20 p-5 shadow-glow-green">
@@ -468,19 +574,28 @@ function StudyPlanProgress({ plans }: { plans: StudyPlan[] }) {
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-synapse-neon-green/20 text-[9px] font-bold text-synapse-neon-green">
               {nextMilestone.week}
             </span>
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Next Milestone</span>
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+              Next Milestone
+            </span>
           </div>
           <p className="text-sm font-medium text-glass-primary">{nextMilestone.title}</p>
-          <p className="mt-0.5 text-xs leading-relaxed text-gray-400 line-clamp-2">{nextMilestone.description}</p>
+          <p className="mt-0.5 text-xs leading-relaxed text-gray-400 line-clamp-2">
+            {nextMilestone.description}
+          </p>
           {nextMilestone.topics.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {nextMilestone.topics.slice(0, 4).map((topic, i) => (
-                <span key={i} className="rounded-lg border border-synapse-neon-green/20 bg-synapse-neon-green/5 px-2 py-0.5 text-[9px] font-medium text-synapse-neon-green">
+                <span
+                  key={i}
+                  className="rounded-lg border border-synapse-neon-green/20 bg-synapse-neon-green/5 px-2 py-0.5 text-[9px] font-medium text-synapse-neon-green"
+                >
                   {topic}
                 </span>
               ))}
               {nextMilestone.topics.length > 4 && (
-                <span className="text-[9px] text-gray-500">+{nextMilestone.topics.length - 4} more</span>
+                <span className="text-[9px] text-gray-500">
+                  +{nextMilestone.topics.length - 4} more
+                </span>
               )}
             </div>
           )}
@@ -536,9 +651,17 @@ function RecentSessionsList({ sessions }: { sessions: Session[] }) {
               <p className="truncate text-sm font-medium text-gray-300 group-hover:text-glass-primary">
                 {s.title || 'Untitled'}
               </p>
-              <p className="mt-0.5 text-[10px] text-gray-500">{timeStr} · {s.message_count} messages</p>
+              <p className="mt-0.5 text-[10px] text-gray-500">
+                {timeStr} · {s.message_count} messages
+              </p>
             </div>
-            <svg className="h-4 w-4 shrink-0 text-gray-600 transition-all group-hover:translate-x-0.5 group-hover:text-synapse-neon-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg
+              className="h-4 w-4 shrink-0 text-gray-600 transition-all group-hover:translate-x-0.5 group-hover:text-synapse-neon-blue"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -554,17 +677,24 @@ function getStudyPlanStatCard(studyPlans: StudyPlan[]): React.ReactNode {
   const activePlan = studyPlans.find((p) => p.status === 'active') || studyPlans[0];
   if (!activePlan || activePlan.milestones.length === 0) return null;
 
-  const weeksElapsed = Math.max(0, Math.floor(
-    (Date.now() - new Date(activePlan.created_at).getTime()) / (7 * 24 * 60 * 60 * 1000)
-  ));
+  const weeksElapsed = Math.max(
+    0,
+    Math.floor(
+      (Date.now() - new Date(activePlan.created_at).getTime()) / (7 * 24 * 60 * 60 * 1000),
+    ),
+  );
   const completedCount = activePlan.milestones.filter((m) => m.week <= weeksElapsed).length;
   const progressPct = Math.round((completedCount / activePlan.milestones.length) * 100);
   const nextMilestone = activePlan.milestones.find((m) => m.week > weeksElapsed);
   const nextDueDate = nextMilestone
-    ? new Date(new Date(activePlan.created_at).getTime() + nextMilestone.week * 7 * 24 * 60 * 60 * 1000)
+    ? new Date(
+        new Date(activePlan.created_at).getTime() + nextMilestone.week * 7 * 24 * 60 * 60 * 1000,
+      )
     : null;
   const dueStr = nextDueDate
-    ? (nextDueDate <= new Date() ? 'Due now!' : `Due ${nextDueDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`)
+    ? nextDueDate <= new Date()
+      ? 'Due now!'
+      : `Due ${nextDueDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
     : 'Complete!';
 
   return (
@@ -573,14 +703,24 @@ function getStudyPlanStatCard(studyPlans: StudyPlan[]): React.ReactNode {
       value={`${progressPct}%`}
       icon="🗺️"
       accent="green"
-      subtitle={nextMilestone ? `Week ${nextMilestone.week}: ${nextMilestone.title.slice(0, 24)}${nextMilestone.title.length > 24 ? '…' : ''} · ${dueStr}` : dueStr}
+      subtitle={
+        nextMilestone
+          ? `Week ${nextMilestone.week}: ${nextMilestone.title.slice(0, 24)}${nextMilestone.title.length > 24 ? '…' : ''} · ${dueStr}`
+          : dueStr
+      }
     />
   );
 }
 
 // ─── Section Container ─────────────────────────────────
 
-function SectionContainer({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+function SectionContainer({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <section className={`glass-card animate-slide-up overflow-hidden p-5 ${className}`}>
       {children}
@@ -588,7 +728,15 @@ function SectionContainer({ children, className = '' }: { children: React.ReactN
   );
 }
 
-function SectionHeader({ icon, title, right }: { icon: string; title: string; right?: React.ReactNode }) {
+function SectionHeader({
+  icon,
+  title,
+  right,
+}: {
+  icon: string;
+  title: string;
+  right?: React.ReactNode;
+}) {
   return (
     <div className="mb-4 flex items-center justify-between">
       <div className="flex items-center gap-3">
@@ -605,7 +753,9 @@ function SectionHeader({ icon, title, right }: { icon: string; title: string; ri
 // ─── Section Divider ───────────────────────────────────
 
 function SectionDivider() {
-  return <div className="my-2 h-px bg-gradient-to-r from-transparent via-gray-700/50 to-transparent" />;
+  return (
+    <div className="my-2 h-px bg-gradient-to-r from-transparent via-gray-700/50 to-transparent" />
+  );
 }
 
 // ─── Main Dashboard ──────────────────────────────────────
@@ -613,20 +763,22 @@ function SectionDivider() {
 /** Wrapper that provides a Suspense boundary for useSearchParams. */
 export default function DashboardPage() {
   return (
-    <Suspense fallback={
-      <main className="relative flex min-h-screen items-center justify-center bg-[#0F1117]">
-        <AmbientBackground />
-        <div className="relative z-10 text-center">
-          <div className="mx-auto mb-4 flex items-center justify-center">
-            <div className="relative">
-              <div className="h-10 w-10 animate-spin rounded-full border-2 border-synapse-neon-blue border-t-transparent" />
-              <div className="absolute inset-0 h-10 w-10 animate-ping rounded-full bg-synapse-neon-blue/10" />
+    <Suspense
+      fallback={
+        <main className="relative flex min-h-screen items-center justify-center bg-[#0F1117]">
+          <AmbientBackground />
+          <div className="relative z-10 text-center">
+            <div className="mx-auto mb-4 flex items-center justify-center">
+              <div className="relative">
+                <div className="h-10 w-10 animate-spin rounded-full border-2 border-synapse-neon-blue border-t-transparent" />
+                <div className="absolute inset-0 h-10 w-10 animate-ping rounded-full bg-synapse-neon-blue/10" />
+              </div>
             </div>
+            <p className="text-sm text-gray-400">Loading your learning dashboard...</p>
           </div>
-          <p className="text-sm text-gray-400">Loading your learning dashboard...</p>
-        </div>
-      </main>
-    }>
+        </main>
+      }
+    >
       <DashboardContent />
     </Suspense>
   );
@@ -641,7 +793,18 @@ function DashboardContent() {
   const [recentSessions, setRecentSessions] = useState<Session[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
   const [studyPlans, setStudyPlans] = useState<StudyPlan[]>([]);
-  const [conceptsDue, setConceptsDue] = useState<{concepts: {concept_name: string; subject: string; mastery_level: string; confidence_score: number | null; times_encountered: number; next_review_at: string | null; days_until_review: number | null}[]; total_due: number} | null>(null);
+  const [conceptsDue, setConceptsDue] = useState<{
+    concepts: {
+      concept_name: string;
+      subject: string;
+      mastery_level: string;
+      confidence_score: number | null;
+      times_encountered: number;
+      next_review_at: string | null;
+      days_until_review: number | null;
+    }[];
+    total_due: number;
+  } | null>(null);
   const [greeting, setGreeting] = useState('Welcome');
 
   useEffect(() => {
@@ -674,8 +837,11 @@ function DashboardContent() {
         setAnalytics(analyticsData);
         setStudyPlans(plansData.study_plans || []);
         setConceptsDue(conceptsDueData);
-      } catch { /* ignore */ }
-      finally { setDataLoading(false); }
+      } catch {
+        /* ignore */
+      } finally {
+        setDataLoading(false);
+      }
     }
     loadData();
   }, [authLoading]);
@@ -717,7 +883,11 @@ function DashboardContent() {
               <div className="mb-4 h-5 w-32 rounded bg-gray-800/30" />
               <div className="flex items-end gap-1">
                 {[...Array(7)].map((_, i) => (
-                  <div key={i} className="flex-1" style={{ height: `${20 + Math.random() * 60}px` }}>
+                  <div
+                    key={i}
+                    className="flex-1"
+                    style={{ height: `${20 + Math.random() * 60}px` }}
+                  >
                     <div className="h-full w-5 rounded-t-md bg-gray-800/20" />
                   </div>
                 ))}
@@ -762,13 +932,16 @@ function DashboardContent() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
                 <span className="text-gradient">
-                  {greeting}{user ? `, ${user.name.split(' ')[0]}` : ''}
+                  {greeting}
+                  {user ? `, ${user.name.split(' ')[0]}` : ''}
                 </span>
               </h1>
               {a && (
                 <div className="mt-1 flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
-                    <span className={`h-2 w-2 rounded-full ${a.is_active_today ? 'bg-synapse-neon-green shadow-glow-sm' : 'bg-gray-600'}`} />
+                    <span
+                      className={`h-2 w-2 rounded-full ${a.is_active_today ? 'bg-synapse-neon-green shadow-glow-sm' : 'bg-gray-600'}`}
+                    />
                     {a.is_active_today ? 'Learned today' : 'Start a session'}
                   </span>
                   {a.learning_streak_days > 0 && (
@@ -782,7 +955,9 @@ function DashboardContent() {
                   {a.top_subject && (
                     <>
                       <span className="h-3 w-px bg-gray-700" />
-                      <span className="text-xs text-gray-500">Focus: <span className="text-gray-400 capitalize">{a.top_subject}</span></span>
+                      <span className="text-xs text-gray-500">
+                        Focus: <span className="text-gray-400 capitalize">{a.top_subject}</span>
+                      </span>
                     </>
                   )}
                 </div>
@@ -794,7 +969,13 @@ function DashboardContent() {
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-synapse-neon-blue to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-glow-sm transition-all duration-200 hover:shadow-glow-blue hover:brightness-110 active:scale-[0.97]"
               >
                 <span>Start Learning</span>
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </Link>
@@ -825,7 +1006,9 @@ function DashboardContent() {
             value={a?.total_concepts ?? 0}
             icon="🧠"
             accent="green"
-            subtitle={a ? `${a.mastered_concepts} mastered · ${a.learning_concepts} learning` : undefined}
+            subtitle={
+              a ? `${a.mastered_concepts} mastered · ${a.learning_concepts} learning` : undefined
+            }
             delay={120}
           />
           <StatCard
@@ -836,13 +1019,21 @@ function DashboardContent() {
             subtitle={a?.top_subject ? `Top: ${a.top_subject}` : undefined}
             delay={180}
           />
-          <div style={{ animationDelay: '240ms', animationFillMode: 'forwards' }} className="animate-card-enter opacity-0">
+          <div
+            style={{ animationDelay: '240ms', animationFillMode: 'forwards' }}
+            className="animate-card-enter opacity-0"
+          >
             {studyPlanStat || (
               <div className="glass-card flex h-full items-center justify-center p-4">
                 <div className="text-center">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Study Plan</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+                    Study Plan
+                  </p>
                   <p className="mt-0.5 text-xs text-gray-600">Not started</p>
-                  <Link href="/study-plan" className="mt-2 inline-block text-[10px] text-synapse-neon-blue hover:underline">
+                  <Link
+                    href="/study-plan"
+                    className="mt-2 inline-block text-[10px] text-synapse-neon-blue hover:underline"
+                  >
                     Create one →
                   </Link>
                 </div>
@@ -854,10 +1045,19 @@ function DashboardContent() {
         {/* ── Activity Timeline ── */}
         {a && a.activity_timeline.length > 0 && (
           <SectionContainer className="mb-6">
-            <SectionHeader icon="📊" title="Activity (7 days)" right={<span className="text-[9px] text-gray-500">Sessions per day</span>} />
+            <SectionHeader
+              icon="📊"
+              title="Activity (7 days)"
+              right={<span className="text-[9px] text-gray-500">Sessions per day</span>}
+            />
             <div className="flex items-end gap-1">
               {a.activity_timeline.map((day, i) => (
-                <ActivityBar key={i} day={day} max={Math.max(...a.activity_timeline.map((d) => d.sessions), 1)} index={i} />
+                <ActivityBar
+                  key={i}
+                  day={day}
+                  max={Math.max(...a.activity_timeline.map((d) => d.sessions), 1)}
+                  index={i}
+                />
               ))}
             </div>
           </SectionContainer>
@@ -871,8 +1071,12 @@ function DashboardContent() {
               title="Quiz Performance"
               right={
                 <div className="flex items-center gap-3 text-[10px] text-gray-500">
-                  <span>Avg: <strong className="text-gray-300">{a.average_quiz_score ?? '—'}%</strong></span>
-                  <span>Best: <strong className="text-gray-300">{a.highest_quiz_score ?? '—'}%</strong></span>
+                  <span>
+                    Avg: <strong className="text-gray-300">{a.average_quiz_score ?? '—'}%</strong>
+                  </span>
+                  <span>
+                    Best: <strong className="text-gray-300">{a.highest_quiz_score ?? '—'}%</strong>
+                  </span>
                   {a.quiz_streak > 0 && (
                     <span className="text-synapse-neon-amber">Streak: {a.quiz_streak} 🏆</span>
                   )}
@@ -881,10 +1085,15 @@ function DashboardContent() {
             />
             <div className="space-y-2.5">
               {a.recent_quizzes.slice(0, 5).map((q) => (
-                <div key={q.quiz_id} className="flex items-center justify-between rounded-lg px-2 py-1.5 transition-all hover:bg-white/[0.02]">
+                <div
+                  key={q.quiz_id}
+                  className="flex items-center justify-between rounded-lg px-2 py-1.5 transition-all hover:bg-white/[0.02]"
+                >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-medium text-gray-300">{q.topic}</p>
-                    <p className="text-[9px] text-gray-500">{q.difficulty} · {q.score}/{q.total_points}</p>
+                    <p className="text-[9px] text-gray-500">
+                      {q.difficulty} · {q.score}/{q.total_points}
+                    </p>
                   </div>
                   <QuizScoreBar percentage={q.percentage} />
                 </div>
@@ -894,7 +1103,11 @@ function DashboardContent() {
         )}
 
         {/* ── Mistake Analysis ── */}
-        {a && <div className="mb-6"><MistakeAnalysisSection analytics={a} /></div>}
+        {a && (
+          <div className="mb-6">
+            <MistakeAnalysisSection analytics={a} />
+          </div>
+        )}
 
         {/* ── Concept Mastery ── */}
         {a && a.total_concepts > 0 && (
@@ -904,8 +1117,12 @@ function DashboardContent() {
               title="Concept Mastery"
               right={
                 <div className="flex items-center gap-2">
-                  <span className="text-[9px] text-synapse-neon-green">✅ {a.mastered_concepts} mastered</span>
-                  <span className="text-[9px] text-synapse-neon-blue">📖 {a.learning_concepts} learning</span>
+                  <span className="text-[9px] text-synapse-neon-green">
+                    ✅ {a.mastered_concepts} mastered
+                  </span>
+                  <span className="text-[9px] text-synapse-neon-blue">
+                    📖 {a.learning_concepts} learning
+                  </span>
                   <span className="text-[9px] text-gray-500">⚪ {a.undiscovered_concepts} new</span>
                 </div>
               }
@@ -926,12 +1143,19 @@ function DashboardContent() {
             )}
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {a.concept_mastery.slice(0, 9).map((c) => (
-                <div key={c.concept_name} className="group rounded-xl border border-gray-700/40 bg-white/[0.02] p-3 transition-all duration-200 hover:border-synapse-neon-blue/20 hover:bg-white/[0.04]">
+                <div
+                  key={c.concept_name}
+                  className="group rounded-xl border border-gray-700/40 bg-white/[0.02] p-3 transition-all duration-200 hover:border-synapse-neon-blue/20 hover:bg-white/[0.04]"
+                >
                   <div className="flex items-center justify-between gap-1">
-                    <p className="truncate text-[10px] font-medium text-gray-300 group-hover:text-glass-primary">{c.concept_name}</p>
+                    <p className="truncate text-[10px] font-medium text-gray-300 group-hover:text-glass-primary">
+                      {c.concept_name}
+                    </p>
                     <MasteryBadge level={c.mastery_level} />
                   </div>
-                  <p className="mt-1 text-[9px] text-gray-500">{c.subject} · {c.times_encountered}x</p>
+                  <p className="mt-1 text-[9px] text-gray-500">
+                    {c.subject} · {c.times_encountered}x
+                  </p>
                 </div>
               ))}
             </div>
@@ -960,19 +1184,24 @@ function DashboardContent() {
             />
             <div className="space-y-2">
               {conceptsDue.concepts.slice(0, 5).map((c) => {
-                const daysOverdue = c.days_until_review !== null && c.days_until_review < 0 ? Math.abs(c.days_until_review) : 0;
-                const dueLabel = daysOverdue > 0
-                  ? `${daysOverdue}d overdue`
-                  : c.days_until_review === 0
-                    ? 'Due today'
-                    : c.days_until_review !== null && c.days_until_review > 0
-                      ? `Due in ${c.days_until_review}d`
-                      : 'Due now';
-                const urgencyColor = daysOverdue >= 7
-                  ? 'text-red-400'
-                  : daysOverdue >= 3
-                    ? 'text-synapse-neon-amber'
-                    : 'text-gray-500';
+                const daysOverdue =
+                  c.days_until_review !== null && c.days_until_review < 0
+                    ? Math.abs(c.days_until_review)
+                    : 0;
+                const dueLabel =
+                  daysOverdue > 0
+                    ? `${daysOverdue}d overdue`
+                    : c.days_until_review === 0
+                      ? 'Due today'
+                      : c.days_until_review !== null && c.days_until_review > 0
+                        ? `Due in ${c.days_until_review}d`
+                        : 'Due now';
+                const urgencyColor =
+                  daysOverdue >= 7
+                    ? 'text-red-400'
+                    : daysOverdue >= 3
+                      ? 'text-synapse-neon-amber'
+                      : 'text-gray-500';
 
                 return (
                   <Link
@@ -980,23 +1209,35 @@ function DashboardContent() {
                     href="/learn"
                     className="flex items-center gap-3 rounded-xl border border-gray-700/40 bg-white/[0.02] px-4 py-3 transition-all duration-200 hover:border-synapse-neon-amber/30 hover:bg-white/[0.04]"
                   >
-                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-                      daysOverdue >= 7
-                        ? 'bg-red-500/10'
-                        : daysOverdue >= 3
-                          ? 'bg-synapse-neon-amber/10'
-                          : 'bg-blue-500/10'
-                    }`}>
-                      <span className="text-sm">{daysOverdue >= 7 ? '🔴' : daysOverdue >= 3 ? '🟡' : '🟢'}</span>
+                    <div
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                        daysOverdue >= 7
+                          ? 'bg-red-500/10'
+                          : daysOverdue >= 3
+                            ? 'bg-synapse-neon-amber/10'
+                            : 'bg-blue-500/10'
+                      }`}
+                    >
+                      <span className="text-sm">
+                        {daysOverdue >= 7 ? '🔴' : daysOverdue >= 3 ? '🟡' : '🟢'}
+                      </span>
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-gray-300">{c.concept_name}</p>
-                      <p className="text-[10px] text-gray-500 capitalize">{c.subject} · {c.mastery_level}</p>
+                      <p className="text-[10px] text-gray-500 capitalize">
+                        {c.subject} · {c.mastery_level}
+                      </p>
                     </div>
                     <span className={`whitespace-nowrap text-[10px] font-medium ${urgencyColor}`}>
                       {dueLabel}
                     </span>
-                    <svg className="h-3.5 w-3.5 shrink-0 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <svg
+                      className="h-3.5 w-3.5 shrink-0 text-gray-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                   </Link>
@@ -1012,9 +1253,14 @@ function DashboardContent() {
             <SectionHeader icon="📚" title="Subjects" />
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {a.subjects.map((s) => (
-                <div key={s.subject} className="rounded-xl border border-gray-700/40 bg-white/[0.02] p-3 transition-all duration-200 hover:border-synapse-neon-blue/20 hover:bg-white/[0.04]">
+                <div
+                  key={s.subject}
+                  className="rounded-xl border border-gray-700/40 bg-white/[0.02] p-3 transition-all duration-200 hover:border-synapse-neon-blue/20 hover:bg-white/[0.04]"
+                >
                   <p className="text-xs font-medium text-gray-300 capitalize">{s.subject}</p>
-                  <p className="mt-0.5 text-[9px] text-gray-500">{s.session_count} sessions · {s.message_count} messages</p>
+                  <p className="mt-0.5 text-[9px] text-gray-500">
+                    {s.session_count} sessions · {s.message_count} messages
+                  </p>
                 </div>
               ))}
             </div>
@@ -1031,14 +1277,18 @@ function DashboardContent() {
             >
               <Link
                 href={feature.href}
-                onClick={(e) => { if (feature.status === 'coming_soon') e.preventDefault(); }}
+                onClick={(e) => {
+                  if (feature.status === 'coming_soon') e.preventDefault();
+                }}
                 className={`glass-card relative block overflow-hidden p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover ${feature.glow} ${feature.status === 'coming_soon' ? 'opacity-60 hover:opacity-80' : ''}`}
               >
                 {/* Hover shine */}
                 <div className="absolute -inset-1 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                 <div className="relative flex items-start gap-4">
-                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${feature.gradient} shadow-lg ${feature.status === 'ready' ? feature.glow : ''}`}>
+                  <div
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${feature.gradient} shadow-lg ${feature.status === 'ready' ? feature.glow : ''}`}
+                  >
                     <span className="text-xl">{feature.icon}</span>
                   </div>
                   <div className="min-w-0 flex-1">
@@ -1050,10 +1300,18 @@ function DashboardContent() {
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 text-xs leading-relaxed text-gray-400">{feature.description}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-gray-400">
+                      {feature.description}
+                    </p>
                   </div>
                   {feature.status === 'ready' && (
-                    <svg className="mt-1 h-4 w-4 shrink-0 text-gray-500 transition-all group-hover:translate-x-1 group-hover:text-synapse-neon-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <svg
+                      className="mt-1 h-4 w-4 shrink-0 text-gray-500 transition-all group-hover:translate-x-1 group-hover:text-synapse-neon-blue"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                   )}
@@ -1064,7 +1322,11 @@ function DashboardContent() {
         </div>
 
         {/* ── Study Plan Progress ── */}
-        {studyPlans.length > 0 && <div className="mb-6"><StudyPlanProgress plans={studyPlans} /></div>}
+        {studyPlans.length > 0 && (
+          <div className="mb-6">
+            <StudyPlanProgress plans={studyPlans} />
+          </div>
+        )}
 
         {/* ── Recent Sessions ── */}
         <section className="mb-6">
@@ -1075,7 +1337,10 @@ function DashboardContent() {
               </div>
               <h2 className="text-sm font-semibold text-glass-primary">Recent Sessions</h2>
             </div>
-            <Link href="/learn" className="text-xs font-medium text-synapse-neon-blue transition-all hover:text-synapse-neon-cyan">
+            <Link
+              href="/learn"
+              className="text-xs font-medium text-synapse-neon-blue transition-all hover:text-synapse-neon-cyan"
+            >
               View all →
             </Link>
           </div>
@@ -1087,7 +1352,12 @@ function DashboardContent() {
         {/* ── First learned date ── */}
         {a?.first_learning_date && (
           <p className="mb-8 text-center text-[10px] text-gray-600">
-            Learning since {new Date(a.first_learning_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+            Learning since{' '}
+            {new Date(a.first_learning_date).toLocaleDateString(undefined, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
           </p>
         )}
       </div>

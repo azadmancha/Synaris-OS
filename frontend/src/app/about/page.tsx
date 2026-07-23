@@ -48,18 +48,16 @@ export default function AboutPage() {
               &ldquo;Concepts are permanent. Marks are temporary.&rdquo;
             </blockquote>
             <p className="mt-2 leading-relaxed text-gray-600 dark:text-gray-400">
-              Every design decision in Synaris answers one question: Does this improve thinking?
-              Not — is it flashy? Is it viral? Does it give the fastest answer?
+              Every design decision in Synaris answers one question: Does this improve thinking? Not
+              — is it flashy? Is it viral? Does it give the fastest answer?
             </p>
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-              The Mission
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">The Mission</h2>
             <p className="mt-2 leading-relaxed text-gray-600 dark:text-gray-400">
-              To make world-class education personalized, adaptive, and accessible to every
-              learner — regardless of background, geography, or resources.
+              To make world-class education personalized, adaptive, and accessible to every learner
+              — regardless of background, geography, or resources.
             </p>
           </div>
         </section>

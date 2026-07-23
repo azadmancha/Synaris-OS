@@ -17,34 +17,63 @@ function ParticleField() {
     let mouseX = 0;
     let mouseY = 0;
 
-    const resize = () => { canvasEl.width = window.innerWidth; canvasEl.height = window.innerHeight; };
+    const resize = () => {
+      canvasEl.width = window.innerWidth;
+      canvasEl.height = window.innerHeight;
+    };
     resize();
     window.addEventListener('resize', resize);
 
-    const particles: Array<{ x: number; y: number; vx: number; vy: number; size: number; opacity: number; hue: number }> = [];
+    const particles: Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      size: number;
+      opacity: number;
+      hue: number;
+    }> = [];
     for (let i = 0; i < 80; i++) {
       particles.push({
-        x: Math.random() * canvasEl.width, y: Math.random() * canvasEl.height,
-        vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
-        size: Math.random() * 2 + 0.5, opacity: Math.random() * 0.4 + 0.1,
+        x: Math.random() * canvasEl.width,
+        y: Math.random() * canvasEl.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        size: Math.random() * 2 + 0.5,
+        opacity: Math.random() * 0.4 + 0.1,
         hue: Math.random() * 80 + 200,
       });
     }
 
-    const onMouse = (e: MouseEvent) => { mouseX = e.clientX; mouseY = e.clientY; };
+    const onMouse = (e: MouseEvent) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    };
     window.addEventListener('mousemove', onMouse);
 
     function draw() {
       ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
       for (const p of particles) {
-        const dx = mouseX - p.x, dy = mouseY - p.y, dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 200) { const force = (200 - dist) / 200 * 0.02; p.vx -= dx * force; p.vy -= dy * force; }
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0) p.x = canvasEl.width; if (p.x > canvasEl.width) p.x = 0;
-        if (p.y < 0) p.y = canvasEl.height; if (p.y > canvasEl.height) p.y = 0;
-        p.vx *= 0.999; p.vy *= 0.999;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue}, 60%, 55%, ${p.opacity})`; ctx.fill();
+        const dx = mouseX - p.x,
+          dy = mouseY - p.y,
+          dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 200) {
+          const force = ((200 - dist) / 200) * 0.02;
+          p.vx -= dx * force;
+          p.vy -= dy * force;
+        }
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = canvasEl.width;
+        if (p.x > canvasEl.width) p.x = 0;
+        if (p.y < 0) p.y = canvasEl.height;
+        if (p.y > canvasEl.height) p.y = 0;
+        p.vx *= 0.999;
+        p.vy *= 0.999;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue}, 60%, 55%, ${p.opacity})`;
+        ctx.fill();
       }
       for (let i = 0; i < particles.length; i++) {
         const pi = particles[i];
@@ -52,17 +81,32 @@ function ParticleField() {
         for (let j = i + 1; j < particles.length; j++) {
           const pj = particles[j];
           if (!pj) continue;
-          const dx = pi.x - pj.x, dy = pi.y - pj.y, dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 100) { ctx.beginPath(); ctx.moveTo(pi.x, pi.y); ctx.lineTo(pj.x, pj.y); ctx.strokeStyle = `hsla(210, 50%, 55%, ${(1 - dist / 100) * 0.08})`; ctx.lineWidth = 0.5; ctx.stroke(); }
+          const dx = pi.x - pj.x,
+            dy = pi.y - pj.y,
+            dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 100) {
+            ctx.beginPath();
+            ctx.moveTo(pi.x, pi.y);
+            ctx.lineTo(pj.x, pj.y);
+            ctx.strokeStyle = `hsla(210, 50%, 55%, ${(1 - dist / 100) * 0.08})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
         }
       }
       animationId = requestAnimationFrame(draw);
     }
     draw();
-    return () => { cancelAnimationFrame(animationId); window.removeEventListener('resize', resize); window.removeEventListener('mousemove', onMouse); };
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', onMouse);
+    };
   }, []);
 
-  return <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-0" aria-hidden="true" />;
+  return (
+    <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-0" aria-hidden="true" />
+  );
 }
 
 // ─── Floating Glow Orbs ─────────────────────────────────
@@ -84,11 +128,19 @@ function DecorativeElements() {
   return (
     <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden" aria-hidden="true">
       {/* Top-right decorative circle */}
-      <svg className="absolute -right-20 -top-20 h-64 w-64 text-blue-500/5" viewBox="0 0 200 200" fill="currentColor">
+      <svg
+        className="absolute -right-20 -top-20 h-64 w-64 text-blue-500/5"
+        viewBox="0 0 200 200"
+        fill="currentColor"
+      >
         <circle cx="100" cy="100" r="100" />
       </svg>
       {/* Bottom-left decorative circle */}
-      <svg className="absolute -bottom-32 -left-32 h-96 w-96 text-indigo-500/5" viewBox="0 0 200 200" fill="currentColor">
+      <svg
+        className="absolute -bottom-32 -left-32 h-96 w-96 text-indigo-500/5"
+        viewBox="0 0 200 200"
+        fill="currentColor"
+      >
         <circle cx="100" cy="100" r="100" />
       </svg>
       {/* Grid pattern overlay */}
@@ -96,7 +148,6 @@ function DecorativeElements() {
     </div>
   );
 }
-
 
 // ─── Main Page ──────────────────────────────────────────
 
@@ -118,7 +169,10 @@ export default function Home() {
     const splashTimer = setTimeout(() => setPhase('content'), 1500);
     // Restore dark mode preference
     const stored = localStorage.getItem('synaris_theme');
-    if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    if (
+      stored === 'dark' ||
+      (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
       setDark(true);
       document.documentElement.classList.add('dark');
     }
@@ -135,7 +189,10 @@ export default function Home() {
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!heroRef.current) return;
     const rect = heroRef.current.getBoundingClientRect();
-    setMousePos({ x: (e.clientX - rect.left) / rect.width, y: (e.clientY - rect.top) / rect.height });
+    setMousePos({
+      x: (e.clientX - rect.left) / rect.width,
+      y: (e.clientY - rect.top) / rect.height,
+    });
   }, []);
 
   const handleGoogleSignIn = useCallback(async () => {
@@ -148,34 +205,37 @@ export default function Home() {
     }
   }, []);
 
-  const handleEmailSignIn = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !password.trim()) return;
+  const handleEmailSignIn = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!email.trim() || !password.trim()) return;
 
-    setIsSubmitting(true);
-    setAuthError(null);
-    setAuthStatus(null);
+      setIsSubmitting(true);
+      setAuthError(null);
+      setAuthStatus(null);
 
-    try {
-      if (isSignUp) {
-        const result = await signUpWithEmail(email, password);
-        if (result.user && !result.session) {
-          setAuthStatus('Check your email for a confirmation link, then sign in below.');
-          setIsSignUp(false);
+      try {
+        if (isSignUp) {
+          const result = await signUpWithEmail(email, password);
+          if (result.user && !result.session) {
+            setAuthStatus('Check your email for a confirmation link, then sign in below.');
+            setIsSignUp(false);
+          } else {
+            setAuthStatus('Signed up successfully! Redirecting...');
+            window.location.href = '/learn';
+          }
         } else {
-          setAuthStatus('Signed up successfully! Redirecting...');
+          await signInWithEmail(email, password);
           window.location.href = '/learn';
         }
-      } else {
-        await signInWithEmail(email, password);
-        window.location.href = '/learn';
+      } catch (err) {
+        setAuthError(err instanceof Error ? err.message : 'Authentication failed');
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (err) {
-      setAuthError(err instanceof Error ? err.message : 'Authentication failed');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [email, password, isSignUp]);
+    },
+    [email, password, isSignUp],
+  );
 
   const parallaxX = (mousePos.x - 0.5) * 15;
   const parallaxY = (mousePos.y - 0.5) * 15;
@@ -212,9 +272,10 @@ export default function Home() {
 
   // ─── MAIN CONTENT ─────────────────────────────────
 
-  const parallaxStyle = phase === 'content'
-    ? { transform: `translate(${parallaxX * 0.5}px, ${parallaxY * 0.5}px)` }
-    : {};
+  const parallaxStyle =
+    phase === 'content'
+      ? { transform: `translate(${parallaxX * 0.5}px, ${parallaxY * 0.5}px)` }
+      : {};
 
   return (
     <main
@@ -271,7 +332,10 @@ export default function Home() {
             Think independently.
           </span>
           <span className="mt-1 block text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-            <span className="animate-gradient bg-gradient-to-r from-teal-500 via-indigo-500 to-blue-600 bg-[length:200%_auto] bg-clip-text text-transparent" style={{ animationDelay: '0.5s' }}>
+            <span
+              className="animate-gradient bg-gradient-to-r from-teal-500 via-indigo-500 to-blue-600 bg-[length:200%_auto] bg-clip-text text-transparent"
+              style={{ animationDelay: '0.5s' }}
+            >
               Build fearlessly.
             </span>
           </span>
@@ -303,10 +367,22 @@ export default function Home() {
                 className="group relative flex w-full items-center justify-center gap-3 rounded-full bg-white px-8 py-3 text-sm font-medium text-gray-700 shadow-lg ring-1 ring-gray-300 transition-all hover:shadow-xl hover:ring-gray-400 active:scale-[0.97] dark:bg-[#1C1E2B] dark:text-gray-200 dark:ring-gray-600 dark:hover:ring-gray-500"
               >
                 <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                  <path
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+                    fill="#4285F4"
+                  />
+                  <path
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    fill="#34A853"
+                  />
+                  <path
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                    fill="#FBBC05"
+                  />
+                  <path
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                    fill="#EA4335"
+                  />
                 </svg>
                 <span>Continue with Google</span>
                 <span className="absolute -inset-1 rounded-full bg-blue-500/10 opacity-0 blur transition-opacity duration-300 group-hover:opacity-100" />
@@ -333,7 +409,13 @@ export default function Home() {
                 className="mt-3 flex items-center justify-center gap-1 text-center text-xs text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
               >
                 Continue as guest
-                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg
+                  className="h-3 w-3"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </a>
@@ -348,7 +430,9 @@ export default function Home() {
 
                 <form onSubmit={handleEmailSignIn} className="space-y-3">
                   <div>
-                    <label htmlFor="email" className="sr-only">Email</label>
+                    <label htmlFor="email" className="sr-only">
+                      Email
+                    </label>
                     <input
                       id="email"
                       type="email"
@@ -361,7 +445,9 @@ export default function Home() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="password" className="sr-only">Password</label>
+                    <label htmlFor="password" className="sr-only">
+                      Password
+                    </label>
                     <input
                       id="password"
                       type="password"
@@ -384,8 +470,10 @@ export default function Home() {
                         <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                         {isSignUp ? 'Creating account...' : 'Signing in...'}
                       </span>
+                    ) : isSignUp ? (
+                      'Create Account'
                     ) : (
-                      isSignUp ? 'Create Account' : 'Sign In'
+                      'Sign In'
                     )}
                   </button>
                 </form>
@@ -435,9 +523,15 @@ export default function Home() {
         >
           <blockquote>
             <p className="text-sm text-gray-400 dark:text-gray-500">
-              &ldquo;<span className="italic text-gray-500 dark:text-gray-400">Concepts are permanent. Marks are temporary.</span>&rdquo;
+              &ldquo;
+              <span className="italic text-gray-500 dark:text-gray-400">
+                Concepts are permanent. Marks are temporary.
+              </span>
+              &rdquo;
             </p>
-            <footer className="mt-2 text-xs text-gray-400">— The guiding principle of Synaris</footer>
+            <footer className="mt-2 text-xs text-gray-400">
+              — The guiding principle of Synaris
+            </footer>
           </blockquote>
         </div>
 
@@ -448,7 +542,9 @@ export default function Home() {
         >
           <span>Synaris</span>
           <span className="h-3 w-px bg-gray-300 dark:bg-gray-700" />
-          <span>Made by <span className="font-medium text-gray-500 dark:text-gray-400">Azad</span></span>
+          <span>
+            Made by <span className="font-medium text-gray-500 dark:text-gray-400">Azad</span>
+          </span>
           <span className="h-3 w-px bg-gray-300 dark:bg-gray-700" />
           <span className="text-gray-400">Aeris Labs</span>
         </div>

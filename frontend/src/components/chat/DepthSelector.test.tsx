@@ -48,7 +48,11 @@ describe('DepthSelector', () => {
     const onChange = vi.fn();
     render(<DepthSelector depth="balanced" onChange={onChange} />);
 
-    fireEvent.click(screen.getByText(depth === 'deep_dive' ? 'Deep Dive' : depth.charAt(0).toUpperCase() + depth.slice(1)));
+    fireEvent.click(
+      screen.getByText(
+        depth === 'deep_dive' ? 'Deep Dive' : depth.charAt(0).toUpperCase() + depth.slice(1),
+      ),
+    );
     expect(onChange).toHaveBeenCalledWith(depth);
   });
 
@@ -62,7 +66,9 @@ describe('DepthSelector', () => {
 
   it('disables all buttons when disabled prop is true', () => {
     const onChange = vi.fn();
-    const { container } = render(<DepthSelector depth="balanced" onChange={onChange} disabled={true} />);
+    const { container } = render(
+      <DepthSelector depth="balanced" onChange={onChange} disabled={true} />,
+    );
 
     const buttons = container.querySelectorAll('button');
     buttons.forEach((btn) => {

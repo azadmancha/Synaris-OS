@@ -50,7 +50,10 @@ export default function QuizView({ sessionId, onError, onClose, prefillTopic }: 
 
     try {
       await api.generateQuizStream(
-        sessionId, topic.trim(), difficulty, questionCount,
+        sessionId,
+        topic.trim(),
+        difficulty,
+        questionCount,
         {
           onToken: (token) => setStreamingText((prev) => prev + token),
           onDone: (generated) => {
@@ -58,7 +61,10 @@ export default function QuizView({ sessionId, onError, onClose, prefillTopic }: 
             setStreamingText('');
             setPhase('answering');
           },
-          onError: (errMsg) => { onError(errMsg); setPhase('idle'); },
+          onError: (errMsg) => {
+            onError(errMsg);
+            setPhase('idle');
+          },
         },
         abortController.signal,
       );
@@ -83,7 +89,8 @@ export default function QuizView({ sessionId, onError, onClose, prefillTopic }: 
     setPhase('submitting');
 
     const answerList = Object.entries(answers).map(([question_id, user_answer]) => ({
-      question_id, user_answer,
+      question_id,
+      user_answer,
     }));
 
     try {
@@ -123,7 +130,14 @@ export default function QuizView({ sessionId, onError, onClose, prefillTopic }: 
         <QuizGenerating
           topic={topic}
           streamingText={streamingText}
-          onCancel={onClose ? () => { abortRef.current?.abort(); onClose(); } : undefined}
+          onCancel={
+            onClose
+              ? () => {
+                  abortRef.current?.abort();
+                  onClose();
+                }
+              : undefined
+          }
         />
       )}
 
