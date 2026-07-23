@@ -26,7 +26,6 @@ import logging
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
 
 from app.security.guardrails import get_auditor
 
@@ -225,7 +224,7 @@ class AbuseDetector:
                 reasons=reasons,
                 ban_expires_at=now + _BAN_DURATION,
                 message=(
-                    f"Your account has been temporarily suspended due to suspicious activity. Please try again later."
+                    "Your account has been temporarily suspended due to suspicious activity. Please try again later."
                 ),
             )
 

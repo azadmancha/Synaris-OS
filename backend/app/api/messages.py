@@ -111,7 +111,8 @@ async def _get_due_concepts_notice(
     Returns:
         A formatted notice string, or empty string if nothing is due.
     """
-    from datetime import UTC, datetime, timedelta
+    from datetime import UTC, datetime
+
     from app.infrastructure.database import engine
     from app.models.concept_mastery import ConceptMastery
 

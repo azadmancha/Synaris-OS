@@ -29,6 +29,14 @@ Usage:
         ai_response = "I apologize, but I cannot provide that response."
 """
 
+from app.security.abuse import (
+    AbuseDetector,
+    AbuseResult,
+    check_abuse,
+    get_abuse_detector,
+    mark_abuse_event,
+    reset_abuse_detector,
+)
 from app.security.guardrails import (
     GuardrailResult,
     InputGuardrail,
@@ -46,14 +54,6 @@ from app.security.rate_limit import (
     SlidingWindowRateLimiter,
     get_rate_limiter,
     reset_rate_limiter,
-)
-from app.security.abuse import (
-    AbuseResult,
-    AbuseDetector,
-    check_abuse,
-    mark_abuse_event,
-    get_abuse_detector,
-    reset_abuse_detector,
 )
 
 __all__ = [

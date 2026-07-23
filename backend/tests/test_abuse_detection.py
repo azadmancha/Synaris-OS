@@ -14,10 +14,9 @@ import time
 
 from app.security.abuse import (
     AbuseDetector,
-    get_abuse_detector,
-    reset_abuse_detector,
     check_abuse,
     mark_abuse_event,
+    reset_abuse_detector,
 )
 
 
