@@ -11,6 +11,7 @@ from enum import Enum
 
 class ChunkType(Enum):
     """The type of content in a chunk."""
+
     CHAPTER = "chapter"
     SECTION = "section"
     SUBSECTION = "subsection"
@@ -27,6 +28,7 @@ class ChunkType(Enum):
 @dataclass
 class DocumentChunk:
     """A single chunk of a document with rich metadata."""
+
     id: str = ""
     document_id: str = ""
     content: str = ""

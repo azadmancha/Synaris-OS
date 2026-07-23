@@ -493,10 +493,12 @@ async def generate_practice_quiz(
     if not topic:
         # Gather all completed quizzes and find weakest topic
         quizzes_result = await db.execute(
-            select(Quiz).where(
+            select(Quiz)
+            .where(
                 Quiz.user_id == user_id,
                 Quiz.status == "completed",
-            ).order_by(desc(Quiz.completed_at))
+            )
+            .order_by(desc(Quiz.completed_at))
         )
         all_quizzes = quizzes_result.scalars().all()
 
@@ -505,7 +507,7 @@ async def generate_practice_quiz(
             t = q.topic or "general"
             if t not in topic_mistakes:
                 topic_mistakes[t] = {"mistakes": 0, "total": 0}
-            for question in (q.questions or []):
+            for question in q.questions or []:
                 if question.get("user_answer") is not None:
                     topic_mistakes[t]["total"] += 1
                     if question["user_answer"] != question.get("correct_answer"):
@@ -517,7 +519,8 @@ async def generate_practice_quiz(
                 topic_mistakes,
                 key=lambda t: (
                     (topic_mistakes[t]["total"] - topic_mistakes[t]["mistakes"]) / topic_mistakes[t]["total"]
-                    if topic_mistakes[t]["total"] > 0 else 0
+                    if topic_mistakes[t]["total"] > 0
+                    else 0
                 ),
             )
 
@@ -526,9 +529,10 @@ async def generate_practice_quiz(
             wrong_questions = []
             for q in all_quizzes:
                 if q.topic == topic:
-                    for question in (q.questions or []):
-                        if (question.get("user_answer") is not None
-                                and question["user_answer"] != question.get("correct_answer")):
+                    for question in q.questions or []:
+                        if question.get("user_answer") is not None and question["user_answer"] != question.get(
+                            "correct_answer"
+                        ):
                             wrong_questions.append(question.get("question", ""))
 
             if wrong_questions:
@@ -723,7 +727,8 @@ async def submit_answers(
 
     # Calculate score
     correct = sum(
-        1 for q in questions
+        1
+        for q in questions
         if q.get("user_answer") is not None
         and _check_answer(
             user_answer=q["user_answer"],
@@ -774,8 +779,23 @@ def _check_answer(user_answer: str, correct_answer: str, question_type: str) -> 
 
     # For longer expected answers, check key word containment
     stop_words = {
-        "the", "a", "an", "is", "are", "was", "were", "to", "of",
-        "in", "for", "on", "with", "by", "at", "from", "as",
+        "the",
+        "a",
+        "an",
+        "is",
+        "are",
+        "was",
+        "were",
+        "to",
+        "of",
+        "in",
+        "for",
+        "on",
+        "with",
+        "by",
+        "at",
+        "from",
+        "as",
     }
     key_words = set(ca.split()) - stop_words
     if not key_words:

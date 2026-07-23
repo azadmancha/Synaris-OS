@@ -101,8 +101,7 @@ class KnowledgePipeline:
             vector_results = await self._vector_store.search_by_text(query, limit=5)
             if vector_results:
                 logger.info(
-                    f"Vector store returned {len(vector_results)} results "
-                    f"(top score: {vector_results[0].score:.3f})"
+                    f"Vector store returned {len(vector_results)} results (top score: {vector_results[0].score:.3f})"
                 )
                 # Normalize vector store results to SourceSearchResult format
                 # ContextBuilder expects doc.document with .content, .title, .source, .url
@@ -118,11 +117,13 @@ class KnowledgePipeline:
                         language="en",
                         license="",
                     )
-                    all_results.append(SourceSearchResult(
-                        document=doc,
-                        score=r.score,
-                        snippet=r.content[:300],
-                    ))
+                    all_results.append(
+                        SourceSearchResult(
+                            document=doc,
+                            score=r.score,
+                            snippet=r.content[:300],
+                        )
+                    )
         except Exception as e:
             logger.warning(f"Vector store search failed: {e}")
 
@@ -133,9 +134,7 @@ class KnowledgePipeline:
                 try:
                     source_results = await source.search(query, limit=3)
                     if source_results:
-                        logger.info(
-                            f"Source '{source.name}' returned {len(source_results)} results"
-                        )
+                        logger.info(f"Source '{source.name}' returned {len(source_results)} results")
                         all_results.extend(source_results)
                 except Exception as e:
                     logger.warning(f"Source '{source.name}' failed: {e}")
@@ -150,7 +149,7 @@ class KnowledgePipeline:
             # Map reranked results back to original sort order
             reranked_order = {r.chunk_id: i for i, r in enumerate(reranked)}
             # Sort original results to match reranked order
-            all_results.sort(key=lambda r: reranked_order.get(r.document.id if hasattr(r, 'document') else '', 999))
+            all_results.sort(key=lambda r: reranked_order.get(r.document.id if hasattr(r, "document") else "", 999))
             logger.info(f"Reranker: reordered {len(all_results)} results for query '{query[:40]}'")
         except Exception as e:
             logger.warning(f"Reranking failed, using original order: {e}")

@@ -144,16 +144,18 @@ def _parse_plan_json(raw_content: str) -> dict[str, Any]:
     # Validate and normalize milestones
     validated_milestones = []
     for i, m in enumerate(milestones):
-        validated_milestones.append({
-            "week": m.get("week", i + 1),
-            "title": m.get("title", f"Week {i + 1}"),
-            "description": m.get("description", ""),
-            "topics": m.get("topics", []),
-            "estimated_hours": m.get("estimated_hours", 5),
-            "learning_objectives": m.get("learning_objectives", []),
-            "quiz_topic": m.get("quiz_topic"),
-            "practical_exercise": m.get("practical_exercise"),
-        })
+        validated_milestones.append(
+            {
+                "week": m.get("week", i + 1),
+                "title": m.get("title", f"Week {i + 1}"),
+                "description": m.get("description", ""),
+                "topics": m.get("topics", []),
+                "estimated_hours": m.get("estimated_hours", 5),
+                "learning_objectives": m.get("learning_objectives", []),
+                "quiz_topic": m.get("quiz_topic"),
+                "practical_exercise": m.get("practical_exercise"),
+            }
+        )
 
     return {"title": title, "milestones": validated_milestones}
 

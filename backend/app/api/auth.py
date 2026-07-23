@@ -33,12 +33,14 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 class LoginRequest(BaseModel):
     """Development login — no real auth needed."""
+
     email: str
     display_name: str | None = None
 
 
 class SupabaseAuthRequest(BaseModel):
     """Supabase Google OAuth login."""
+
     access_token: str
     email: str
     name: str | None = None
@@ -72,10 +74,7 @@ async def dev_login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     user = result.scalar_one_or_none()
 
     if user is None:
-        display_name = (
-            request.display_name
-            or (request.email.split("@")[0] if request.email else "Developer")
-        )
+        display_name = request.display_name or (request.email.split("@")[0] if request.email else "Developer")
         user = User(
             id=uuid.uuid4(),
             email=request.email or "dev@synaris.local",
@@ -118,9 +117,7 @@ async def supabase_auth(
 
     # Create or update user in our database — lookup by Supabase user ID (stored in external_id)
     # This ensures the same Google account maps to the same local user even if email changes
-    result = await db.execute(
-        select(User).where(User.external_id == supabase_user_id)
-    )
+    result = await db.execute(select(User).where(User.external_id == supabase_user_id))
     user = result.scalar_one_or_none()
 
     if user is None:

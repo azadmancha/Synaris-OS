@@ -153,8 +153,8 @@ async def _get_due_concepts_notice(
 
         parts.append("")
         parts.append(
-            "Start the session by briefly asking: '" +
-            "Last time you studied X... Let's review. Can you tell me what you remember?'"
+            "Start the session by briefly asking: '"
+            + "Last time you studied X... Let's review. Can you tell me what you remember?'"
         )
         parts.append("---")
         return "\n".join(parts)
@@ -216,12 +216,15 @@ async def _get_relevant_past_summaries(
             LIMIT :limit
         """)
 
-        result = await db.execute(sql, {
-            "query_vec": query_vec,
-            "user_id": user_id,
-            "session_id": current_session_id,
-            "limit": limit,
-        })
+        result = await db.execute(
+            sql,
+            {
+                "query_vec": query_vec,
+                "user_id": user_id,
+                "session_id": current_session_id,
+                "limit": limit,
+            },
+        )
         rows = result.fetchall()
 
         if not rows:
@@ -242,9 +245,7 @@ async def _get_relevant_past_summaries(
             s.created_at = row[8]
             summaries.append(s)
 
-        logger.debug(
-            f"Cross-session recall: {len(summaries)} past summaries relevant to '{query[:40]}'"
-        )
+        logger.debug(f"Cross-session recall: {len(summaries)} past summaries relevant to '{query[:40]}'")
         return summaries
 
     except Exception as e:
@@ -353,6 +354,7 @@ async def _summarize_session_in_background(
     Called by the auto-summarize trigger every 5 message pairs.
     """
     from app.infrastructure.database import async_session_factory
+
     try:
         async with async_session_factory() as bg_db:
             await generate_session_summary(
@@ -466,8 +468,7 @@ async def send_message(
     if output_result.blocked:
         # Replace the AI response with a safe message
         ai_response.content = (
-                "I apologize, but I cannot provide that response "
-                "as it was flagged by our content safety filters."
+            "I apologize, but I cannot provide that response as it was flagged by our content safety filters."
         )
 
     # Save AI response
@@ -496,9 +497,7 @@ async def send_message(
     # Fire off a background task to generate a session summary.
     # This powers the Long-Term Memory system (Phase 1).
     if (next_seq + 1) % 10 == 0:
-        asyncio.ensure_future(
-            _summarize_session_in_background(user_id, session_id)
-        )
+        asyncio.ensure_future(_summarize_session_in_background(user_id, session_id))
 
     return ChatResponse(
         user_message=_serialize_message(user_msg),
@@ -629,7 +628,9 @@ async def send_message_stream(
         )
         if output_result.blocked:
             # Send a replacement response event instead of the original content
-            blocked_msg = "I apologize, but the response was flagged by our content safety filters and cannot be displayed."  # noqa: E501
+            blocked_msg = (
+                "I apologize, but the response was flagged by our content safety filters and cannot be displayed."  # noqa: E501
+            )
             yield f"event: token\ndata: {json.dumps(blocked_msg)}\n\n"
             full_content = blocked_msg
 
@@ -667,9 +668,7 @@ async def send_message_stream(
 
                 # ── Auto-Summarize (every 5 message pairs) ───
                 if (next_seq + 1) % 10 == 0:
-                    asyncio.ensure_future(
-                        _summarize_session_in_background(user_id, session_id)
-                    )
+                    asyncio.ensure_future(_summarize_session_in_background(user_id, session_id))
 
                 # 5. Send the done event with the AI message metadata
                 done_data = {

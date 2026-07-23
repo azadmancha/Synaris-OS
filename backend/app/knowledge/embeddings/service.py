@@ -32,6 +32,7 @@ try:
     from google import genai
     from google.genai import errors as genai_errors
     from google.genai import types as genai_types
+
     HAS_GEMINI = True
 except ImportError:
     HAS_GEMINI = False
@@ -154,7 +155,9 @@ class EmbeddingService:
                     contents=text,
                     config=genai_types.EmbedContentConfig(
                         output_dimensionality=GEMINI_EMBEDDING_DIM,
-                    ) if genai_types else None,
+                    )
+                    if genai_types
+                    else None,
                 )
                 vector = response.embeddings[0].values
                 return EmbeddingResult(
@@ -166,11 +169,12 @@ class EmbeddingService:
             except genai_errors.ClientError as e:
                 if "429" in str(e) or "rate" in str(e).lower():
                     if attempt < _MAX_RETRIES:
-                        backoff = _INITIAL_BACKOFF * (2 ** attempt)
+                        backoff = _INITIAL_BACKOFF * (2**attempt)
                         logger.warning(
-                            "Gemini embedding rate-limited (attempt %d/%d), "
-                            "retrying in %.1fs...",
-                            attempt + 1, _MAX_RETRIES + 1, backoff,
+                            "Gemini embedding rate-limited (attempt %d/%d), retrying in %.1fs...",
+                            attempt + 1,
+                            _MAX_RETRIES + 1,
+                            backoff,
                         )
                         await asyncio.sleep(backoff)
                         continue
@@ -189,7 +193,8 @@ class EmbeddingService:
         return self._local_embed(text)
 
     async def _gemini_embed_batch_with_retry(
-        self, texts: Sequence[str],
+        self,
+        texts: Sequence[str],
     ) -> list[EmbeddingResult]:
         """Embed multiple texts via Gemini API with retry on rate limits."""
         for attempt in range(_MAX_RETRIES + 1):
@@ -199,25 +204,30 @@ class EmbeddingService:
                     contents=list(texts),
                     config=genai_types.EmbedContentConfig(
                         output_dimensionality=GEMINI_EMBEDDING_DIM,
-                    ) if genai_types else None,
+                    )
+                    if genai_types
+                    else None,
                 )
                 results = []
                 for i, embedding in enumerate(response.embeddings):
-                    results.append(EmbeddingResult(
-                        text=texts[i],
-                        vector=embedding.values,
-                        model=GEMINI_EMBEDDING_MODEL,
-                        dimension=len(embedding.values),
-                    ))
+                    results.append(
+                        EmbeddingResult(
+                            text=texts[i],
+                            vector=embedding.values,
+                            model=GEMINI_EMBEDDING_MODEL,
+                            dimension=len(embedding.values),
+                        )
+                    )
                 return results
             except genai_errors.ClientError as e:
                 if "429" in str(e) or "rate" in str(e).lower():
                     if attempt < _MAX_RETRIES:
-                        backoff = _INITIAL_BACKOFF * (2 ** attempt)
+                        backoff = _INITIAL_BACKOFF * (2**attempt)
                         logger.warning(
-                            "Gemini batch embedding rate-limited (attempt %d/%d), "
-                            "retrying in %.1fs...",
-                            attempt + 1, _MAX_RETRIES + 1, backoff,
+                            "Gemini batch embedding rate-limited (attempt %d/%d), retrying in %.1fs...",
+                            attempt + 1,
+                            _MAX_RETRIES + 1,
+                            backoff,
                         )
                         await asyncio.sleep(backoff)
                         continue
@@ -231,8 +241,7 @@ class EmbeddingService:
 
         # All retries exhausted — fall back to individual (which will then local-fallback)
         logger.warning(
-            "Gemini batch embedding rate-limited after %d retries, "
-            "falling back to individual embeds",
+            "Gemini batch embedding rate-limited after %d retries, falling back to individual embeds",
             _MAX_RETRIES + 1,
         )
         return [await self._gemini_embed_with_retry(t) for t in texts]
@@ -249,16 +258,14 @@ class EmbeddingService:
         vector = [0.0] * dim
 
         if not text:
-            return EmbeddingResult(
-                text=text, vector=vector, model="local-ngram", dimension=dim
-            )
+            return EmbeddingResult(text=text, vector=vector, model="local-ngram", dimension=dim)
 
         text = text.lower()
         total_ngrams = 0
 
         for n in (2, 3):
             for i in range(len(text) - n + 1):
-                ngram = text[i:i + n]
+                ngram = text[i : i + n]
                 hash_val = int(hashlib.md5(ngram.encode()).hexdigest(), 16)
                 idx = hash_val % dim
                 vector[idx] += 1.0

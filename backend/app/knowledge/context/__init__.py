@@ -11,6 +11,7 @@ from dataclasses import dataclass
 @dataclass
 class ContextDocument:
     """A document prepared for LLM context."""
+
     content: str
     source: str
     citation: str  # Formatted citation string
@@ -20,6 +21,7 @@ class ContextDocument:
 @dataclass
 class LLMContext:
     """The complete context to inject into an LLM prompt."""
+
     system_prompt: str
     documents: list[ContextDocument]
     token_count: int

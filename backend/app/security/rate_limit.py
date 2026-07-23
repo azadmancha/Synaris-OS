@@ -30,9 +30,11 @@ logger = logging.getLogger(__name__)
 
 # ─── Types ───────────────────────────────────────────────────
 
+
 @dataclass
 class RateLimitResult:
     """Result of a rate limit check."""
+
     blocked: bool = False
     remaining: int = 0
     reset_at: float = 0.0
@@ -53,6 +55,7 @@ class RateLimitResult:
 
 
 # ─── Sliding Window Rate Limiter ──────────────────────────────
+
 
 class SlidingWindowRateLimiter:
     """Sliding window rate limiter using in-memory timestamps.
@@ -118,8 +121,7 @@ class SlidingWindowRateLimiter:
             retry_after = max(0, reset_at - now)
 
             logger.warning(
-                "Rate limit exceeded for user %s: %d requests in %ds window, "
-                "retry after %.1fs",
+                "Rate limit exceeded for user %s: %d requests in %ds window, retry after %.1fs",
                 user_id[:12],
                 len(timestamps),
                 self._window,

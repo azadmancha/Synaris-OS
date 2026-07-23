@@ -259,9 +259,7 @@ async def client(override_get_db: AsyncSession) -> Generator[TestClient, None, N
 
     from app.models.user import User
 
-    result = await override_get_db.execute(
-        select(User).where(User.id == DEV_USER_ID)
-    )
+    result = await override_get_db.execute(select(User).where(User.id == DEV_USER_ID))
     if not result.scalar_one_or_none():
         dev_user = User(
             id=DEV_USER_ID,
@@ -274,6 +272,7 @@ async def client(override_get_db: AsyncSession) -> Generator[TestClient, None, N
 
     # Reset rate limiter for each test
     from app.security.rate_limit import reset_rate_limiter
+
     reset_rate_limiter()
 
     # Create and start fresh mock patches for this test

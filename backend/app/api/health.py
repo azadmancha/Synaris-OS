@@ -22,6 +22,8 @@ router = APIRouter(tags=["health"])
 
 # ─── Server start time (set on module load) ─────────────────
 _server_start_time: datetime = datetime.now(UTC)
+
+
 def _check_api_key(name: str, value: str | None) -> str:
     """Check if an API key is configured and return a human-readable status."""
     if not value:
@@ -83,7 +85,8 @@ async def health_check(db: AsyncSession = Depends(get_db)):
         "checks": checks,
         "uptime_seconds": round(uptime, 1),
         "setup_guide": (
-            None if len(available_providers) > 0
+            None
+            if len(available_providers) > 0
             else {
                 "message": "No AI providers configured. Add at least one API key to your .env file.",
                 "providers": {

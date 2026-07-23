@@ -161,22 +161,15 @@ async def get_analytics(
     today_start = now_utc.replace(hour=0, minute=0, second=0, microsecond=0).replace(tzinfo=None)
 
     # ── Sessions ──────────────────────────────────────────
-    sessions_result = await db.execute(
-        select(LearningSession).where(LearningSession.user_id == user_id)
-    )
+    sessions_result = await db.execute(select(LearningSession).where(LearningSession.user_id == user_id))
     sessions = sessions_result.scalars().all()
     total_sessions = len(sessions)
     active_sessions = sum(1 for s in sessions if s.status == "active")
     total_session_messages = sum(s.message_count for s in sessions)
-    average_messages_per_session = round(
-        total_session_messages / total_sessions, 1
-    ) if total_sessions > 0 else 0
+    average_messages_per_session = round(total_session_messages / total_sessions, 1) if total_sessions > 0 else 0
 
     # Sessions created today
-    sessions_today = [
-        s for s in sessions
-        if        s.created_at and _naive(s.created_at) >= today_start
-    ]
+    sessions_today = [s for s in sessions if s.created_at and _naive(s.created_at) >= today_start]
     session_count_today = len(sessions_today)
     is_active_today = session_count_today > 0
 
@@ -189,20 +182,14 @@ async def get_analytics(
 
     # ── Messages ──────────────────────────────────────────
     messages_result = await db.execute(
-        select(func.count()).select_from(Message).where(
-            Message.session_id.in_(
-                select(LearningSession.id).where(LearningSession.user_id == user_id)
-            )
-        )
+        select(func.count())
+        .select_from(Message)
+        .where(Message.session_id.in_(select(LearningSession.id).where(LearningSession.user_id == user_id)))
     )
     total_messages = messages_result.scalar() or 0
 
     # ── Quizzes ───────────────────────────────────────────
-    quizzes_result = await db.execute(
-        select(Quiz).where(
-            Quiz.user_id == user_id
-        ).order_by(desc(Quiz.created_at))
-    )
+    quizzes_result = await db.execute(select(Quiz).where(Quiz.user_id == user_id).order_by(desc(Quiz.created_at)))
     quizzes = quizzes_result.scalars().all()
     total_quizzes = len(quizzes)
     completed_quizzes = [q for q in quizzes if q.status == "completed"]
@@ -234,30 +221,26 @@ async def get_analytics(
             if q.score is not None and q.total_points and q.total_points > 0
             else None
         )
-        recent_quizzes_data.append(QuizPerformanceSummary(
-            quiz_id=str(q.id),
-            topic=q.topic,
-            difficulty=q.difficulty,
-            score=q.score,
-            total_points=q.total_points,
-            percentage=pct,
-            completed_at=q.completed_at.isoformat() if q.completed_at else None,
-        ))
+        recent_quizzes_data.append(
+            QuizPerformanceSummary(
+                quiz_id=str(q.id),
+                topic=q.topic,
+                difficulty=q.difficulty,
+                score=q.score,
+                total_points=q.total_points,
+                percentage=pct,
+                completed_at=q.completed_at.isoformat() if q.completed_at else None,
+            )
+        )
 
     # ── Concept Mastery ───────────────────────────────────
-    concepts_result = await db.execute(
-        select(ConceptMastery).where(ConceptMastery.user_id == user_id)
-    )
+    concepts_result = await db.execute(select(ConceptMastery).where(ConceptMastery.user_id == user_id))
     concepts = concepts_result.scalars().all()
     total_concepts = len(concepts)
 
     mastered_concepts = sum(1 for c in concepts if c.mastery_level == "mastered")
-    learning_concepts = sum(
-        1 for c in concepts if c.mastery_level in ("familiar", "practicing")
-    )
-    undiscovered_concepts = sum(
-        1 for c in concepts if c.mastery_level in ("undiscovered", "introduced")
-    )
+    learning_concepts = sum(1 for c in concepts if c.mastery_level in ("familiar", "practicing"))
+    undiscovered_concepts = sum(1 for c in concepts if c.mastery_level in ("undiscovered", "introduced"))
 
     # Average confidence
     confidence_scores = [c.confidence_score for c in concepts if c.confidence_score is not None]
@@ -270,44 +253,45 @@ async def get_analytics(
     # Concept mastery details
     concept_mastery_data = []
     for c in sorted(concepts, key=lambda x: x.confidence_score or 0, reverse=True)[:20]:
-        concept_mastery_data.append(ConceptMasterySummary(
-            concept_name=c.concept_name,
-            subject=c.subject,
-            mastery_level=c.mastery_level,
-            confidence_score=c.confidence_score,
-            times_encountered=c.times_encountered,
-            times_correct=c.times_correct,
-            times_incorrect=c.times_incorrect,
-            last_reviewed_at=c.last_reviewed_at.isoformat() if c.last_reviewed_at else None,
-        ))
+        concept_mastery_data.append(
+            ConceptMasterySummary(
+                concept_name=c.concept_name,
+                subject=c.subject,
+                mastery_level=c.mastery_level,
+                confidence_score=c.confidence_score,
+                times_encountered=c.times_encountered,
+                times_correct=c.times_correct,
+                times_incorrect=c.times_incorrect,
+                last_reviewed_at=c.last_reviewed_at.isoformat() if c.last_reviewed_at else None,
+            )
+        )
 
     # ── Subject Breakdown ─────────────────────────────────
     subjects_data = []
     for subject, count in subject_counter.most_common():
-        subject_messages = sum(
-            s.message_count for s in sessions if s.subject == subject
+        subject_messages = sum(s.message_count for s in sessions if s.subject == subject)
+        subjects_data.append(
+            SubjectBreakdown(
+                subject=subject or "general",
+                session_count=count,
+                message_count=subject_messages,
+                total_time_minutes=count * 15,  # Estimate ~15 min per session
+            )
         )
-        subjects_data.append(SubjectBreakdown(
-            subject=subject or "general",
-            session_count=count,
-            message_count=subject_messages,
-            total_time_minutes=count * 15,  # Estimate ~15 min per session
-        ))
 
     # ── Activity Timeline (last 7 days) ──────────────────
     activity_timeline = []
     for i in range(6, -1, -1):
         day = today_start - timedelta(days=i)
-        day_sessions = [
-            s for s in sessions
-            if s.created_at and _naive(s.created_at).date() == day.date()
-        ]
+        day_sessions = [s for s in sessions if s.created_at and _naive(s.created_at).date() == day.date()]
         day_messages = sum(s.message_count for s in day_sessions)
-        activity_timeline.append(ActivityDay(
-            date=day.strftime("%a"),
-            sessions=len(day_sessions),
-            messages=day_messages,
-        ))
+        activity_timeline.append(
+            ActivityDay(
+                date=day.strftime("%a"),
+                sessions=len(day_sessions),
+                messages=day_messages,
+            )
+        )
 
     # ── Mistake Analysis ──────────────────────────────────
     all_mistakes: list[dict] = []
@@ -325,16 +309,18 @@ async def get_analytics(
                 topic_stats[topic]["total"] += 1
                 if not is_correct:
                     topic_stats[topic]["mistakes"] += 1
-                    all_mistakes.append({
-                        "question": question.get("question", ""),
-                        "topic": topic,
-                        "difficulty": q.difficulty,
-                        "user_answer": question.get("user_answer", ""),
-                        "correct_answer": question.get("correct_answer", ""),
-                        "explanation": question.get("explanation"),
-                        "quiz_id": str(q.id),
-                        "quiz_completed_at": q.completed_at.isoformat() if q.completed_at else None,
-                    })
+                    all_mistakes.append(
+                        {
+                            "question": question.get("question", ""),
+                            "topic": topic,
+                            "difficulty": q.difficulty,
+                            "user_answer": question.get("user_answer", ""),
+                            "correct_answer": question.get("correct_answer", ""),
+                            "explanation": question.get("explanation"),
+                            "quiz_id": str(q.id),
+                            "quiz_completed_at": q.completed_at.isoformat() if q.completed_at else None,
+                        }
+                    )
 
     total_mistakes = len(all_mistakes)
     weakest_topics = sorted(
@@ -343,9 +329,7 @@ async def get_analytics(
                 topic=t,
                 mistake_count=s["mistakes"],
                 total_questions=s["total"],
-                accuracy=round(
-                    (s["total"] - s["mistakes"]) / s["total"], 2
-                ) if s["total"] > 0 else 0.0,
+                accuracy=round((s["total"] - s["mistakes"]) / s["total"], 2) if s["total"] > 0 else 0.0,
             )
             for t, s in topic_stats.items()
         ],
@@ -357,10 +341,7 @@ async def get_analytics(
     learning_streak_days = 0
     check_date = today_start
     while True:
-        day_sessions = [
-            s for s in sessions
-            if s.created_at and _naive(s.created_at).date() == check_date.date()
-        ]
+        day_sessions = [s for s in sessions if s.created_at and _naive(s.created_at).date() == check_date.date()]
         if day_sessions:
             learning_streak_days += 1
             check_date -= timedelta(days=1)

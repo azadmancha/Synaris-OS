@@ -11,6 +11,7 @@ Covers:
 - Configurable limits
 - Edge cases
 """
+
 import asyncio
 import time
 
@@ -44,7 +45,7 @@ class TestRateLimiterBasics:
 
         for i in range(5):
             result = await limiter.check("user-1")
-            assert result.blocked is False, f"Request {i+1} should be allowed"
+            assert result.blocked is False, f"Request {i + 1} should be allowed"
             assert result.remaining == 5 - (i + 1)
 
     @pytest.mark.asyncio

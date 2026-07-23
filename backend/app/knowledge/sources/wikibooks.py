@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 try:
     import wikipediaapi
+
     HAS_WIKIPEDIA = True
 except ImportError:
     HAS_WIKIPEDIA = False
@@ -32,14 +33,29 @@ class WikibooksSource(SourceAdapter):
 
     # Popular Wikibooks subjects to pre-index
     COMMON_BOOKS = [
-        "Calculus", "Linear Algebra", "Statistics", "Abstract Algebra",
-        "General Chemistry", "Organic Chemistry", "Biochemistry",
-        "Physics", "Classical Mechanics", "Quantum Mechanics", "Electrodynamics",
-        "Cell Biology", "Genetics", "Neuroscience",
-        "Python Programming", "Java Programming", "Data Structures",
-        "Microeconomics", "Macroeconomics",
-        "Introduction to Philosophy", "Cognitive Psychology",
-        "Astronomy", "Climatology",
+        "Calculus",
+        "Linear Algebra",
+        "Statistics",
+        "Abstract Algebra",
+        "General Chemistry",
+        "Organic Chemistry",
+        "Biochemistry",
+        "Physics",
+        "Classical Mechanics",
+        "Quantum Mechanics",
+        "Electrodynamics",
+        "Cell Biology",
+        "Genetics",
+        "Neuroscience",
+        "Python Programming",
+        "Java Programming",
+        "Data Structures",
+        "Microeconomics",
+        "Macroeconomics",
+        "Introduction to Philosophy",
+        "Cognitive Psychology",
+        "Astronomy",
+        "Climatology",
     ]
 
     def __init__(self, language: str = "en") -> None:
@@ -109,6 +125,7 @@ class WikibooksSource(SourceAdapter):
     async def _fetch_book_page(self, title: str) -> SearchResult | None:
         """Fetch a single Wikibooks page and return as SearchResult."""
         import asyncio
+
         loop = asyncio.get_running_loop()
 
         def _fetch() -> object | None:
@@ -154,11 +171,13 @@ class WikibooksSource(SourceAdapter):
     async def _search_books(self, query: str, limit: int) -> list[SearchResult]:
         """Search Wikibooks using the MediaWiki API."""
         import asyncio
+
         loop = asyncio.get_running_loop()
 
         def _search() -> list[str]:
             """Search Wikibooks synchronously using requests."""
             import requests
+
             headers = {
                 "User-Agent": "Synaris/0.1 (learning-platform; contact@synaris.app)",
             }

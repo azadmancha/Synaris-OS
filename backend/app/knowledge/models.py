@@ -22,39 +22,25 @@ class KnowledgeDocument(Base):
 
     __tablename__ = "knowledge_documents"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(), primary_key=True, default=uuid.uuid4
-    )
-    source: Mapped[str] = mapped_column(
-        String(50), nullable=False, index=True
-    )
-    source_id: Mapped[str] = mapped_column(
-        String(200), nullable=False
-    )
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(), primary_key=True, default=uuid.uuid4)
+    source: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    source_id: Mapped[str] = mapped_column(String(200), nullable=False)
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     url: Mapped[str | None] = mapped_column(Text)
-    subject: Mapped[str] = mapped_column(
-        String(100), default="", index=True
-    )
+    subject: Mapped[str] = mapped_column(String(100), default="", index=True)
     language: Mapped[str] = mapped_column(String(10), default="en")
     license: Mapped[str] = mapped_column(String(50), default="")
-    difficulty: Mapped[str] = mapped_column(
-        String(20), default="intermediate"
-    )
+    difficulty: Mapped[str] = mapped_column(String(20), default="intermediate")
     chunk_count: Mapped[int] = mapped_column(Integer, default=0)
     total_tokens: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(UTC)
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
         onupdate=lambda: datetime.now(UTC),
     )
 
-    __table_args__ = (
-        Index("idx_doc_source_subject", "source", "subject"),
-    )
+    __table_args__ = (Index("idx_doc_source_subject", "source", "subject"),)
 
     def __repr__(self) -> str:
         return f"<KnowledgeDocument {self.source}: {self.title[:50]}>"
@@ -65,21 +51,13 @@ class KnowledgeChunk(Base):
 
     __tablename__ = "knowledge_chunks"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(), primary_key=True, default=uuid.uuid4
-    )
-    document_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(), nullable=False, index=True
-    )
-    source: Mapped[str] = mapped_column(
-        String(50), nullable=False, index=True
-    )
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(), primary_key=True, default=uuid.uuid4)
+    document_id: Mapped[uuid.UUID] = mapped_column(Uuid(), nullable=False, index=True)
+    source: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
 
     # Content
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    chunk_type: Mapped[str] = mapped_column(
-        String(20), default="paragraph"
-    )
+    chunk_type: Mapped[str] = mapped_column(String(20), default="paragraph")
     heading: Mapped[str] = mapped_column(String(500), default="")
     subheading: Mapped[str] = mapped_column(String(500), default="")
 
@@ -89,21 +67,15 @@ class KnowledgeChunk(Base):
     sequence: Mapped[int] = mapped_column(Integer, default=0)
 
     # Metadata
-    subject: Mapped[str] = mapped_column(
-        String(100), default="", index=True
-    )
-    difficulty: Mapped[str] = mapped_column(
-        String(20), default="intermediate"
-    )
+    subject: Mapped[str] = mapped_column(String(100), default="", index=True)
+    difficulty: Mapped[str] = mapped_column(String(20), default="intermediate")
     language: Mapped[str] = mapped_column(String(10), default="en")
     source_url: Mapped[str | None] = mapped_column(Text)
     license: Mapped[str] = mapped_column(String(50), default="")
 
     # Token tracking
     token_count: Mapped[int] = mapped_column(Integer, default=0)
-    embedding_version: Mapped[str] = mapped_column(
-        String(20), default=""
-    )
+    embedding_version: Mapped[str] = mapped_column(String(20), default="")
 
     # Vector embedding — stored as pgvector array
     # The actual Vector(N) type is registered via raw SQL in init_db()
@@ -114,9 +86,7 @@ class KnowledgeChunk(Base):
     )
 
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(UTC)
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
     __table_args__ = (
         Index("idx_chunk_source_subject", "source", "subject"),

@@ -7,7 +7,6 @@ Covers:
 - GET /v1/sessions/{id}/messages — get messages
 """
 
-
 from fastapi.testclient import TestClient
 
 

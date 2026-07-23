@@ -16,6 +16,7 @@ from typing import Any
 @dataclass
 class CachedEntry:
     """A cached query result."""
+
     query: str
     result: Any
     created_at: str = ""

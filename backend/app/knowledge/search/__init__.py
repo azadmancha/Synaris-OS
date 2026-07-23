@@ -13,6 +13,7 @@ from dataclasses import dataclass
 @dataclass
 class SearchResult:
     """A single search result from the Knowledge Engine."""
+
     chunk_id: str
     content: str
     heading: str

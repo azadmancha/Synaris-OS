@@ -18,10 +18,10 @@ from app.ai.providers.openrouter import provider as openrouter_provider
 # LiteLLM is the primary — it handles 100+ models through one interface.
 # SDK providers are fallbacks for specific cases.
 AVAILABLE_PROVIDERS: dict[str, AIProvider] = {
-    "litellm": litellm_provider,        # Primary — unified interface
-    "gemini": gemini_provider,           # Fallback — direct SDK
-    "groq": groq_provider,               # Fallback — direct SDK
-    "openrouter": openrouter_provider,   # Fallback — direct SDK
+    "litellm": litellm_provider,  # Primary — unified interface
+    "gemini": gemini_provider,  # Fallback — direct SDK
+    "groq": groq_provider,  # Fallback — direct SDK
+    "openrouter": openrouter_provider,  # Fallback — direct SDK
     # TODO(v3): Ollama provider (local models)
 }
 

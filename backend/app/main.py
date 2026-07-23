@@ -25,9 +25,7 @@ from app.infrastructure.logging import configure_logging
 # ─── Configure structured logging ─────────────────────
 
 # Log format detection: JSON if SENTRY_DSN is set (assumes production), else console
-_json_format = settings.log_format == "json" or (
-    settings.sentry_dsn is not None and settings.log_format != "console"
-)
+_json_format = settings.log_format == "json" or (settings.sentry_dsn is not None and settings.log_format != "console")
 configure_logging(json_format=_json_format)
 # Use structlog's bound logger to support keyword-argument logging
 # (e.g., logger.info("message", user_id=..., duration_ms=...)).
@@ -64,8 +62,8 @@ def init_sentry() -> None:
         from sentry_sdk.integrations.starlette import StarletteIntegration
 
         sentry_logging = LoggingIntegration(
-            level=logging.WARNING,       # Send warnings and above breadcrumbs
-            event_level=logging.ERROR,   # Send errors and above as events
+            level=logging.WARNING,  # Send warnings and above breadcrumbs
+            event_level=logging.ERROR,  # Send errors and above as events
         )
 
         sentry_sdk.init(
@@ -93,9 +91,7 @@ def init_sentry() -> None:
         )
         _sentry_initialized = True
     except ImportError:
-        logger.warning(
-            "sentry-sdk not installed — install with: pip install sentry-sdk"
-        )
+        logger.warning("sentry-sdk not installed — install with: pip install sentry-sdk")
     except Exception as e:
         logger.warning("Failed to initialize Sentry", error=str(e))
 
@@ -119,6 +115,7 @@ async def lifespan(app: FastAPI):
     # Log AI provider status
     try:
         from app.orchestration.router import router as request_router
+
         available_providers = request_router.get_available_providers()
         if not available_providers:
             logger.warning(
@@ -141,6 +138,7 @@ async def lifespan(app: FastAPI):
     # Initialize knowledge engine — index content in background
     try:
         from app.knowledge.indexer import index_on_startup
+
         asyncio.create_task(index_on_startup())
     except Exception as e:
         logger.warning("Knowledge indexing module not available, skipping", error=str(e))
@@ -148,6 +146,7 @@ async def lifespan(app: FastAPI):
     # Initialize AI Evaluator for response quality monitoring
     try:
         from app.ai.evaluator import get_evaluator
+
         evaluator = get_evaluator()
         logger.info(
             "AI Evaluator initialized",
@@ -159,6 +158,7 @@ async def lifespan(app: FastAPI):
     # Start scheduled re-indexing (every 24 hours)
     try:
         from app.knowledge.indexer import get_indexer
+
         async def _scheduled_reindex():
             """Re-index knowledge sources every 24 hours for content freshness."""
             while True:

@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 try:
     from groq import AsyncGroq, GroqError
+
     HAS_GROQ = True
 except ImportError:
     HAS_GROQ = False

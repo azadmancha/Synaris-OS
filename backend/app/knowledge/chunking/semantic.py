@@ -129,16 +129,18 @@ class SemanticChunker:
                 # Save previous section
                 if current_content:
                     chunk_content = "\n".join(current_content)
-                    chunks.append(self._make_chunk(
-                        content=chunk_content,
-                        heading=current_heading,
-                        subheading=current_subheading,
-                        chunk_type=ChunkType.SECTION if current_subheading else ChunkType.CHAPTER,
-                        source=source,
-                        source_url=source_url,
-                        subject=subject,
-                        difficulty=difficulty,
-                    ))
+                    chunks.append(
+                        self._make_chunk(
+                            content=chunk_content,
+                            heading=current_heading,
+                            subheading=current_subheading,
+                            chunk_type=ChunkType.SECTION if current_subheading else ChunkType.CHAPTER,
+                            source=source,
+                            source_url=source_url,
+                            subject=subject,
+                            difficulty=difficulty,
+                        )
+                    )
                     current_content = []
 
                 # Update hierarchy
@@ -169,16 +171,18 @@ class SemanticChunker:
         # Save last section
         if current_content:
             chunk_content = "\n".join(current_content)
-            chunks.append(self._make_chunk(
-                content=chunk_content,
-                heading=current_heading,
-                subheading=current_subheading,
-                chunk_type=ChunkType.SECTION,
-                source=source,
-                source_url=source_url,
-                subject=subject,
-                difficulty=difficulty,
-            ))
+            chunks.append(
+                self._make_chunk(
+                    content=chunk_content,
+                    heading=current_heading,
+                    subheading=current_subheading,
+                    chunk_type=ChunkType.SECTION,
+                    source=source,
+                    source_url=source_url,
+                    subject=subject,
+                    difficulty=difficulty,
+                )
+            )
 
         # Split large chunks that exceed token limit
         final_chunks: list[DocumentChunk] = []
@@ -210,15 +214,17 @@ class SemanticChunker:
             para_tokens = self._estimate_tokens(para)
             if current_tokens + para_tokens > self.MAX_TOKENS and current_paras:
                 chunk_content = "\n\n".join(current_paras)
-                chunks.append(self._make_chunk(
-                    content=chunk_content,
-                    heading=title,
-                    chunk_type=ChunkType.PARAGRAPH,
-                    source=source,
-                    source_url=source_url,
-                    subject=subject,
-                    difficulty=difficulty,
-                ))
+                chunks.append(
+                    self._make_chunk(
+                        content=chunk_content,
+                        heading=title,
+                        chunk_type=ChunkType.PARAGRAPH,
+                        source=source,
+                        source_url=source_url,
+                        subject=subject,
+                        difficulty=difficulty,
+                    )
+                )
                 # Overlap: keep last paragraph
                 overlap = current_paras[-1] if current_paras else ""
                 current_paras = [overlap] if overlap else []
@@ -229,15 +235,17 @@ class SemanticChunker:
 
         if current_paras:
             chunk_content = "\n\n".join(current_paras)
-            chunks.append(self._make_chunk(
-                content=chunk_content,
-                heading=title,
-                chunk_type=ChunkType.PARAGRAPH,
-                source=source,
-                source_url=source_url,
-                subject=subject,
-                difficulty=difficulty,
-            ))
+            chunks.append(
+                self._make_chunk(
+                    content=chunk_content,
+                    heading=title,
+                    chunk_type=ChunkType.PARAGRAPH,
+                    source=source,
+                    source_url=source_url,
+                    subject=subject,
+                    difficulty=difficulty,
+                )
+            )
 
         return chunks
 
@@ -251,16 +259,18 @@ class SemanticChunker:
         for para in paragraphs:
             para_tokens = self._estimate_tokens(para)
             if current_tokens + para_tokens > self.MAX_TOKENS and current:
-                sub_chunks.append(self._make_chunk(
-                    content="\n\n".join(current),
-                    heading=chunk.heading,
-                    subheading=chunk.subheading,
-                    chunk_type=ChunkType.PARAGRAPH,
-                    source=chunk.source,
-                    source_url=chunk.source_url,
-                    subject=chunk.subject,
-                    difficulty=chunk.difficulty,
-                ))
+                sub_chunks.append(
+                    self._make_chunk(
+                        content="\n\n".join(current),
+                        heading=chunk.heading,
+                        subheading=chunk.subheading,
+                        chunk_type=ChunkType.PARAGRAPH,
+                        source=chunk.source,
+                        source_url=chunk.source_url,
+                        subject=chunk.subject,
+                        difficulty=chunk.difficulty,
+                    )
+                )
                 # Keep last paragraph for overlap context
                 overlap = current[-1] if len(current) > 0 else ""
                 current = [overlap] if overlap else []
@@ -270,30 +280,32 @@ class SemanticChunker:
             current_tokens += para_tokens
 
         if current:
-            sub_chunks.append(self._make_chunk(
-                content="\n\n".join(current),
-                heading=chunk.heading,
-                subheading=chunk.subheading,
-                chunk_type=ChunkType.PARAGRAPH,
-                source=chunk.source,
-                source_url=chunk.source_url,
-                subject=chunk.subject,
-                difficulty=chunk.difficulty,
-            ))
+            sub_chunks.append(
+                self._make_chunk(
+                    content="\n\n".join(current),
+                    heading=chunk.heading,
+                    subheading=chunk.subheading,
+                    chunk_type=ChunkType.PARAGRAPH,
+                    source=chunk.source,
+                    source_url=chunk.source_url,
+                    subject=chunk.subject,
+                    difficulty=chunk.difficulty,
+                )
+            )
 
         return sub_chunks
 
     def _detect_heading(self, line: str) -> tuple[int, str] | None:
         """Detect if a line is a heading and return (level, text)."""
         # Markdown: # ## ### ####
-        md_match = re.match(r'^(#{1,4})\s+(.+)$', line)
+        md_match = re.match(r"^(#{1,4})\s+(.+)$", line)
         if md_match:
             level = len(md_match.group(1))
             text = md_match.group(2).strip()
             return (level, text)
 
         # Wikipedia: == Section ==  or  === Subsection ===
-        wiki_match = re.match(r'^(={2,4})\s*(.+?)\s*\1$', line)
+        wiki_match = re.match(r"^(={2,4})\s*(.+?)\s*\1$", line)
         if wiki_match:
             level = len(wiki_match.group(1)) - 1  # == is level 1
             text = wiki_match.group(2).strip()
@@ -332,6 +344,7 @@ class SemanticChunker:
         """
         try:
             import tiktoken
+
             enc = tiktoken.get_encoding("cl100k_base")
             return len(enc.encode(text))
         except ImportError:

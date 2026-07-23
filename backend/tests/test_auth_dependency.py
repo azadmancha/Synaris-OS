@@ -126,18 +126,23 @@ async def test_supabase_token_user_exists_returns_user_id(
     mock_client_instance = AsyncMock()
     mock_client_instance.get = mock_get
 
-    with patch(
-        "app.api.dependencies._verify_supabase_token",
-        new=AsyncMock(return_value=mock_supabase_id),
-    ), patch(
-        "app.api.dependencies.settings.supabase_url",
-        "https://test.supabase.co",
-    ), patch(
-        "app.api.dependencies.settings.supabase_anon_key",
-        "test-anon-key",
-    ), patch(
-        "httpx.AsyncClient",
-    ) as mock_client_class:
+    with (
+        patch(
+            "app.api.dependencies._verify_supabase_token",
+            new=AsyncMock(return_value=mock_supabase_id),
+        ),
+        patch(
+            "app.api.dependencies.settings.supabase_url",
+            "https://test.supabase.co",
+        ),
+        patch(
+            "app.api.dependencies.settings.supabase_anon_key",
+            "test-anon-key",
+        ),
+        patch(
+            "httpx.AsyncClient",
+        ) as mock_client_class,
+    ):
         mock_client_class.return_value.__aenter__.return_value = mock_client_instance
 
         result = await get_current_user_id(
@@ -164,18 +169,23 @@ async def test_supabase_token_no_matching_user_returns_dev_user_id(
     mock_client_instance = AsyncMock()
     mock_client_instance.get = mock_get
 
-    with patch(
-        "app.api.dependencies._verify_supabase_token",
-        new=AsyncMock(return_value="some-supabase-id"),
-    ), patch(
-        "app.api.dependencies.settings.supabase_url",
-        "https://test.supabase.co",
-    ), patch(
-        "app.api.dependencies.settings.supabase_anon_key",
-        "test-anon-key",
-    ), patch(
-        "httpx.AsyncClient",
-    ) as mock_client_class:
+    with (
+        patch(
+            "app.api.dependencies._verify_supabase_token",
+            new=AsyncMock(return_value="some-supabase-id"),
+        ),
+        patch(
+            "app.api.dependencies.settings.supabase_url",
+            "https://test.supabase.co",
+        ),
+        patch(
+            "app.api.dependencies.settings.supabase_anon_key",
+            "test-anon-key",
+        ),
+        patch(
+            "httpx.AsyncClient",
+        ) as mock_client_class,
+    ):
         mock_client_class.return_value.__aenter__.return_value = mock_client_instance
 
         result = await get_current_user_id(
@@ -215,18 +225,23 @@ async def test_supabase_http_error_returns_dev_user_id(db_session: AsyncSession)
     mock_client_instance = AsyncMock()
     mock_client_instance.get = AsyncMock(side_effect=Exception("Connection refused"))
 
-    with patch(
-        "app.api.dependencies._verify_supabase_token",
-        new=AsyncMock(return_value="verified-supabase-id"),
-    ), patch(
-        "app.api.dependencies.settings.supabase_url",
-        "https://test.supabase.co",
-    ), patch(
-        "app.api.dependencies.settings.supabase_anon_key",
-        "test-anon-key",
-    ), patch(
-        "httpx.AsyncClient",
-    ) as mock_client_class:
+    with (
+        patch(
+            "app.api.dependencies._verify_supabase_token",
+            new=AsyncMock(return_value="verified-supabase-id"),
+        ),
+        patch(
+            "app.api.dependencies.settings.supabase_url",
+            "https://test.supabase.co",
+        ),
+        patch(
+            "app.api.dependencies.settings.supabase_anon_key",
+            "test-anon-key",
+        ),
+        patch(
+            "httpx.AsyncClient",
+        ) as mock_client_class,
+    ):
         mock_client_class.return_value.__aenter__.return_value = mock_client_instance
 
         result = await get_current_user_id(
@@ -251,18 +266,23 @@ async def test_supabase_non_200_response_returns_dev_user_id(db_session: AsyncSe
     mock_client_instance = AsyncMock()
     mock_client_instance.get = mock_get
 
-    with patch(
-        "app.api.dependencies._verify_supabase_token",
-        new=AsyncMock(return_value="verified-supabase-id"),
-    ), patch(
-        "app.api.dependencies.settings.supabase_url",
-        "https://test.supabase.co",
-    ), patch(
-        "app.api.dependencies.settings.supabase_anon_key",
-        "test-anon-key",
-    ), patch(
-        "httpx.AsyncClient",
-    ) as mock_client_class:
+    with (
+        patch(
+            "app.api.dependencies._verify_supabase_token",
+            new=AsyncMock(return_value="verified-supabase-id"),
+        ),
+        patch(
+            "app.api.dependencies.settings.supabase_url",
+            "https://test.supabase.co",
+        ),
+        patch(
+            "app.api.dependencies.settings.supabase_anon_key",
+            "test-anon-key",
+        ),
+        patch(
+            "httpx.AsyncClient",
+        ) as mock_client_class,
+    ):
         mock_client_class.return_value.__aenter__.return_value = mock_client_instance
 
         result = await get_current_user_id(

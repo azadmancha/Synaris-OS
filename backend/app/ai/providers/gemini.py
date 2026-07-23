@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 try:
     from google import genai
     from google.genai import errors as genai_errors
+
     HAS_GEMINI = True
 except ImportError:
     HAS_GEMINI = False
@@ -119,8 +120,7 @@ class GeminiProvider(AIProvider):
             if "RESOURCE_EXHAUSTED" in error_msg or "429" in error_msg:
                 logger.warning("Gemini rate limit hit")
                 return AIResponse(
-                    content=("I've reached my rate limit for the moment. "
-                             "Give me a few seconds and try again."),
+                    content=("I've reached my rate limit for the moment. Give me a few seconds and try again."),
                     content_type="text",
                     model_used=self.name,
                     provider=self.name,

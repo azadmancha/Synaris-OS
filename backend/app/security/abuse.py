@@ -36,12 +36,12 @@ logger = logging.getLogger(__name__)
 # ─── Config ────────────────────────────────────────────────
 
 # Thresholds — how many events of a type before we flag as abuse
-_INJECTION_ATTEMPT_LIMIT = 5           # 5+ injection attempts in the window → flagged
-_RAPID_REQUEST_LIMIT = 30              # 30+ rapid requests in the window → flagged
-_RAPID_REQUEST_WINDOW = 10             # seconds for rapid request detection
-_ABUSE_WINDOW = 300                    # 5-minute sliding window for abuse tracking
-_BAN_DURATION = 1800                   # 30-minute temporary ban
-_MAX_EVENTS_TOTAL = 50                 # total suspicious events before escalating
+_INJECTION_ATTEMPT_LIMIT = 5  # 5+ injection attempts in the window → flagged
+_RAPID_REQUEST_LIMIT = 30  # 30+ rapid requests in the window → flagged
+_RAPID_REQUEST_WINDOW = 10  # seconds for rapid request detection
+_ABUSE_WINDOW = 300  # 5-minute sliding window for abuse tracking
+_BAN_DURATION = 1800  # 30-minute temporary ban
+_MAX_EVENTS_TOTAL = 50  # total suspicious events before escalating
 
 
 # ─── Types ─────────────────────────────────────────────────
@@ -50,6 +50,7 @@ _MAX_EVENTS_TOTAL = 50                 # total suspicious events before escalati
 @dataclass
 class AbuseResult:
     """Result of an abuse check."""
+
     blocked: bool = False
     score: float = 0.0
     reasons: list[str] = field(default_factory=list)
@@ -58,6 +59,7 @@ class AbuseResult:
 
 
 # ─── Abuse Detector ────────────────────────────────────────
+
 
 class AbuseDetector:
     """Detects abusive behavior patterns across multiple requests.
@@ -86,9 +88,7 @@ class AbuseDetector:
     def _prune_user(self, user_id: str, now: float) -> None:
         """Remove events outside the abuse window for a user."""
         cutoff = now - _ABUSE_WINDOW
-        self._events[user_id] = [
-            e for e in self._events[user_id] if e[0] > cutoff
-        ]
+        self._events[user_id] = [e for e in self._events[user_id] if e[0] > cutoff]
 
     def _prune_rapid(self, user_id: str, now: float) -> list[tuple[float, str, str]]:
         """Return rapid-request events within the rapid window."""
@@ -193,9 +193,7 @@ class AbuseDetector:
 
         if rapid_count >= _RAPID_REQUEST_LIMIT:
             score = max(score, 0.7)
-            reasons.append(
-                f"Suspicious request burst ({rapid_count} in {_RAPID_REQUEST_WINDOW}s)"
-            )
+            reasons.append(f"Suspicious request burst ({rapid_count} in {_RAPID_REQUEST_WINDOW}s)")
 
         if total_count >= _MAX_EVENTS_TOTAL:
             score = max(score, 0.6)
@@ -227,8 +225,7 @@ class AbuseDetector:
                 reasons=reasons,
                 ban_expires_at=now + _BAN_DURATION,
                 message=(
-                    f"Your account has been temporarily suspended due to "
-                    f"suspicious activity. Please try again later."
+                    f"Your account has been temporarily suspended due to suspicious activity. Please try again later."
                 ),
             )
 

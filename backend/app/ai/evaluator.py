@@ -25,18 +25,20 @@ logger = logging.getLogger(__name__)
 @dataclass
 class EvaluationScore:
     """Score for a single evaluation dimension."""
+
     dimension: str
-    score: float           # 0.0 to 1.0
-    reasoning: str         # Why this score was given
+    score: float  # 0.0 to 1.0
+    reasoning: str  # Why this score was given
     suggestions: list[str] = field(default_factory=list)
 
 
 @dataclass
 class EvaluationResult:
     """Complete evaluation result for a single AI response."""
-    overall_score: float                 # 0.0 to 1.0
-    scores: list[EvaluationScore]        # Per-dimension scores
-    response_summary: str = ""           # Brief summary of what was evaluated
+
+    overall_score: float  # 0.0 to 1.0
+    scores: list[EvaluationScore]  # Per-dimension scores
+    response_summary: str = ""  # Brief summary of what was evaluated
     improvement_suggestions: list[str] = field(default_factory=list)
     evaluated_at: str = ""
     model_used: str = ""
@@ -76,12 +78,18 @@ def _evaluate_length(response: str, expected_min: int = 50) -> EvaluationScore:
 
 def _evaluate_citations(response: str) -> EvaluationScore:
     """Evaluate citation usage in the response."""
-    has_citation_markers = any(marker in response for marker in [
-        "📖", "Source:", "Confidence:", "Learn More", "Citation:",
-    ])
+    has_citation_markers = any(
+        marker in response
+        for marker in [
+            "📖",
+            "Source:",
+            "Confidence:",
+            "Learn More",
+            "Citation:",
+        ]
+    )
 
-    has_urls = "http" in response and ("openstax" in response or "wikipedia" in response
-                                       or "wikibooks" in response)
+    has_urls = "http" in response and ("openstax" in response or "wikipedia" in response or "wikibooks" in response)
 
     if has_citation_markers and has_urls:
         return EvaluationScore(
@@ -108,10 +116,20 @@ def _evaluate_citations(response: str) -> EvaluationScore:
 def _evaluate_educational_quality(response: str) -> EvaluationScore:
     """Evaluate the educational quality of a response."""
     educational_markers = [
-        "example", "analogy", "imagine", "think of it as",
-        "step", "first", "next", "finally",
-        "understand", "concept", "explain",
-        "practice", "try", "exercise",
+        "example",
+        "analogy",
+        "imagine",
+        "think of it as",
+        "step",
+        "first",
+        "next",
+        "finally",
+        "understand",
+        "concept",
+        "explain",
+        "practice",
+        "try",
+        "exercise",
     ]
 
     positive_score = sum(2 for m in educational_markers if m in response.lower())
@@ -174,10 +192,13 @@ class AIEvaluator:
         if not response or not response.strip():
             return EvaluationResult(
                 overall_score=0.0,
-                scores=[EvaluationScore(
-                    dimension="completeness", score=0.0,
-                    reasoning="Empty response",
-                )],
+                scores=[
+                    EvaluationScore(
+                        dimension="completeness",
+                        score=0.0,
+                        reasoning="Empty response",
+                    )
+                ],
                 response_summary="Empty response",
                 improvement_suggestions=["Response was empty"],
             )

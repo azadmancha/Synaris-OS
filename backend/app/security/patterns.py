@@ -59,7 +59,6 @@ PROMPT_INJECTION_PATTERNS: list[re.Pattern] = [
         """,
         re.VERBOSE,
     ),
-
     # ── "You are now" role-play jailbreaks ─────────────────────
     re.compile(
         r"""
@@ -71,7 +70,6 @@ PROMPT_INJECTION_PATTERNS: list[re.Pattern] = [
         """,
         re.VERBOSE | re.DOTALL,
     ),
-
     # ── Direct injection commands ──────────────────────────────
     re.compile(
         r"""
@@ -84,7 +82,6 @@ PROMPT_INJECTION_PATTERNS: list[re.Pattern] = [
         """,
         re.VERBOSE,
     ),
-
     # ── Instruction override attempts ──────────────────────────
     re.compile(
         r"""
@@ -97,7 +94,6 @@ PROMPT_INJECTION_PATTERNS: list[re.Pattern] = [
         """,
         re.VERBOSE,
     ),
-
     # ── Hypnotic / trance / mode switching ─────────────────────
     re.compile(
         r"""
@@ -146,7 +142,6 @@ SYSTEM_EXTRACTION_PATTERNS: list[re.Pattern] = [
         """,
         re.VERBOSE,
     ),
-
     # ── Prompt engineering to elicit system prompt ─────────────
     re.compile(
         r"""
@@ -161,7 +156,6 @@ SYSTEM_EXTRACTION_PATTERNS: list[re.Pattern] = [
         """,
         re.VERBOSE,
     ),
-
     # ── Translation / encoding extraction attempts ─────────────
     re.compile(
         r"""
@@ -174,7 +168,6 @@ SYSTEM_EXTRACTION_PATTERNS: list[re.Pattern] = [
         """,
         re.VERBOSE,
     ),
-
     # ── "Repeat everything above" variants ─────────────────────
     re.compile(
         r"""
@@ -214,7 +207,6 @@ JAILBREAK_PATTERNS: list[re.Pattern] = [
         """,
         re.VERBOSE,
     ),
-
     # ── Common jailbreak acronyms ──────────────────────────────
     re.compile(
         r"""
@@ -225,7 +217,6 @@ JAILBREAK_PATTERNS: list[re.Pattern] = [
         """,
         re.VERBOSE,
     ),
-
     # ── "No rules / no filter" claims ──────────────────────────
     re.compile(
         r"""
@@ -246,7 +237,6 @@ JAILBREAK_PATTERNS: list[re.Pattern] = [
         """,
         re.VERBOSE,
     ),
-
     # ── "Ignore everything above / below" ──────────────────────
     re.compile(
         r"""
@@ -257,7 +247,6 @@ JAILBREAK_PATTERNS: list[re.Pattern] = [
         """,
         re.VERBOSE,
     ),
-
     # ── Morally ambiguous framing ──────────────────────────────
     re.compile(
         r"""
@@ -322,13 +311,10 @@ SENSITIVE_DATA_PATTERNS: list[re.Pattern] = [
     re.compile(r"(?i)AIza[0-9A-Za-z\-_]{35}"),  # Google API keys
     re.compile(r"(?i)AKIA[0-9A-Z]{16}"),  # AWS access keys
     re.compile(r"(?i)(?:-----BEGIN\s+(?:RSA\s+)?PRIVATE\s+KEY-----|-----BEGIN\s+CERTIFICATE-----)"),
-
     # ── Email addresses (potential PII leakage) ────────────────
     re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"),
-
     # ── IP addresses ───────────────────────────────────────────
     re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b"),
-
     # ── Phone numbers ──────────────────────────────────────────
     re.compile(r"\b(?:\+?\d{1,3}[-.\s]??)?\(?\d{3}\)?[-.\s]??\d{3}[-.\s]??\d{4}\b"),
 ]

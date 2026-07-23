@@ -245,23 +245,24 @@ class VectorStore:
                         "difficulty": chunk.difficulty or "intermediate",
                         "document_title": doc.title or "",
                         "chunk_type": (
-                chunk.chunk_type.value
-                if hasattr(chunk.chunk_type, "value")
-                else str(chunk.chunk_type)
-            ),
+                            chunk.chunk_type.value if hasattr(chunk.chunk_type, "value") else str(chunk.chunk_type)
+                        ),
                         "sequence": chunk.sequence,
                     }
 
-                    all_points.append(qdrant_models.PointStruct(
-                        id=point_id,
-                        vector=emb_result.vector,
-                        payload=payload,
-                    ))
+                    all_points.append(
+                        qdrant_models.PointStruct(
+                            id=point_id,
+                            vector=emb_result.vector,
+                            payload=payload,
+                        )
+                    )
 
             except Exception as e:
                 logger.warning(
                     "Failed to index document '%s': %s",
-                    getattr(doc, "title", "?"), e,
+                    getattr(doc, "title", "?"),
+                    e,
                 )
                 continue
 
@@ -388,22 +389,23 @@ class VectorStore:
             results = []
             for i, scored_point in enumerate(points):
                 payload = scored_point.payload or {}
-                results.append(SearchResult(
-                    chunk_id=payload.get("chunk_id", str(scored_point.id)),
-                    content=payload.get("content", ""),
-                    heading=payload.get("heading", ""),
-                    source=payload.get("source", ""),
-                    source_url=payload.get("source_url", ""),
-                    subject=payload.get("subject", "general"),
-                    difficulty=payload.get("difficulty", "intermediate"),
-                    score=scored_point.score,
-                    rank=i + 1,
-                ))
+                results.append(
+                    SearchResult(
+                        chunk_id=payload.get("chunk_id", str(scored_point.id)),
+                        content=payload.get("content", ""),
+                        heading=payload.get("heading", ""),
+                        source=payload.get("source", ""),
+                        source_url=payload.get("source_url", ""),
+                        subject=payload.get("subject", "general"),
+                        difficulty=payload.get("difficulty", "intermediate"),
+                        score=scored_point.score,
+                        rank=i + 1,
+                    )
+                )
 
             if results:
                 logger.info(
-                    f"Vector search for '{query[:40]}...': "
-                    f"{len(results)} results (top score: {results[0].score:.3f})"
+                    f"Vector search for '{query[:40]}...': {len(results)} results (top score: {results[0].score:.3f})"
                 )
             else:
                 logger.info(f"Vector search for '{query[:40]}...': no results")

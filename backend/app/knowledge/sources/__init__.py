@@ -21,6 +21,7 @@ from dataclasses import dataclass, field
 @dataclass
 class SourceDocument:
     """A document retrieved from a knowledge source."""
+
     id: str
     title: str
     content: str
@@ -37,6 +38,7 @@ class SourceDocument:
 @dataclass
 class SearchResult:
     """A single search result from a knowledge source."""
+
     document: SourceDocument
     score: float = 0.0
     snippet: str = ""

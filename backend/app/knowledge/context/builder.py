@@ -38,8 +38,8 @@ class ContextBuilder:
         citations = []
         total_chars = 0
 
-        for doc in documents[:self.MAX_DOCUMENTS]:
-            content = doc.document.content[:self.MAX_CONTENT_LENGTH]
+        for doc in documents[: self.MAX_DOCUMENTS]:
+            content = doc.document.content[: self.MAX_CONTENT_LENGTH]
             total_chars += len(content)
 
             # Create citation for this document

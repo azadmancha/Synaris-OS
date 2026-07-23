@@ -21,6 +21,7 @@ from datetime import UTC, datetime
 @dataclass
 class Citation:
     """A structured citation for a knowledge source."""
+
     source: str
     title: str
     url: str
@@ -63,6 +64,7 @@ class Citation:
 @dataclass
 class CitationGroup:
     """A group of citations for a single response."""
+
     citations: list[Citation]
     source_count: int = 0
 

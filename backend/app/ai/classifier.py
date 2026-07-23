@@ -30,12 +30,13 @@ logger = logging.getLogger(__name__)
 @dataclass
 class QuestionClass:
     """Classification result for a user question."""
-    category: str = "general"       # simple, math, science, code, history, concept, general
-    needs_rag: bool = False         # Whether to search Wikipedia
-    needs_latex: bool = False       # Whether math formatting is needed
-    complexity: str = "medium"      # low, medium, high
-    subject: str = "general"        # The detected subject
-    confidence: float = 0.0         # How confident we are (internal use only)
+
+    category: str = "general"  # simple, math, science, code, history, concept, general
+    needs_rag: bool = False  # Whether to search Wikipedia
+    needs_latex: bool = False  # Whether math formatting is needed
+    complexity: str = "medium"  # low, medium, high
+    subject: str = "general"  # The detected subject
+    confidence: float = 0.0  # How confident we are (internal use only)
 
 
 # ─── Pattern-based classifier (fast, no external API call) ─────
@@ -46,38 +47,32 @@ class QuestionClass:
 _SIMPLE_PATTERNS = [
     # ── Basic calculations ──
     r"^\d+\s*[-+*/xX\xf7]\s*\d+",  # "2+2", "5*3", "10/2"
-
     # ── What / Which questions ──
-    r"^(what('s| is)\s+(a|an|the)\s+\w+)",         # "What's a neuron?", "What is the capital"
-    r"^(what('s| is)\s+\w+\s+(mean|stand for))",     # "What does CPU mean?", "What's API stand for"
+    r"^(what('s| is)\s+(a|an|the)\s+\w+)",  # "What's a neuron?", "What is the capital"
+    r"^(what('s| is)\s+\w+\s+(mean|stand for))",  # "What does CPU mean?", "What's API stand for"
     r"^(what does\s+\w+\s+(mean|stand for|refer to))",  # "What does API stand for?"
     r"^(what\s+(is|are)\s+\w+\s+(used for|made of|made from))",  # "What is X used for?"
     r"^(what('s| is)\s+(the\s+)?(difference|opposite|synonym|antonym))",
     r"^(what\s+(color|size|shape|weight|height|length|width|depth)\s+(is|are))",
-    r"^(what\s+(is|are)\s+\w+\s+called)",            # "What are baby cats called?"
-    r"^(what\s+is\s+\w+\s*[?]?$)",                   # "What is entropy?" (single-word topic only)
-
+    r"^(what\s+(is|are)\s+\w+\s+called)",  # "What are baby cats called?"
+    r"^(what\s+is\s+\w+\s*[?]?$)",  # "What is entropy?" (single-word topic only)
     # ── Define / Explain (concise) ──
-    r"^(define|what is|what's|what are)\s+\w+",      # "Define inertia", "What is gravity"
-    r"^(explain briefly|summarize)\s+\w+",   # "Explain briefly how rain forms"
-
+    r"^(define|what is|what's|what are)\s+\w+",  # "Define inertia", "What is gravity"
+    r"^(explain briefly|summarize)\s+\w+",  # "Explain briefly how rain forms"
     # ── How questions (measurable attributes) ──
     r"^(how\s+(old|tall|big|far|long|many|much|fast|heavy|deep|wide|hot|cold)\s+(is|are)\s+\w+)",
     r"^(how\s+(do|does|can|would)\s+(i|you|we)\s+\w+)",  # "How do I cook pasta?"
-
     # ── When / Where / Who ──
     r"^(when\s+(was|were|did|will|do|does)\s+\w+)",
     r"^(where\s+(is|are|was|were|do|does|did|can)\s+\w+)",
     r"^(who\s+(is|was|were|invented|created|discovered|wrote|said|made)\s+\w+)",
-
     # ── Yes / No / Short answers ──
     r"^(yes|no|maybe|idk|i don't know|not sure|perhaps|probably|never mind)$",
-    r"^(is\s+(it|there|that|this)\s+\w+)",           # "Is it true?", "Is there a way?"
+    r"^(is\s+(it|there|that|this)\s+\w+)",  # "Is it true?", "Is there a way?"
     r"^(are\s+(there|these|those|we|you|they)\s+\w+)",
-    r"^(can\s+(i|you|we|it|this|that)\s+\w+)",       # "Can you help?", "Can I do X?"
-    r"^(does\s+(it|this|that|he|she)\s+\w+)",        # "Does this work?"
-    r"^(do\s+(you|we|they|i)\s+\w+)",                # "Do you know?", "Do we need?"
-
+    r"^(can\s+(i|you|we|it|this|that)\s+\w+)",  # "Can you help?", "Can I do X?"
+    r"^(does\s+(it|this|that|he|she)\s+\w+)",  # "Does this work?"
+    r"^(do\s+(you|we|they|i)\s+\w+)",  # "Do you know?", "Do we need?"
     # ── Greetings & acknowledgements ──
     r"^(hi|hello|hey|good morning|good afternoon|good evening|good night|greetings|sup|yo)(\s|[!.,?]|$)",
     r"^(thanks|thank you|thankyou|thx|ty|tyvm)\s*(!|\.|,)?(\s|$)",
@@ -85,34 +80,26 @@ _SIMPLE_PATTERNS = [
     r"^(ok|okay|okey|k|kk|sure|great|awesome|nice|perfect|excellent|amazing)(\s|[!.,?]|$)",
     r"^(got it|gotcha|understood)(\s|[!.,?]|$)",
     r"^(bye|goodbye|see you|later|talk later|peace)(\s|[!.,?]|$)",
-
     # ── Follow-up prompts ──
     r"^(can you|could you|please)\s+(elaborate|expand|clarify|explain|detail)\s*\w*",
     r"^(tell me more|go on|continue|elaborate|explain further|give me more|say more)(\s|[!.,?]|$)",
-    r"^(give (me|another)\s+example)",               # "Give me an example", "Give another example"
+    r"^(give (me|another)\s+example)",  # "Give me an example", "Give another example"
     r"^(show me|give me|list|name)\s+(a|an|the|some|me|another|more)\s+\w+",
-
     # ── Conversion / Translation ──
     r"^(convert|change|turn)\s+\w+\s+(to|into)\s+\w+",  # "Convert 100F to Celsius"
-    r"^(translate)\s+\w+\s+(to|into)\s+\w+",            # "Translate hello to Spanish"
+    r"^(translate)\s+\w+\s+(to|into)\s+\w+",  # "Translate hello to Spanish"
     r"^(how many|how much)\s+\w+\s+(are|is)\s+in\s+\w+",  # "How many feet in a meter?"
-
     # ── Spelling / Pronunciation / Meaning ──
-    r"^(how do you (spell|pronounce|say))\s+\w+",     # "How do you spell parallel?"
-
+    r"^(how do you (spell|pronounce|say))\s+\w+",  # "How do you spell parallel?"
     # ── Usage / Purpose ──
     r"^(what('s| is)\s+\w+\s+(for|used for|about))",
-
     # ── Short standalone questions ──
     r"^(why|why not|how|how come|when|where|who|which one|what next|and then|so what)\s*[?]?$",
-
     # ── Possession / Existence ──
     r"^(does\s+\w+\s+(have|has|contain|include|support))\s+\w+",
     r"^(is\s+there\s+\w+)",
-
     # ── Comparisons (basic, well-known concepts) ──
     r"^(what('s| is)\s+the\s+(difference|similarity|relation)\s+between)",
-
     # ── True/False verification ──
     r"^(is it (true|correct|possible|right|safe|ok|okay)\s+(that|to))",
 ]
@@ -286,6 +273,7 @@ async def classify_question(question: str) -> QuestionClass:
         )
 
         import json
+
         data = json.loads(result.content)
         return QuestionClass(
             category=data.get("category", "general"),

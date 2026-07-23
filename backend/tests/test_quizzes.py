@@ -21,47 +21,50 @@ from app.security.guardrails import GuardrailResult
 
 # ─── Sample quiz data for mocking ──────────────────────────
 
-SAMPLE_QUIZ_JSON = json.dumps({
-    "topic": "Quantum Mechanics",
-    "difficulty": "balanced",
-    "questions": [
-        {
-            "id": "q1",
-            "question": "What is the Heisenberg Uncertainty Principle?",
-            "type": "multiple_choice",
-            "options": [
-                "You cannot know both position and momentum precisely",
-                "Energy and time are unrelated",
-                "Light is always a wave",
-                "Electrons are particles",
-            ],
-            "correct_answer": "You cannot know both position and momentum precisely",
-            "explanation": "The uncertainty principle states that the more precisely you know position, the less precisely you know momentum, and vice versa."
-        },
-        {
-            "id": "q2",
-            "question": "True or False: Quantum entanglement allows faster-than-light communication.",
-            "type": "true_false",
-            "options": ["True", "False"],
-            "correct_answer": "False",
-            "explanation": "Entanglement does not allow FTL communication because measuring one particle gives random results that can only be correlated after classical communication."
-        },
-        {
-            "id": "q3",
-            "question": "Briefly explain what a photon is.",
-            "type": "short_answer",
-            "options": None,
-            "correct_answer": "A photon is a quantum of light or electromagnetic radiation.",
-            "explanation": "Photons are the fundamental particles of light, carrying electromagnetic energy."
-        },
-    ],
-})
+SAMPLE_QUIZ_JSON = json.dumps(
+    {
+        "topic": "Quantum Mechanics",
+        "difficulty": "balanced",
+        "questions": [
+            {
+                "id": "q1",
+                "question": "What is the Heisenberg Uncertainty Principle?",
+                "type": "multiple_choice",
+                "options": [
+                    "You cannot know both position and momentum precisely",
+                    "Energy and time are unrelated",
+                    "Light is always a wave",
+                    "Electrons are particles",
+                ],
+                "correct_answer": "You cannot know both position and momentum precisely",
+                "explanation": "The uncertainty principle states that the more precisely you know position, the less precisely you know momentum, and vice versa.",
+            },
+            {
+                "id": "q2",
+                "question": "True or False: Quantum entanglement allows faster-than-light communication.",
+                "type": "true_false",
+                "options": ["True", "False"],
+                "correct_answer": "False",
+                "explanation": "Entanglement does not allow FTL communication because measuring one particle gives random results that can only be correlated after classical communication.",
+            },
+            {
+                "id": "q3",
+                "question": "Briefly explain what a photon is.",
+                "type": "short_answer",
+                "options": None,
+                "correct_answer": "A photon is a quantum of light or electromagnetic radiation.",
+                "explanation": "Photons are the fundamental particles of light, carrying electromagnetic energy.",
+            },
+        ],
+    }
+)
 
 
 @pytest.mark.asyncio
 async def _mock_route_request_quiz(prompt, system_prompt=None, mode="balanced"):
     """Mock that returns a valid quiz JSON."""
     from app.ai.providers.base import AIResponse
+
     return AIResponse(
         content=SAMPLE_QUIZ_JSON,
         content_type="text",
@@ -85,7 +88,9 @@ async def _mock_check_output_pass(_content, user_id=None, session_id=None):
 async def _mock_check_input_block(_content, user_id=None):
     """Mock input guardrail that blocks everything."""
     return GuardrailResult(
-        passed=False, blocked=True, score=0.9,
+        passed=False,
+        blocked=True,
+        score=0.9,
         message="Content blocked",
         reasons=["Blocked"],
         categories=["prompt_injection"],
@@ -202,9 +207,7 @@ class TestQuizList:
 
     def test_list_quizzes_no_session_returns_404(self, patched_quiz_app: TestClient) -> None:
         """Should return 404 for non-existent session."""
-        response = patched_quiz_app.get(
-            "/v1/sessions/00000000-0000-0000-0000-000000000000/quizzes"
-        )
+        response = patched_quiz_app.get("/v1/sessions/00000000-0000-0000-0000-000000000000/quizzes")
         assert response.status_code == 404
 
 
@@ -229,9 +232,7 @@ class TestQuizRetrieval:
 
     def test_get_quiz_not_found(self, patched_quiz_app: TestClient, session_id: str) -> None:
         """Should return 404 for non-existent quiz."""
-        response = patched_quiz_app.get(
-            BASE.format(sid=session_id) + "/00000000-0000-0000-0000-000000000000"
-        )
+        response = patched_quiz_app.get(BASE.format(sid=session_id) + "/00000000-0000-0000-0000-000000000000")
         assert response.status_code == 404
 
 

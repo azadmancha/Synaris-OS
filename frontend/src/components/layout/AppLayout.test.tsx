@@ -5,7 +5,7 @@ import type { AuthUser } from '@/hooks/useAuth';
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), prefetch: vi.fn() }),
 }));
 
 // Mock next/link

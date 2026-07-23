@@ -39,6 +39,7 @@ router = APIRouter(tags=["memory"])
 
 class ConceptForReview(BaseModel):
     """A concept due for spaced repetition review."""
+
     concept_name: str
     subject: str
     mastery_level: str
@@ -55,6 +56,7 @@ class ConceptsDueResponse(BaseModel):
 
 class ConceptReviewRequest(BaseModel):
     """Record a review result for a concept."""
+
     concept_name: str
     subject: str
     correct: bool
@@ -64,6 +66,7 @@ class ConceptReviewRequest(BaseModel):
 
 class ConceptReviewResponse(BaseModel):
     """Result of recording a concept review."""
+
     concept_name: str
     subject: str
     quality: float
@@ -164,6 +167,7 @@ async def get_concepts_due_for_review(
 
     # Calculate the cutoff: now + upcoming days
     from datetime import timedelta
+
     cutoff = now + timedelta(days=include_upcoming_days)
 
     # Query concepts where next_review_at is due
@@ -328,7 +332,7 @@ async def get_session_memory(
         raise HTTPException(
             status_code=404,
             detail="No memory summary found for this session. "
-                   "Summaries are generated after a few messages are exchanged.",
+            "Summaries are generated after a few messages are exchanged.",
         )
 
     return _serialize(summary)
@@ -347,6 +351,7 @@ async def refresh_session_memory(
     """
     # Verify the session belongs to the user
     from app.api.dependencies import verify_session
+
     await verify_session(session_id, user_id, db)
 
     summary = await generate_session_summary(

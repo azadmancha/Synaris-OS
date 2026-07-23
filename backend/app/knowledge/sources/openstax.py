@@ -123,11 +123,13 @@ class OpenStaxSource(SourceAdapter):
                             language="en",
                             license="CC-BY 4.0",
                         )
-                        results.append(SearchResult(
-                            document=doc,
-                            score=0.85,
-                            snippet=content[:300],
-                        ))
+                        results.append(
+                            SearchResult(
+                                document=doc,
+                                score=0.85,
+                                snippet=content[:300],
+                            )
+                        )
 
             if not results:
                 logger.info(f"OpenStax: no content found for '{query[:40]}'")

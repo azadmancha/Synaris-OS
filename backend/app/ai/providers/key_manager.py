@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class KeyState:
     """Tracks a single API key's state."""
+
     key: str
     exhausted_at: float = 0.0  # timestamp when rate-limited, 0 = active
 

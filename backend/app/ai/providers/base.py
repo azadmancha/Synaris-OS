@@ -17,6 +17,7 @@ from dataclasses import dataclass
 @dataclass
 class AIResponse:
     """Standard response from any AI provider."""
+
     content: str
     content_type: str = "text"
     model_used: str = "unknown"
@@ -29,6 +30,7 @@ class AIResponse:
 @dataclass
 class AIStreamChunk:
     """A single chunk from a streaming AI response."""
+
     content: str
     model_used: str = "unknown"
     provider: str = "unknown"

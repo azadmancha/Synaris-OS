@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 try:
     from openai import AsyncOpenAI
+
     HAS_OPENAI = True
 except ImportError:
     HAS_OPENAI = False

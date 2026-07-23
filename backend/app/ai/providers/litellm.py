@@ -38,9 +38,11 @@ class ProviderRetryError(Exception):
     The router catches this exception and automatically tries
     the next available provider in the priority chain.
     """
+
     def __init__(self, message: str, error_type: str = "retryable") -> None:
         self.error_type = error_type
         super().__init__(message)
+
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +50,7 @@ logger = logging.getLogger(__name__)
 try:
     import litellm
     from litellm import acompletion
+
     HAS_LITELLM = True
     # Disable LiteLLM's internal logging by default
     litellm.suppress_debug_info = True
@@ -270,9 +273,7 @@ class LiteLLMProvider(AIProvider):
             except Exception as e:
                 # Check if this is a rate limit that we can retry with a different key
                 error_msg = str(e).lower()
-                is_rate_limit = any(
-                    x in error_msg for x in ["rate", "429", "too many", "resource_exhausted"]
-                )
+                is_rate_limit = any(x in error_msg for x in ["rate", "429", "too many", "resource_exhausted"])
 
                 if is_rate_limit and has_multi_key:
                     logger.warning(
@@ -384,9 +385,7 @@ class LiteLLMProvider(AIProvider):
 
             except Exception as e:
                 error_msg = str(e).lower()
-                is_rate_limit = any(
-                    x in error_msg for x in ["rate", "429", "too many", "resource_exhausted"]
-                )
+                is_rate_limit = any(x in error_msg for x in ["rate", "429", "too many", "resource_exhausted"])
 
                 if is_rate_limit and has_multi_key:
                     logger.warning(
@@ -465,8 +464,9 @@ class LiteLLMProvider(AIProvider):
         # ── Non-retryable: return user-friendly message ──
 
         # Authentication errors (bad API key, wrong provider config)
-        if any(x in error_msg for x in ["401", "unauthorized", "403", "api_key",
-                                         "invalid key", "authentication", "auth"]):
+        if any(
+            x in error_msg for x in ["401", "unauthorized", "403", "api_key", "invalid key", "authentication", "auth"]
+        ):
             logger.error(f"LiteLLM auth error for {model_name}: {error}")
             provider = model_name.split("/")[0] if "/" in model_name else model_name
             return AIResponse(

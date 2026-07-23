@@ -40,7 +40,9 @@ def http(method: str, path: str, body: dict = None, timeout: int = 30):
     if body:
         headers["Content-Type"] = "application/json"
     req = urllib.request.Request(
-        url, data=data, method=method,
+        url,
+        data=data,
+        method=method,
         headers=headers,
     )
     try:
@@ -77,13 +79,16 @@ async def main() -> int:
         sys.exit(1)
 
     providers = []
-    if gemini_key: providers.append("Gemini")
-    if groq_key: providers.append("Groq")
-    if openrouter_key: providers.append("OpenRouter")
+    if gemini_key:
+        providers.append("Gemini")
+    if groq_key:
+        providers.append("Groq")
+    if openrouter_key:
+        providers.append("OpenRouter")
 
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print("  Synaris — Local Server Test")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"  DB:       {db_path}")
     print(f"  Port:     http://localhost:{PORT}")
     print(f"  AI:       {', '.join(providers)}")
@@ -96,17 +101,31 @@ async def main() -> int:
     # ── Start server ──
     env = os.environ.copy()
     env["DATABASE_URL"] = f"sqlite+aiosqlite:///{db_path}"
-    if gemini_key: env["GEMINI_API_KEY"] = gemini_key
-    if groq_key: env["GROQ_API_KEY"] = groq_key
-    if openrouter_key: env["OPENROUTER_API_KEY"] = openrouter_key
+    if gemini_key:
+        env["GEMINI_API_KEY"] = gemini_key
+    if groq_key:
+        env["GROQ_API_KEY"] = groq_key
+    if openrouter_key:
+        env["OPENROUTER_API_KEY"] = openrouter_key
     env["DEBUG"] = "false"
 
     server = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn",
-         "app.main:app", "--host", HOST, "--port", str(PORT),
-         "--log-level", "warning"],
-        cwd=str(backend_dir), env=env,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        [
+            sys.executable,
+            "-m",
+            "uvicorn",
+            "app.main:app",
+            "--host",
+            HOST,
+            "--port",
+            str(PORT),
+            "--log-level",
+            "warning",
+        ],
+        cwd=str(backend_dir),
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
 
     # Wait for server
@@ -115,7 +134,7 @@ async def main() -> int:
         time.sleep(1)
         s, _ = http("GET", "/health")
         if 200 <= s < 300:
-            print(f" ready ({i+1}s)")
+            print(f" ready ({i + 1}s)")
             break
         print(".", end="", flush=True)
     else:
@@ -155,10 +174,14 @@ async def main() -> int:
 
         # ── 2. Auth ──
         print("\n  ── Auth ──")
-        s, data = http("POST", "/auth/login", {
-            "email": "student@synaris.app",
-            "display_name": "Test Student",
-        })
+        s, data = http(
+            "POST",
+            "/auth/login",
+            {
+                "email": "student@synaris.app",
+                "display_name": "Test Student",
+            },
+        )
         check("POST /auth/login", s, data)
         if s >= 300:
             raise RuntimeError(f"Auth failed (status={s})")
@@ -168,10 +191,14 @@ async def main() -> int:
 
         # ── 3. Create session ──
         print("\n  ── Session ──")
-        s, data = http("POST", "/sessions", {
-            "mode": "balanced",
-            "subject": "physics",
-        })
+        s, data = http(
+            "POST",
+            "/sessions",
+            {
+                "mode": "balanced",
+                "subject": "physics",
+            },
+        )
         check("POST /sessions", s, data)
         if s >= 300:
             raise RuntimeError(f"Session creation failed (status={s})")
@@ -179,10 +206,15 @@ async def main() -> int:
 
         # ── 4. Quick chat via Groq ──
         print("\n  ── AI Chat (Quick → Groq) ──")
-        s, data = http("POST", f"/sessions/{session_id}/messages", {
-            "content": "Explain what entropy is in one sentence.",
-            "mode": "quick",
-        }, timeout=60)
+        s, data = http(
+            "POST",
+            f"/sessions/{session_id}/messages",
+            {
+                "content": "Explain what entropy is in one sentence.",
+                "mode": "quick",
+            },
+            timeout=60,
+        )
         check("POST /messages (quick)", s, data)
         if isinstance(data, dict) and "ai_message" in data:
             ai = data["ai_message"]
@@ -193,10 +225,15 @@ async def main() -> int:
 
         # ── 5. Deep chat via Gemini ──
         print("\n  ── AI Chat (Deep → Gemini) ──")
-        s, data = http("POST", f"/sessions/{session_id}/messages", {
-            "content": "Why is the sky blue? Use physics principles.",
-            "mode": "deep_dive",
-        }, timeout=60)
+        s, data = http(
+            "POST",
+            f"/sessions/{session_id}/messages",
+            {
+                "content": "Why is the sky blue? Use physics principles.",
+                "mode": "deep_dive",
+            },
+            timeout=60,
+        )
         check("POST /messages (deep)", s, data)
         if isinstance(data, dict) and "ai_message" in data:
             ai = data["ai_message"]
@@ -209,7 +246,7 @@ async def main() -> int:
         print(f"\n  ⚠️  {e}")
 
     finally:
-        print(f"\n  ── Results: {passed}/{passed+failed} passed ──")
+        print(f"\n  ── Results: {passed}/{passed + failed} passed ──")
         print("  Shutting down server...")
         server.terminate()
         server.wait(timeout=5)

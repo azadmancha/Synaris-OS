@@ -459,15 +459,19 @@ class TestEdgeCases:
         """Barely passing (quality=3.0) vs perfect (quality=5.0) should differ in ease."""
         # Hinted correct = quality 3.0
         barely = calculate_review_update(
-            correct=True, requested_hint=True,
+            correct=True,
+            requested_hint=True,
             response_time_seconds=2.0,
-            current_interval_days=6, total_reviews=2,
+            current_interval_days=6,
+            total_reviews=2,
         )
         # Perfect
         perfect = calculate_review_update(
-            correct=True, requested_hint=False,
+            correct=True,
+            requested_hint=False,
             response_time_seconds=1.0,
-            current_interval_days=6, total_reviews=2,
+            current_interval_days=6,
+            total_reviews=2,
         )
 
         assert barely["passed"] is True

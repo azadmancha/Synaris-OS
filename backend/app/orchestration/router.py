@@ -157,9 +157,7 @@ class RequestRouter:
             )
             return
 
-        async for chunk in self._try_providers_stream(
-            available, prompt, system_prompt, mode
-        ):
+        async for chunk in self._try_providers_stream(available, prompt, system_prompt, mode):
             yield chunk
 
     def _get_priority_order(

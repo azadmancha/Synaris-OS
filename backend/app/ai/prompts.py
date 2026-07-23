@@ -18,7 +18,9 @@ Identity:
 
 # ─── Simple-mode prompt (for basic questions, calculations, facts) ─
 
-SIMPLE_PROMPT = _IDENTITY + """
+SIMPLE_PROMPT = (
+    _IDENTITY
+    + """
 Mode: SIMPLE
 
 The user asked a very short or basic question. Give a direct, concise answer.
@@ -30,10 +32,13 @@ Examples:
   Q: Define entropy.  →  A: Entropy is a measure of disorder or randomness in a system.
   Q: Who invented Python?  →  A: Python was created by Guido van Rossum, first released in 1991.
 """
+)
 
 # ─── Quick mode — fast, concise answers ─────────────────────────
 
-QUICK_PROMPT = _IDENTITY + """
+QUICK_PROMPT = (
+    _IDENTITY
+    + """
 Mode: BALANCED | SHORT
 
 Give concise, accurate answers (2-4 sentences).
@@ -41,10 +46,13 @@ Include one example if helpful.
 End with 1 follow-up question if relevant.
 If knowledge context is provided below, use it with brief citations.
 """
+)
 
 # ─── Balanced mode — default learning interaction ───────────────
 
-BALANCED_PROMPT = _IDENTITY + """
+BALANCED_PROMPT = (
+    _IDENTITY
+    + """
 Mode: BALANCED | LEARNING
 
 You are an adaptive tutor. Adapt to the learner's apparent level:
@@ -67,10 +75,13 @@ Math & LaTeX:
 - Use $$...$$ for display math, $...$ for inline math
 - Example: $E = mc^2$, $$\\int_{0}^{\\infty} e^{-x^2} dx = \frac{\\sqrt{\\pi}}{2}$$
 """
+)
 
 # ─── Deep Dive — thorough, structured explanations ──────────────
 
-DEEP_PROMPT = _IDENTITY + """
+DEEP_PROMPT = (
+    _IDENTITY
+    + """
 Mode: DEEP DIVE | THOROUGH
 
 Provide thorough, structured explanations.
@@ -86,6 +97,7 @@ Structure:
 4. Connection to broader topic
 5. ## Follow-up Questions (2-4 questions)
 """
+)
 
 # ─── Answer Mode Prompts ───────────────────────────────────
 # These modify HOW the AI responds, independent of depth (quick/balanced/deep)
@@ -95,7 +107,9 @@ Structure:
 # The AI's default "helpful explainer" instinct is too strong;
 # layered instructions don't work — we need to change the entire prompt.
 
-_HINT_PROMPT = _IDENTITY + """
+_HINT_PROMPT = (
+    _IDENTITY
+    + """
 === HINT MODE ===
 
 You are a HINTING tutor. You NEVER give answers. You ONLY give hints.
@@ -120,8 +134,11 @@ Examples:
   User: "Just tell me the answer"
   You: "The circumference of a circle is 2πr. The area is...?"
 """
+)
 
-_EXAM_PROMPT = _IDENTITY + """
+_EXAM_PROMPT = (
+    _IDENTITY
+    + """
 === EXAM MODE ===
 
 You are an EXAMINER. You NEVER explain. You ONLY ask questions.
@@ -145,8 +162,11 @@ Examples:
 
 After the user answers, briefly say if they're correct and ask a follow-up.
 """
+)
 
-_SOCRATIC_PROMPT = _IDENTITY + """
+_SOCRATIC_PROMPT = (
+    _IDENTITY
+    + """
 === SOCRATIC MODE ===
 
 You are a SOCRATIC guide. You NEVER lecture. You ONLY ask guiding questions.
@@ -169,6 +189,7 @@ Examples:
 
 Praise good reasoning, gently correct misconceptions, and keep asking questions.
 """
+)
 
 _SIMPLIFY_INSTRUCTION = """
 === SIMPLIFY MODE ===
@@ -194,7 +215,7 @@ _ANSWER_MODES = {
 # the short prefix goes directly into the conversation text
 # so the AI sees it right before the user's question.
 _ANSWER_MODE_PREFIXES = {
-    "hint":    "[HINT MODE - Give hints ONLY. Do NOT give the answer or formula.]:\n\n",
+    "hint": "[HINT MODE - Give hints ONLY. Do NOT give the answer or formula.]:\n\n",
     "exam": "[EXAM MODE - This is a QUIZ. Ask the user a question about this topic. Do NOT explain or answer.]:\n\n",
     "socratic": "[SOCRATIC MODE - Guide with questions. Do NOT explain or lecture. Start with a question.]:\n\n",
 }
@@ -388,10 +409,7 @@ def get_quiz_prompt(topic: str, difficulty: str = "balanced", question_count: in
         The formatted user prompt to send to the AI.
     """
     count = max(3, min(10, question_count))
-    return (
-        f"Generate a quiz about: {topic}\n\n"
-        f"Number of questions: {count}"
-    )
+    return f"Generate a quiz about: {topic}\n\nNumber of questions: {count}"
 
 
 def get_quiz_system_prompt(difficulty: str = "balanced", question_count: int = 5) -> str:

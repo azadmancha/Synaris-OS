@@ -17,9 +17,9 @@ engine = create_async_engine(
     settings.database_url,
     pool_size=settings.db_pool_size,
     max_overflow=settings.db_max_overflow,
-    pool_pre_ping=True,      # Verify connections before using them
-    pool_recycle=3600,       # Recycle connections after 1 hour
-    echo=settings.debug,     # SQL logging in debug mode
+    pool_pre_ping=True,  # Verify connections before using them
+    pool_recycle=3600,  # Recycle connections after 1 hour
+    echo=settings.debug,  # SQL logging in debug mode
 )
 
 
@@ -27,6 +27,7 @@ engine = create_async_engine(
 # Enable WAL mode for SQLite to allow concurrent reads + writes.
 # This prevents "database is locked" errors during streaming
 # when multiple sessions try to write simultaneously.
+
 
 @event.listens_for(engine.sync_engine, "connect")
 def _set_sqlite_pragma(dbapi_connection, connection_record) -> None:
@@ -42,11 +43,11 @@ def _set_sqlite_pragma(dbapi_connection, connection_record) -> None:
     # Only apply to SQLite connections
     if engine.name == "sqlite":
         cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL")      # Write-Ahead Logging
-        cursor.execute("PRAGMA busy_timeout=5000")      # Wait 5s instead of failing
-        cursor.execute("PRAGMA synchronous=NORMAL")     # Balance speed vs durability
-        cursor.execute("PRAGMA cache_size=-8000")       # 8MB cache
-        cursor.execute("PRAGMA foreign_keys=ON")        # Enforce FK constraints
+        cursor.execute("PRAGMA journal_mode=WAL")  # Write-Ahead Logging
+        cursor.execute("PRAGMA busy_timeout=5000")  # Wait 5s instead of failing
+        cursor.execute("PRAGMA synchronous=NORMAL")  # Balance speed vs durability
+        cursor.execute("PRAGMA cache_size=-8000")  # 8MB cache
+        cursor.execute("PRAGMA foreign_keys=ON")  # Enforce FK constraints
         cursor.close()
 
 
@@ -61,6 +62,7 @@ async_session_factory = async_sessionmaker(
 
 class Base(DeclarativeBase):
     """Base class for all SQLAlchemy models."""
+
     pass
 
 
@@ -109,16 +111,14 @@ async def init_db() -> None:
                 dev_user = result.scalar_one_or_none()
                 if not dev_user:
                     dev_user = User(
-                        id=DEV_USER_ID,
-                        email=DEV_USER_EMAIL,
-                        display_name="Developer",
-                        onboarding_completed=True
+                        id=DEV_USER_ID, email=DEV_USER_EMAIL, display_name="Developer", onboarding_completed=True
                     )
                     session.add(dev_user)
                     await session.commit()
             except Exception as e:
                 await session.rollback()
                 import logging
+
                 logging.getLogger(__name__).warning(f"Failed to seed dev user: {e}")
 
 

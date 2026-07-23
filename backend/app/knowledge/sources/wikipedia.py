@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 try:
     import wikipediaapi
+
     HAS_WIKIPEDIA = True
 except ImportError:
     HAS_WIKIPEDIA = False
@@ -29,11 +30,26 @@ class WikipediaSource(SourceAdapter):
 
     # Topics to pre-index for popular educational content
     COMMON_TOPICS = [
-        "Physics", "Mathematics", "Chemistry", "Biology", "Computer science",
-        "Calculus", "Quantum mechanics", "Thermodynamics", "Genetics",
-        "Machine learning", "Artificial intelligence", "Economics",
-        "Psychology", "Philosophy", "Astronomy", "Geology",
-        "Organic chemistry", "Linear algebra", "Statistics", "Electromagnetism",
+        "Physics",
+        "Mathematics",
+        "Chemistry",
+        "Biology",
+        "Computer science",
+        "Calculus",
+        "Quantum mechanics",
+        "Thermodynamics",
+        "Genetics",
+        "Machine learning",
+        "Artificial intelligence",
+        "Economics",
+        "Psychology",
+        "Philosophy",
+        "Astronomy",
+        "Geology",
+        "Organic chemistry",
+        "Linear algebra",
+        "Statistics",
+        "Electromagnetism",
     ]
 
     def __init__(self, language: str = "en") -> None:
@@ -74,11 +90,13 @@ class WikipediaSource(SourceAdapter):
                 if page is not None:
                     doc = self._page_to_document(page)
                     snippet = doc.content[:300] if doc.content else ""
-                    results.append(SearchResult(
-                        document=doc,
-                        score=0.95,
-                        snippet=snippet,
-                    ))
+                    results.append(
+                        SearchResult(
+                            document=doc,
+                            score=0.95,
+                            snippet=snippet,
+                        )
+                    )
 
             return results
 
@@ -108,6 +126,7 @@ class WikipediaSource(SourceAdapter):
     async def _fetch_page_async(self, title: str) -> object | None:
         """Fetch a Wikipedia page (runs sync API in executor)."""
         import asyncio
+
         loop = asyncio.get_running_loop()
 
         def _fetch():
@@ -121,10 +140,12 @@ class WikipediaSource(SourceAdapter):
     async def _search_related(self, query: str, limit: int) -> list[SearchResult]:
         """Find pages related to the query via Wikipedia's search API."""
         import asyncio
+
         loop = asyncio.get_running_loop()
 
         def _search():
             import requests
+
             headers = {
                 "User-Agent": "Synaris/0.1 (learning-platform; contact@synaris.app)",
                 "Accept": "application/json",
@@ -145,10 +166,7 @@ class WikipediaSource(SourceAdapter):
                 )
                 response.raise_for_status()
                 data = response.json()
-                return [
-                    r["title"]
-                    for r in data.get("query", {}).get("search", [])
-                ]
+                return [r["title"] for r in data.get("query", {}).get("search", [])]
             except Exception as e:
                 logger.warning(f"Wikipedia search API call failed: {e}")
                 return []
@@ -165,11 +183,13 @@ class WikipediaSource(SourceAdapter):
                     continue
 
                 doc = self._page_to_document(page)
-                results.append(SearchResult(
-                    document=doc,
-                    score=0.7 if len(results) > 0 else 0.95,
-                    snippet=doc.content[:300] if doc.content else "",
-                ))
+                results.append(
+                    SearchResult(
+                        document=doc,
+                        score=0.7 if len(results) > 0 else 0.95,
+                        snippet=doc.content[:300] if doc.content else "",
+                    )
+                )
 
             return results
 
@@ -209,8 +229,13 @@ class WikipediaSource(SourceAdapter):
             "chemistry": ["chemistry", "chemical", "element", "molecule", "reaction", "organic"],
             "biology": ["biology", "cell", "genetics", "evolution", "ecology", "organism"],
             "computer science": [
-                "computer", "algorithm", "programming", "data structure",
-                "software", "machine learning", "ai",
+                "computer",
+                "algorithm",
+                "programming",
+                "data structure",
+                "software",
+                "machine learning",
+                "ai",
             ],
             "economics": ["economics", "economy", "market", "supply", "demand", "finance"],
             "psychology": ["psychology", "behavior", "cognitive", "neuroscience", "personality"],

@@ -156,11 +156,14 @@ class PgVectorSearch:
                 LIMIT :limit
             """)
 
-            result = await db.execute(sql, {
-                "embedding": embedding_json,
-                "tsquery": tsquery,
-                "limit": limit,
-            })
+            result = await db.execute(
+                sql,
+                {
+                    "embedding": embedding_json,
+                    "tsquery": tsquery,
+                    "limit": limit,
+                },
+            )
             rows = result.fetchall()
 
             return [
@@ -232,9 +235,8 @@ class PgVectorSearch:
     async def remove_document_chunks(self, document_id: str, db: AsyncSession) -> None:
         """Remove all chunks for a given document."""
         from sqlalchemy import delete
-        stmt = delete(KnowledgeChunk).where(
-            KnowledgeChunk.document_id == uuid.UUID(document_id)
-        )
+
+        stmt = delete(KnowledgeChunk).where(KnowledgeChunk.document_id == uuid.UUID(document_id))
         await db.execute(stmt)
 
 

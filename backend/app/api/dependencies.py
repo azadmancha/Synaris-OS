@@ -71,6 +71,7 @@ async def get_current_user_id(
         # For now, find or create user via the token's email
         try:
             from httpx import AsyncClient
+
             # Get the email from Supabase
             async with AsyncClient() as client:
                 resp = await client.get(
@@ -148,9 +149,7 @@ async def check_rate_limit(
             detail={
                 "message": result.message,
                 "code": "rate_limited",
-                "retry_after_seconds": max(
-                    0, result.reset_at - time.monotonic()
-                ),
+                "retry_after_seconds": max(0, result.reset_at - time.monotonic()),
             },
         )
 

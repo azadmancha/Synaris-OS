@@ -170,7 +170,14 @@ class TestAbuseConvenienceFunctions:
 
     def test_convenience_functions_importable(self) -> None:
         """All abuse functions should be importable through the security module."""
-        from app.security import AbuseDetector, AbuseResult, check_abuse, get_abuse_detector, mark_abuse_event, reset_abuse_detector
+        from app.security import (
+            AbuseDetector,
+            AbuseResult,
+            check_abuse,
+            get_abuse_detector,
+            mark_abuse_event,
+            reset_abuse_detector,
+        )
 
         assert AbuseDetector is not None
         assert AbuseResult is not None

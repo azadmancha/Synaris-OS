@@ -86,7 +86,8 @@ class Quiz(Base):
         if not self.questions:
             return 0
         return sum(
-            1 for q in self.questions
+            1
+            for q in self.questions
             if q.get("user_answer") is not None and q.get("user_answer") == q.get("correct_answer")
         )
 

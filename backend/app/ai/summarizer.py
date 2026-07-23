@@ -122,10 +122,7 @@ async def generate_session_summary(
         if content.startswith("```"):
             # Strip markdown code blocks
             lines = content.split("\n")
-            content = "\n".join(
-                line for line in lines
-                if not line.startswith("```")
-            ).strip()
+            content = "\n".join(line for line in lines if not line.startswith("```")).strip()
 
         data = json.loads(content)
 

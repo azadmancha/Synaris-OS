@@ -45,12 +45,14 @@ logger = logging.getLogger(__name__)
 
 # ─── Result Types ─────────────────────────────────────────────
 
+
 @dataclass
 class GuardrailResult:
     """Result of a security guardrail check."""
+
     passed: bool = True
     blocked: bool = False
-    score: float = 0.0          # 0.0 = safe, 1.0 = definitely malicious
+    score: float = 0.0  # 0.0 = safe, 1.0 = definitely malicious
     reasons: list[str] = field(default_factory=list)
     categories: list[str] = field(default_factory=list)
     message: str = ""
@@ -72,6 +74,7 @@ class GuardrailResult:
 
 
 # ─── Security Auditor ─────────────────────────────────────────
+
 
 class SecurityAuditor:
     """Audit logger for security events.
@@ -119,6 +122,7 @@ class SecurityAuditor:
     def _write_audit_log(self, entry: dict) -> None:
         """Write audit entry to a dedicated file (production only)."""
         import os
+
         log_dir = os.path.join(os.path.dirname(__file__), "..", "..", "logs")
         os.makedirs(log_dir, exist_ok=True)
         log_path = os.path.join(log_dir, "security_audit.log")
@@ -142,6 +146,7 @@ def get_auditor() -> SecurityAuditor:
 # ═══════════════════════════════════════════════════════════════
 # INPUT GUARDRAIL — validates user input before AI processing
 # ═══════════════════════════════════════════════════════════════
+
 
 class InputGuardrail:
     """Validates user input before it reaches the AI provider.
@@ -210,19 +215,23 @@ class InputGuardrail:
                     match_score = min(0.5 + (len(matched_text) / 200), 1.0)
                     highest_score = max(highest_score, match_score)
 
-                    findings.append((
-                        category,
-                        f"Matched {category} pattern: '{matched_text[:100]}'",
-                    ))
+                    findings.append(
+                        (
+                            category,
+                            f"Matched {category} pattern: '{matched_text[:100]}'",
+                        )
+                    )
 
         # ── 3. Repetitive / Spam Detection ──────────────────
         repetition_score = self._detect_repetition(content)
         if repetition_score > 0.5:
             highest_score = max(highest_score, repetition_score)
-            findings.append((
-                "repetitive_content",
-                f"Repetitive content detected (score: {repetition_score:.2f})",
-            ))
+            findings.append(
+                (
+                    "repetitive_content",
+                    f"Repetitive content detected (score: {repetition_score:.2f})",
+                )
+            )
 
         # ── 4. Evaluate Results ─────────────────────────────
         if highest_score >= 0.8:
@@ -245,6 +254,7 @@ class InputGuardrail:
 
             # Record abuse event for blocked content
             from app.security.abuse import mark_abuse_event
+
             try:
                 mark_abuse_event(user_id, "injection_attempt", categories[0] if categories else "unknown")
             except Exception:
@@ -306,7 +316,7 @@ class InputGuardrail:
         total_ngrams = len(words) - n + 1
 
         for i in range(total_ngrams):
-            ngram = " ".join(words[i:i + n])
+            ngram = " ".join(words[i : i + n])
             ngrams.add(ngram)
 
         uniqueness_ratio = len(ngrams) / total_ngrams if total_ngrams > 0 else 1.0
@@ -330,6 +340,7 @@ class InputGuardrail:
 # ═══════════════════════════════════════════════════════════════
 # OUTPUT GUARDRAIL — validates AI output before user delivery
 # ═══════════════════════════════════════════════════════════════
+
 
 class OutputGuardrail:
     """Validates AI output before it reaches the user.
@@ -375,10 +386,12 @@ class OutputGuardrail:
 
         # ── 1. Length Check ──────────────────────────────────
         if len(content) > self.max_output_length:
-            findings.append((
-                "output_too_long",
-                f"Output exceeds maximum length ({len(content)} > {self.max_output_length})",
-            ))
+            findings.append(
+                (
+                    "output_too_long",
+                    f"Output exceeds maximum length ({len(content)} > {self.max_output_length})",
+                )
+            )
             highest_score = max(highest_score, 0.6)
 
         # ── 2. System Prompt Leakage Detection ───────────────
@@ -387,10 +400,12 @@ class OutputGuardrail:
         for sig in self._leakage_signatures:
             if sig in content_lower:
                 sig_matches += 1
-                findings.append((
-                    "prompt_leakage",
-                    f"Output contains system prompt signature: '{sig}'",
-                ))
+                findings.append(
+                    (
+                        "prompt_leakage",
+                        f"Output contains system prompt signature: '{sig}'",
+                    )
+                )
 
         if sig_matches > 0:
             # More signatures matched = higher confidence of leakage
@@ -404,10 +419,12 @@ class OutputGuardrail:
                 if matches:
                     # Show only first few chars to avoid logging secrets
                     sanitized = [m[:8] + "..." for m in matches[:3]]
-                    findings.append((
-                        category,
-                        f"Output contains potential {category}: {', '.join(sanitized)}",
-                    ))
+                    findings.append(
+                        (
+                            category,
+                            f"Output contains potential {category}: {', '.join(sanitized)}",
+                        )
+                    )
                     highest_score = max(highest_score, 0.7)
 
         # ── 4. Evaluate Results ─────────────────────────────

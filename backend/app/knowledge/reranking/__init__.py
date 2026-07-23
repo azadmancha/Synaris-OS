@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RerankedResult:
     """A search result after reranking."""
+
     chunk_id: str
     content: str
     original_score: float
@@ -29,20 +30,41 @@ class RerankedResult:
 
 # Simple keyword-based relevance scoring as a fast pre-filter
 _KEYWORD_BONUS = {
-    "what": 0.1, "how": 0.1, "why": 0.15, "explain": 0.15,
-    "define": 0.1, "example": 0.1, "difference": 0.2,
-    "compare": 0.2, "benefits": 0.15, "advantage": 0.15,
-    "disadvantage": 0.15, "purpose": 0.1, "function": 0.1,
-    "structure": 0.1, "process": 0.1, "cause": 0.15,
-    "effect": 0.15, "relationship": 0.2,
+    "what": 0.1,
+    "how": 0.1,
+    "why": 0.15,
+    "explain": 0.15,
+    "define": 0.1,
+    "example": 0.1,
+    "difference": 0.2,
+    "compare": 0.2,
+    "benefits": 0.15,
+    "advantage": 0.15,
+    "disadvantage": 0.15,
+    "purpose": 0.1,
+    "function": 0.1,
+    "structure": 0.1,
+    "process": 0.1,
+    "cause": 0.15,
+    "effect": 0.15,
+    "relationship": 0.2,
 }
 
 _TERM_BONUS = {
-    "simply": 0.1, "easy": 0.05, "basic": 0.05,
-    "key": 0.1, "important": 0.1, "critical": 0.15,
-    "essential": 0.15, "fundamental": 0.15,
-    "first": 0.05, "primary": 0.1, "main": 0.1,
-    "overview": 0.1, "summary": 0.1, "introduction": 0.1,
+    "simply": 0.1,
+    "easy": 0.05,
+    "basic": 0.05,
+    "key": 0.1,
+    "important": 0.1,
+    "critical": 0.15,
+    "essential": 0.15,
+    "fundamental": 0.15,
+    "first": 0.05,
+    "primary": 0.1,
+    "main": 0.1,
+    "overview": 0.1,
+    "summary": 0.1,
+    "introduction": 0.1,
 }
 
 
@@ -52,8 +74,8 @@ def _keyword_score(query: str, content: str) -> float:
     content_lower = content.lower()
 
     # Token overlap
-    query_tokens = set(re.findall(r'\w+', query_lower))
-    content_tokens = set(re.findall(r'\w+', content_lower))
+    query_tokens = set(re.findall(r"\w+", query_lower))
+    content_tokens = set(re.findall(r"\w+", content_lower))
     overlap = query_tokens & content_tokens
 
     if not overlap:
@@ -128,13 +150,15 @@ class Reranker:
             # keyword score + original embedding score
             reranked = (kw_score * 0.4) + (original_score * 0.6)
 
-            scored.append(RerankedResult(
-                chunk_id=chunk_id,
-                content=content[:200],  # Store preview only
-                original_score=original_score,
-                reranked_score=round(reranked, 4),
-                delta=round(reranked - original_score, 4),
-            ))
+            scored.append(
+                RerankedResult(
+                    chunk_id=chunk_id,
+                    content=content[:200],  # Store preview only
+                    original_score=original_score,
+                    reranked_score=round(reranked, 4),
+                    delta=round(reranked - original_score, 4),
+                )
+            )
 
         # Optionally refine with LLM scoring for top candidates
         if self._use_llm and len(scored) > top_n:
@@ -174,7 +198,7 @@ class Reranker:
             return results
 
         # Take top candidates by keyword score for LLM evaluation
-        candidates = sorted(results, key=lambda x: x.reranked_score, reverse=True)[:top_n * 2]
+        candidates = sorted(results, key=lambda x: x.reranked_score, reverse=True)[: top_n * 2]
 
         # Build a prompt asking the LLM to rate relevance
         parts = [
@@ -184,7 +208,7 @@ class Reranker:
         ]
         for i, r in enumerate(candidates):
             preview = r.content[:150].replace("\n", " ")
-            parts.append(f"[{i+1}] {preview}\n")
+            parts.append(f"[{i + 1}] {preview}\n")
 
         parts.append("\nScores: ")
 
@@ -201,7 +225,7 @@ class Reranker:
         )
 
         # Parse LLM scores
-        llm_scores = re.findall(r'(\d{1,2}(?:\.\d)?)', response.content)
+        llm_scores = re.findall(r"(\d{1,2}(?:\.\d)?)", response.content)
 
         score_map = {}
         for i, score_str in enumerate(llm_scores):
