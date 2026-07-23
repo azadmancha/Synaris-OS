@@ -12,9 +12,19 @@ from sqlalchemy.orm import DeclarativeBase
 
 from app.infrastructure.config import settings
 
+# ── Auto-fix DATABASE_URL ──────────────────────────────────
+# Railway injects DATABASE_URL in postgres:// format (sync driver),
+# but async SQLAlchemy needs postgresql+asyncpg://. We normalize
+# the URL here so users don't need to manually add the suffix.
+
+_db_url = settings.database_url
+if _db_url and _db_url.startswith("postgres://"):
+    _db_url = _db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+
+
 # Async engine — created once, used for the lifetime of the app
 engine = create_async_engine(
-    settings.database_url,
+    _db_url,
     pool_size=settings.db_pool_size,
     max_overflow=settings.db_max_overflow,
     pool_pre_ping=True,  # Verify connections before using them
